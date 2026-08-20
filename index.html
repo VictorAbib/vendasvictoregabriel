@@ -1,0 +1,1711 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}</style>
+</head>
+<body>
+<title>Quanto Sobrou</title>
+
+<style id="css">
+*,*::before,*::after{box-sizing:border-box}
+html,body,h1,h2,h3,p,ul,ol,li,figure,table,fieldset,legend{margin:0;padding:0}
+ul,ol{list-style:none}
+button,input,select{font:inherit;color:inherit}
+img{max-width:100%}
+
+:root{
+  /* sem isto o navegador trata a pagina como "so clara" e escurece tudo por conta propria */
+  color-scheme:light;
+  --bg:#F4F6F5; --surface:#FFFFFF; --surface-2:#ECF0EE; --line:#DBE2DF; --line-2:#C6D0CC;
+  --ink:#111917; --ink-2:#4A5551; --ink-3:#5C6662;
+  --accent:#0B6B5F; --accent-ink:#FFFFFF; --accent-soft:#DBEDE8;
+  --pos:#136B38; --neg:#A81E27; --warn:#845804;
+  --cupom:#FBFCFB;
+  --shadow:0 1px 2px rgba(17,25,23,.05), 0 10px 28px -16px rgba(17,25,23,.22);
+  --sans:ui-sans-serif,-apple-system,"Segoe UI Variable Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono","Roboto Mono",Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0C1211; --surface:#151D1B; --surface-2:#1D2725; --line:#293432; --line-2:#3A4744;
+    --ink:#E5EDEA; --ink-2:#A1ADA9; --ink-3:#99A39E;
+    --accent:#3FC3AA; --accent-ink:#05221D; --accent-soft:#123330;
+    --pos:#4FCC7C; --neg:#F0787E; --warn:#DFA73B;
+    --cupom:#192220;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0C1211; --surface:#151D1B; --surface-2:#1D2725; --line:#293432; --line-2:#3A4744;
+  --ink:#E5EDEA; --ink-2:#A1ADA9; --ink-3:#99A39E;
+  --accent:#3FC3AA; --accent-ink:#05221D; --accent-soft:#123330;
+  --pos:#4FCC7C; --neg:#F0787E; --warn:#DFA73B;
+  --cupom:#192220;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+}
+
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  padding:20px 16px 64px;
+}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* ---------- cabecalho ---------- */
+.topo{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.marca h1{font-size:clamp(26px,4.4vw,36px);font-weight:760;letter-spacing:-.028em;line-height:1.05;text-wrap:balance}
+.marca p{color:var(--ink-2);font-size:13.5px;margin-top:5px;max-width:56ch}
+.topo-acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line-2);
+  background:var(--surface);color:var(--ink);border-radius:9px;padding:9px 14px;
+  font-size:13.5px;font-weight:560;cursor:pointer;transition:background .13s,border-color .13s,transform .06s;
+}
+.btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn-forte{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:640}
+.btn-forte:hover{background:var(--accent);filter:brightness(1.08);border-color:var(--accent)}
+.btn-larg{width:100%;padding:13px;font-size:15px}
+.btn-mini{padding:7px 12px;font-size:12.5px;white-space:nowrap}
+.btn-fantasma{background:none;border-color:transparent;color:var(--ink-3)}
+.btn-fantasma:hover{background:var(--surface-2);border-color:var(--line-2);color:var(--ink)}
+:where(a,button,input,label,summary):focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* ---------- avisos ---------- */
+.aviso{
+  display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:10px;
+  font-size:13px;line-height:1.45;margin-bottom:16px;border:1px solid;
+}
+.aviso b{font-weight:640}
+.aviso-info{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
+.aviso-alerta{background:color-mix(in srgb,var(--warn) 12%,var(--surface));border-color:color-mix(in srgb,var(--warn) 34%,transparent);color:var(--ink)}
+.aviso-erro{background:color-mix(in srgb,var(--neg) 12%,var(--surface));border-color:color-mix(in srgb,var(--neg) 34%,transparent);color:var(--ink)}
+[hidden]{display:none !important}
+
+/* ---------- grade ---------- */
+.grade{display:grid;grid-template-columns:1fr;gap:22px;align-items:start}
+@media (min-width:980px){ .grade{grid-template-columns:minmax(360px,410px) 1fr;gap:26px} .coluna-esq{position:sticky;top:20px} }
+
+.cartao{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:20px}
+.cartao:last-child{margin-bottom:0}
+.cartao-corpo{padding:18px}
+.rotulo-secao{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:12px;
+}
+.conta{
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:1px 8px;color:var(--ink-2);
+}
+
+/* ---------- formulario ---------- */
+.campo{margin-bottom:15px}
+.campo:last-child{margin-bottom:0}
+.campo label,.campo .rot{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+.entrada{
+  width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:9px;
+  padding:11px 12px;font-size:15px;transition:border-color .13s,background .13s;
+}
+.entrada:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft)}
+.entrada::placeholder{color:var(--ink-3)}
+.entrada-dinheiro{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.dupla{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.qtd-custo{display:grid;grid-template-columns:88px 1fr;gap:11px}
+.com-prefixo{position:relative}
+.com-prefixo .prefixo{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:13px;color:var(--ink-3);pointer-events:none;font-weight:600;
+}
+.com-prefixo .entrada{padding-left:38px}
+.dica{
+  font-size:12px;color:var(--accent);margin-top:7px;font-weight:600;
+  display:flex;align-items:flex-start;gap:6px;line-height:1.4;
+}
+.dica b{font-family:var(--mono);font-weight:700}
+.marcar{display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.marcar input{width:17px;height:17px;margin:1px 0 0;accent-color:var(--accent);flex:0 0 auto;cursor:pointer}
+.marcar small{display:block;color:var(--ink-3);font-size:11.5px;margin-top:1px}
+
+/* ---------- canais ---------- */
+.canais{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:7px}
+.canal{position:relative;cursor:pointer}
+.canal input{position:absolute;opacity:0;width:0;height:0}
+.canal-face{
+  display:flex;align-items:center;gap:7px;padding:9px 10px;border-radius:9px;
+  border:1.5px solid var(--line-2);background:var(--surface);
+  font-size:12.5px;font-weight:600;line-height:1.15;transition:border-color .13s,background .13s,color .13s;
+  min-height:40px;
+}
+.canal:hover .canal-face{border-color:var(--ink-3)}
+.ponto{width:10px;height:10px;border-radius:50%;flex:0 0 auto;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+.canal input:checked + .canal-face{
+  background:var(--marca);color:var(--marca-txt);border-color:var(--marca);
+  box-shadow:0 2px 10px -3px var(--marca);
+}
+.canal input:checked + .canal-face .ponto{background:var(--marca-txt) !important;opacity:.55}
+.canal input:focus-visible + .canal-face{outline:2.5px solid var(--accent);outline-offset:2px}
+
+/* ---------- cupom ---------- */
+.cupom-area{margin-top:16px}
+.cupom{
+  position:relative;background:var(--cupom);border:1px solid var(--line);
+  border-bottom:none;border-radius:12px 12px 0 0;padding:16px 17px 14px;
+  font-family:var(--mono);font-variant-numeric:tabular-nums;
+}
+.cupom::after{
+  content:"";position:absolute;top:100%;left:-1px;right:-1px;height:9px;background:var(--cupom);
+  -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/13px 100%;
+  mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/13px 100%;
+}
+.cupom-topo{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  padding-bottom:9px;margin-bottom:10px;border-bottom:1.5px dashed var(--line-2);
+}
+.cupom-topo span{font-family:var(--sans);font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.linha{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;padding:3.5px 0;color:var(--ink-2)}
+.linha b{color:var(--ink);font-weight:600}
+.linha .val{white-space:nowrap;font-weight:600}
+.linha-neg .val{color:var(--neg)}
+.linha-nota{font-size:11px;color:var(--ink-3);font-family:var(--sans);padding-top:0;margin-top:-2px}
+.regua{height:1.5px;background:repeating-linear-gradient(90deg,var(--line-2) 0 5px,transparent 5px 10px);margin:9px 0}
+.linha-total{font-size:15px;padding-top:6px}
+.linha-total b{font-weight:700}
+.linha-total .val{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.val-pos{color:var(--pos)} .val-neg{color:var(--neg)}
+.chips-cupom{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1.5px dashed var(--line-2)}
+.chip{
+  font-family:var(--sans);font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;
+  background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);
+}
+.chip b{font-family:var(--mono);font-weight:700;color:var(--ink)}
+.cupom-vazio{text-align:center;color:var(--ink-3);font-family:var(--sans);font-size:13px;padding:14px 8px;line-height:1.5}
+.sugestao{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:11px;padding-top:10px;
+  border-top:1.5px dashed var(--line-2);font-family:var(--sans);font-size:12.5px;color:var(--ink-2);
+}
+.sugestao input{
+  width:56px;padding:4px 7px;border:1px solid var(--line-2);border-radius:7px;background:var(--surface);
+  font-family:var(--mono);font-size:13px;font-weight:700;text-align:center;
+}
+.sugestao .alvo{font-family:var(--mono);font-weight:700;color:var(--accent);font-size:15px}
+
+/* ---------- detalhes ---------- */
+details.mais{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+details.mais summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink-2);list-style:none;display:flex;align-items:center;gap:6px}
+details.mais summary::-webkit-details-marker{display:none}
+details.mais summary::before{content:"+";font-family:var(--mono);font-weight:700;color:var(--accent)}
+details.mais[open] summary::before{content:"–"}
+details.mais > div{margin-top:12px}
+
+/* ---------- painel de venda / edicao ---------- */
+.venda-alvo{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:15px;
+}
+.venda-alvo .nome{font-weight:660;font-size:15px;line-height:1.25}
+.venda-alvo .meta{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.venda-alvo .custo{font-family:var(--mono);font-weight:700;font-size:14px;white-space:nowrap;color:var(--ink-2)}
+.botoes-par{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:16px}
+.sub-secao{
+  font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  margin:18px 0 12px;padding-top:14px;border-top:1px solid var(--line);
+}
+
+/* ---------- itens (a caminho / em estoque) ---------- */
+.item{
+  display:grid;grid-template-columns:1fr auto auto;gap:6px 12px;align-items:center;
+  padding:11px 0;border-bottom:1px solid var(--line);
+}
+.item:last-of-type{border-bottom:none}
+.item-nome{font-weight:620;line-height:1.3}
+.item-meta{font-size:11.5px;color:var(--ink-3);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.item-meta .encalhe{color:var(--neg);font-weight:700}
+.unidade{
+  font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--ink-2);
+  background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:1px 7px;white-space:nowrap;
+}
+.item-valor{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;white-space:nowrap}
+.item-acoes{display:flex;gap:5px;align-items:center}
+.item-form{
+  grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:2px;
+}
+.item-form label{font-size:12px;font-weight:600;color:var(--ink-2)}
+.item-form input{
+  padding:7px 9px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);font-size:13.5px;
+}
+.item-form input[type=number]{width:76px;font-family:var(--mono);font-weight:700;text-align:center}
+.item-form input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+@media (max-width:519px){
+  .item{grid-template-columns:1fr auto}
+  .item-acoes{grid-column:1/-1;justify-content:flex-end;gap:7px}
+}
+
+/* ---------- resumo ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:11px;margin-bottom:20px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
+.tile .rot{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.tile .num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;letter-spacing:-.025em;line-height:1.1}
+.tile .sub{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+.tile-destaque{background:var(--accent-soft);border-color:transparent}
+
+.canal-linha{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}
+.canal-linha:last-child{border-bottom:none}
+.canal-nome{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600}
+.canal-num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px;font-weight:700;white-space:nowrap}
+.barra{grid-column:1/-1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden;margin-top:1px}
+.barra i{display:block;height:100%;border-radius:3px;background:var(--marca)}
+.canal-meta{grid-column:1/-1;font-size:11.5px;color:var(--ink-3);font-family:var(--mono)}
+
+/* ---------- tabela ---------- */
+.tabela-caixa{overflow-x:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead th{
+  text-align:right;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);padding:0 11px 9px;white-space:nowrap;border-bottom:1.5px solid var(--line-2);
+}
+thead th:first-child,tbody td:first-child{text-align:left}
+tbody td{padding:11px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+.num-cel{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.prod{font-weight:620;color:var(--ink);line-height:1.3}
+.prod small{display:block;font-weight:500;color:var(--ink-3);font-size:11.5px;margin-top:1px}
+.lucro-cel{font-weight:700}
+.acoes-cel{display:flex;gap:2px;justify-content:flex-end}
+.icone{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:34px;min-height:34px;
+  background:none;border:none;color:var(--ink-3);cursor:pointer;font-size:16px;line-height:1;
+  padding:5px 7px;border-radius:8px;
+}
+.icone:hover{background:var(--surface-2);color:var(--ink)}
+.icone-perigo:hover{background:color-mix(in srgb,var(--neg) 14%,transparent);color:var(--neg)}
+/* confirmacao em dois toques: o iframe do artifact bloqueia confirm() nativo, que devolve
+   false calado — o clique de apagar morria sem o usuario entender por que */
+.icone.armado{
+  min-width:auto;padding:0 12px;background:var(--neg);color:#fff;
+  font-family:var(--sans);font-size:12px;font-weight:700;
+}
+.icone.armado:hover{background:var(--neg);filter:brightness(1.12);color:#fff}
+/* no celular o dedo precisa de alvo maior — um destes botoes apaga o produto.
+   precisa vir DEPOIS das regras base de .icone/.btn-mini, senao elas vencem no empate */
+@media (pointer:coarse),(max-width:719px){
+  .icone{min-width:42px;min-height:42px;font-size:18px}
+  .btn-mini{min-height:42px;padding:9px 15px}
+  .item-form input{min-height:42px}
+  .proj-item select{min-height:42px}
+}
+tfoot td{padding:12px 11px;font-weight:700;border-top:1.5px solid var(--line-2);text-align:right}
+tfoot td:first-child{text-align:left}
+
+.vazio{text-align:center;padding:34px 20px;color:var(--ink-3)}
+.vazio strong{display:block;color:var(--ink-2);font-size:15px;font-weight:640;margin-bottom:5px}
+.vazio p{font-size:13px;max-width:40ch;margin:0 auto;line-height:1.55}
+
+@media (max-width:719px){
+  thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  tbody tr{display:block;border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:9px;background:var(--surface)}
+  tbody td{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:4px 0;border:none;text-align:right}
+  tbody td::before{content:attr(data-l);font-size:11.5px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+  tbody td:first-child{border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:5px}
+  tbody td:first-child::before{display:none}
+  tfoot tr{display:block;padding:11px 13px}
+  tfoot td{display:flex;justify-content:space-between;padding:3px 0;border:none}
+  tfoot td::before{content:attr(data-l);font-weight:600;color:var(--ink-3)}
+  tfoot td:first-child{display:none}
+}
+
+/* ---------- ajustes ---------- */
+.ajuste-linha{display:grid;grid-template-columns:1fr repeat(4,minmax(62px,80px));gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.ajuste-linha:last-of-type{border-bottom:none}
+.ajuste-cab{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);text-align:center;padding-bottom:4px}
+.ajuste-cab:first-child{text-align:left}
+.ajuste-linha input{
+  width:100%;padding:7px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--bg);
+  font-family:var(--mono);font-size:13px;font-weight:600;text-align:center;
+}
+.ajuste-linha input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+@media (max-width:719px){
+  .ajuste-cabs{display:none}
+  .ajuste-linha{grid-template-columns:1fr 1fr;gap:8px 10px;padding:13px 0}
+  .ajuste-linha > .canal-nome{grid-column:1/-1}
+  .ajuste-linha label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:600;color:var(--ink-3)}
+}
+/* ---------- projecao ---------- */
+.proj-nota{font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:14px}
+.proj-nota b{color:var(--ink)}
+.proj-item{
+  display:grid;grid-template-columns:1fr 132px 118px 156px;gap:10px;align-items:center;
+  padding:12px 0;border-bottom:1px solid var(--line);
+}
+.proj-item:last-child{border-bottom:none}
+.proj-item select{
+  padding:9px 8px;border:1px solid var(--line-2);border-radius:9px;background:var(--bg);
+  font-size:13px;font-weight:600;width:100%;
+}
+.proj-item select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.proj-item .entrada{font-size:15px;padding-top:9px;padding-bottom:9px}
+.proj-res{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.proj-lucro{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.proj-sub{font-family:var(--sans);font-size:11px;color:var(--ink-3);margin-top:2px;line-height:1.35}
+.proj-vazio{font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+.proj-ferramentas{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);
+  margin:14px 0;padding:11px 13px;background:var(--surface-2);border-radius:10px;
+}
+.proj-ferramentas input{
+  width:62px;padding:6px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);
+  font-family:var(--mono);font-size:13px;font-weight:700;text-align:center;
+}
+.proj-ferramentas input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.proj-caixa{
+  background:var(--cupom);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+  font-family:var(--mono);font-variant-numeric:tabular-nums;margin-bottom:12px;
+}
+.proj-linha{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;padding:3.5px 0;color:var(--ink-2)}
+.proj-linha .v{font-weight:600;white-space:nowrap}
+.proj-linha.neg .v{color:var(--neg)}
+.proj-linha.destaque{font-size:15px;padding-top:6px}
+.proj-linha.destaque b{color:var(--ink);font-weight:700}
+.proj-linha.destaque .v{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.proj-alerta{font-size:12px;color:var(--warn);font-weight:600;margin-bottom:12px;line-height:1.45}
+.proj-somatorio{
+  font-size:13px;color:var(--ink-2);line-height:1.55;margin-bottom:14px;
+  padding:11px 13px;background:var(--accent-soft);border-radius:10px;
+}
+.proj-somatorio b{font-family:var(--mono);font-weight:700;color:var(--ink)}
+@media (max-width:719px){
+  .proj-item{grid-template-columns:1fr 1fr;gap:9px}
+  .proj-id{grid-column:1/-1}
+  .proj-res{grid-column:1/-1;text-align:left;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .proj-sub{margin-top:0}
+}
+.backup-caixa{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.backup-cola{
+  width:100%;min-height:88px;padding:10px 12px;border:1px solid var(--line-2);border-radius:9px;
+  background:var(--bg);font-family:var(--mono);font-size:11.5px;line-height:1.45;resize:vertical;
+}
+.backup-cola:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.rodape{margin-top:6px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3);line-height:1.6}
+.rodape b{color:var(--ink-2)}
+.salvando{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gira .65s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+</style>
+
+<div id="root"></div>
+
+<script id="dados" type="application/json">{"v":3,"canais":[{"id":"mlc","nome":"Mercado Livre Clássico","curto":"ML Clássico","cor":"#FFE600","fg":"#111917","pct":0.13,"fixa":6.25,"limite":79,"frete":23.65,"freteMin":79},{"id":"mlp","nome":"Mercado Livre Premium","curto":"ML Premium","cor":"#FFD100","fg":"#111917","pct":0.18,"fixa":6.25,"limite":79,"frete":23.65,"freteMin":79},{"id":"shopee","nome":"Shopee","curto":"Shopee","cor":"#EE4D2D","fg":"#FFFFFF","pct":0.2,"fixa":4,"limite":999999,"frete":0,"freteMin":0},{"id":"olx","nome":"OLX","curto":"OLX","cor":"#6E0AD6","fg":"#FFFFFF","pct":0,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"face","nome":"Facebook Marketplace","curto":"Facebook","cor":"#1877F2","fg":"#FFFFFF","pct":0,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"amazon","nome":"Amazon","curto":"Amazon","cor":"#FF9900","fg":"#111917","pct":0.15,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"zap","nome":"WhatsApp / Instagram","curto":"WhatsApp","cor":"#25D366","fg":"#111917","pct":0,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"magalu","nome":"Magalu","curto":"Magalu","cor":"#0086FF","fg":"#FFFFFF","pct":0.16,"fixa":0,"limite":0,"frete":0,"freteMin":0}],"itens":[]}</script>
+
+<script id="app">
+(function () {
+  'use strict';
+
+  var DADOS = JSON.parse(document.getElementById('dados').textContent);
+  if (!DADOS.itens) DADOS.itens = [];
+  // migra dados da versao 1, quando cada registro ja nascia vendido
+  if (DADOS.vendas && DADOS.vendas.length) {
+    for (var m = 0; m < DADOS.vendas.length; m++) DADOS.itens.push(DADOS.vendas[m]);
+    delete DADOS.vendas;
+  }
+  DADOS.v = 3;
+
+  var NS = null;           // namespace do artifact
+  var MODO_LOCAL = false;  // true quando a pagina roda fora do Claude
+  var CHAVE_LOCAL = 'quanto-sobrou-dados';
+  var soLeitura = false;
+  var salvando = false;
+  var vendendo = null;     // id do item sendo vendido
+  var editando = null;     // id do item sendo alterado
+
+  // ---------- utilidades ----------
+  function num(v) {
+    if (typeof v === 'number') return isFinite(v) ? v : 0;
+    var s = String(v == null ? '' : v).trim();
+    if (!s) return 0;
+    s = s.replace(/\s/g, '').replace(/R\$/gi, '');
+    if (s.indexOf(',') > -1) s = s.replace(/\./g, '').replace(',', '.');
+    var n = parseFloat(s);
+    return isFinite(n) ? n : 0;
+  }
+  function brl(n) {
+    return (n < 0 ? '-' : '') + 'R$ ' + Math.abs(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function pc(n) {
+    if (!isFinite(n)) return '—';
+    return (n * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function $(s) { return document.querySelector(s); }
+  function novoId(p) { return (p || 'i') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function paraCampo(n) { return String(num(n).toFixed(2)).replace('.', ','); }
+  function hoje() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function dataBR(iso) {
+    if (!iso) return '';
+    var p = String(iso).split('-');
+    return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso;
+  }
+  function dias(de, ate) {
+    if (!de) return null;
+    var d = (new Date((ate || hoje()) + 'T12:00') - new Date(de + 'T12:00')) / 86400000;
+    return isFinite(d) ? Math.round(d) : null;
+  }
+  function plural(n, um, muitos) { return n + ' ' + (n === 1 ? um : muitos); }
+  function canalDe(id) {
+    for (var i = 0; i < DADOS.canais.length; i++) if (DADOS.canais[i].id === id) return DADOS.canais[i];
+    return null;
+  }
+  function itemDe(id) {
+    for (var i = 0; i < DADOS.itens.length; i++) if (DADOS.itens[i].id === id) return DADOS.itens[i];
+    return null;
+  }
+  function fase(it) {
+    if (it.dVenda) return 'vendido';
+    if (it.dChegada) return 'estoque';
+    return 'caminho';
+  }
+  function porFase(f) {
+    var r = [];
+    for (var i = 0; i < DADOS.itens.length; i++) if (fase(DADOS.itens[i]) === f) r.push(DADOS.itens[i]);
+    return r;
+  }
+
+  // divide um valor total entre N unidades SEM perder centavo:
+  // o resto da divisao vai de um em um para as primeiras unidades
+  function ratear(total, qtd) {
+    var centavos = Math.round(num(total) * 100);
+    var base = Math.floor(centavos / qtd);
+    var resto = centavos - base * qtd;
+    var r = [];
+    for (var i = 0; i < qtd; i++) r.push((base + (i < resto ? 1 : 0)) / 100);
+    return r;
+  }
+  // "2 de 6" — calculado na hora, entao apagar uma unidade reajusta o resto
+  function grupoDe(it) {
+    if (!it.grupo) return null;
+    var irmaos = [];
+    for (var i = 0; i < DADOS.itens.length; i++) if (DADOS.itens[i].grupo === it.grupo) irmaos.push(DADOS.itens[i]);
+    if (irmaos.length < 2) return null;
+    return { idx: irmaos.indexOf(it) + 1, total: irmaos.length };
+  }
+  function selo(it) {
+    var g = grupoDe(it);
+    return g ? '<span class="unidade">' + g.idx + ' de ' + g.total + '</span>' : '';
+  }
+
+  // ---------- o calculo ----------
+  function taxaDe(canal, preco) {
+    if (!canal || !preco) return 0;
+    var t = preco * num(canal.pct);
+    if (preco < num(canal.limite)) t += num(canal.fixa);
+    return t;
+  }
+  function freteAuto(canal, preco) {
+    if (!canal) return 0;
+    return preco >= num(canal.freteMin) ? num(canal.frete) : 0;
+  }
+  function conta(custo, preco, canal, freteManual) {
+    var taxa = taxaDe(canal, preco);
+    var frete = freteManual == null ? freteAuto(canal, preco) : num(freteManual);
+    var liquido = preco - taxa - frete;
+    var lucro = liquido - custo;
+    return {
+      custo: custo, preco: preco, taxa: taxa, frete: frete, liquido: liquido, lucro: lucro,
+      margem: preco > 0 ? lucro / preco : NaN,
+      roi: custo > 0 ? lucro / custo : NaN
+    };
+  }
+  function contaDoItem(it) { return conta(num(it.custo), num(it.preco), canalDe(it.canal), it.frete); }
+  function precoAlvo(custo, canal, margem) {
+    if (!canal || custo <= 0 || margem >= 1) return NaN;
+    var p = custo / (1 - num(canal.pct) - margem);
+    for (var i = 0; i < 40; i++) {
+      var extra = (p < num(canal.limite) ? num(canal.fixa) : 0) + freteAuto(canal, p);
+      var novo = (custo + extra) / (1 - num(canal.pct) - margem);
+      if (!isFinite(novo) || novo <= 0) return NaN;
+      if (Math.abs(novo - p) < 0.005) { p = novo; break; }
+      p = novo;
+    }
+    return isFinite(p) && p > 0 ? Math.ceil(p * 100) / 100 : NaN;
+  }
+
+  // ---------- a casca da pagina ----------
+  var SHELL = ''
+    + '<div class="wrap">'
+    + '  <header class="topo">'
+    + '    <div class="marca"><h1>Quanto Sobrou</h1>'
+    + '      <p>Dá entrada quando compra, avisa quando chega, registra quando vende. A taxa do canal e o frete entram sozinhos na hora da saída.</p></div>'
+    + '    <div class="topo-acoes"><button class="btn" id="btn-csv" type="button">Baixar planilha</button></div>'
+    + '  </header>'
+    + '  <div class="aviso aviso-alerta" id="aviso-leitura" hidden><span>👀</span><div><b>Modo somente leitura.</b> Você pode mexer à vontade, mas nada que registrar aqui vai ser guardado — só o dono desta página consegue salvar.</div></div>'
+    + '  <div class="aviso aviso-info" id="aviso-local" hidden><span>💾</span><div><b>Versão local.</b> Você está rodando o app fora do Claude, então os dados ficam guardados <b>só neste navegador, neste aparelho</b>. Abrir em outro celular ou computador começa do zero. Use o backup abaixo para transportar.</div></div>'
+    + '  <div class="aviso aviso-erro" id="aviso-erro" hidden><span>⚠️</span><div id="aviso-erro-txt"></div></div>'
+    + '  <div class="aviso aviso-info" id="aviso-pendente" hidden><span>↩️</span><div><b>Isso não chegou a ser salvo.</b> Devolvi os dados ao formulário — confira e registre de novo.</div></div>'
+    + '  <div class="grade">'
+    + '    <div class="coluna-esq">'
+
+    /* ---- painel 1: dar entrada ---- */
+    + '      <section class="cartao" id="painel-entrada"><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>1 · Dar entrada num produto</span></div>'
+    + '        <div class="campo"><label for="e-produto">O que você comprou</label>'
+    + '          <input class="entrada" id="e-produto" type="text" placeholder="Fone bluetooth, iPhone 11…" autocomplete="off"></div>'
+    + '        <div class="campo"><div class="qtd-custo">'
+    + '          <div><label for="e-qtd">Quantas</label>'
+    + '            <input class="entrada entrada-dinheiro" id="e-qtd" type="number" min="1" max="200" step="1" value="1" style="text-align:center"></div>'
+    + '          <div><label for="e-custo" id="e-custo-rot">Quanto custou</label>'
+    + '            <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '            <input class="entrada entrada-dinheiro" id="e-custo" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>'
+    + '        </div><div class="dica" id="e-dica" hidden></div></div>'
+    + '        <div class="campo dupla">'
+    + '          <div><label for="e-dcompra">Data da compra</label><input class="entrada" id="e-dcompra" type="date"></div>'
+    + '          <div><label for="e-fornecedor">Onde comprou</label><input class="entrada" id="e-fornecedor" type="text" placeholder="opcional" autocomplete="off"></div>'
+    + '        </div>'
+    + '        <div class="campo"><label class="marcar"><input type="checkbox" id="e-jachegou">'
+    + '          <span>Já está comigo<small>marque se comprou pessoalmente ou o produto já chegou</small></span></label></div>'
+    + '        <button class="btn btn-forte btn-larg" id="btn-entrada" type="button">Dar entrada</button>'
+    + '      </div></section>'
+
+    /* ---- painel 2: dar saida ---- */
+    + '      <section class="cartao" id="painel-venda" hidden><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>3 · Dar saída</span></div>'
+    + '        <div class="venda-alvo"><div><div class="nome" id="v-nome"></div><div class="meta" id="v-meta"></div></div>'
+    + '          <div class="custo" id="v-custo"></div></div>'
+    + '        <div class="campo"><span class="rot">Onde você vendeu</span><div class="canais" id="v-canais" role="radiogroup" aria-label="Canal de venda"></div></div>'
+    + '        <div class="campo dupla">'
+    + '          <div><label for="v-preco">Por quanto saiu</label>'
+    + '            <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '            <input class="entrada entrada-dinheiro" id="v-preco" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>'
+    + '          <div><label for="v-dvenda">Data da saída</label><input class="entrada" id="v-dvenda" type="date"></div>'
+    + '        </div>'
+    + '        <div class="cupom-area"><div class="cupom" id="cupom"></div></div>'
+    + '        <details class="mais"><summary>Ajustar frete ou o custo do produto</summary><div>'
+    + '          <div class="campo dupla">'
+    + '            <div><label for="v-frete">Frete do seu bolso</label>'
+    + '              <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '              <input class="entrada entrada-dinheiro" id="v-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
+    + '            <div><label for="v-custo-edit">Custo total</label>'
+    + '              <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '              <input class="entrada entrada-dinheiro" id="v-custo-edit" type="text" inputmode="decimal" autocomplete="off"></div></div>'
+    + '          </div>'
+    + '          <p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin-top:-4px">Some no custo o que gastou depois: conserto, peça, embalagem, imposto de importação.</p>'
+    + '        </div></details>'
+    + '        <div class="botoes-par"><button class="btn btn-forte" id="btn-venda" type="button">Confirmar saída</button>'
+    + '          <button class="btn btn-fantasma" id="btn-cancelar-venda" type="button">Cancelar</button></div>'
+    + '      </div></section>'
+
+    /* ---- painel 3: alterar ---- */
+    + '      <section class="cartao" id="painel-editar" hidden><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Alterar produto</span><span class="conta" id="ed-selo"></span></div>'
+    + '        <div class="campo"><label for="ed-produto">Produto</label>'
+    + '          <input class="entrada" id="ed-produto" type="text" autocomplete="off"></div>'
+    + '        <div class="campo"><label for="ed-custo">Quanto custou esta unidade</label>'
+    + '          <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '          <input class="entrada entrada-dinheiro" id="ed-custo" type="text" inputmode="decimal" autocomplete="off"></div>'
+    + '          <div class="dica" id="ed-dica-grupo" hidden></div></div>'
+    + '        <div class="campo dupla">'
+    + '          <div><label for="ed-dcompra">Data da compra</label><input class="entrada" id="ed-dcompra" type="date"></div>'
+    + '          <div><label for="ed-fornecedor">Onde comprou</label><input class="entrada" id="ed-fornecedor" type="text" placeholder="opcional" autocomplete="off"></div>'
+    + '        </div>'
+    + '        <div class="campo"><label for="ed-dchegada">Data da chegada</label><input class="entrada" id="ed-dchegada" type="date">'
+    + '          <div class="dica" style="color:var(--ink-3);font-weight:500"><span>↳</span><span>Deixe vazio se ainda está a caminho.</span></div></div>'
+    + '        <div id="ed-bloco-venda" hidden>'
+    + '          <div class="sub-secao">Dados da venda</div>'
+    + '          <div class="campo"><span class="rot">Onde vendeu</span><div class="canais" id="ed-canais" role="radiogroup" aria-label="Canal de venda"></div></div>'
+    + '          <div class="campo dupla">'
+    + '            <div><label for="ed-preco">Por quanto saiu</label>'
+    + '              <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '              <input class="entrada entrada-dinheiro" id="ed-preco" type="text" inputmode="decimal" autocomplete="off"></div></div>'
+    + '            <div><label for="ed-dvenda">Data da saída</label><input class="entrada" id="ed-dvenda" type="date"></div>'
+    + '          </div>'
+    + '          <div class="campo"><label for="ed-frete">Frete do seu bolso</label>'
+    + '            <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '            <input class="entrada entrada-dinheiro" id="ed-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
+    + '        </div>'
+    + '        <div class="botoes-par"><button class="btn btn-forte" id="btn-editar-salvar" type="button">Salvar alterações</button>'
+    + '          <button class="btn btn-fantasma" id="btn-editar-cancelar" type="button">Cancelar</button></div>'
+    + '      </div></section>'
+    + '    </div>'
+
+    + '    <div class="coluna-dir">'
+    + '      <div class="tiles" id="tiles"></div>'
+    + '      <section class="cartao" id="sec-caminho" hidden><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>2 · A caminho</span><span class="conta" id="conta-caminho"></span></div><div id="lista-caminho"></div>'
+    + '      </div></section>'
+    + '      <section class="cartao" id="sec-estoque"><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Em estoque, pronto pra vender</span><span class="conta" id="conta-estoque"></span></div><div id="lista-estoque"></div>'
+    + '      </div></section>'
+    + '      <section class="cartao" id="sec-projecao" hidden><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Projeção · o que ainda pode entrar</span><span class="conta" id="conta-proj"></span></div>'
+    + '        <p class="proj-nota">Diga por quanto pretende vender cada produto e por onde. <b>Nada daqui entra no faturamento nem no lucro lá de cima</b> — isso só acontece quando você dá a saída de verdade.</p>'
+    + '        <div id="proj-lista"></div>'
+    + '        <div class="proj-ferramentas"><span>Não sabe o preço? Preencher os vazios mirando</span>'
+    + '          <input id="proj-margem" type="number" min="1" max="90" step="1" value="30" aria-label="margem desejada em %"><span>% de margem</span>'
+    + '          <button class="btn btn-mini" id="btn-proj-sugerir" type="button">Preencher</button></div>'
+    + '        <div id="proj-totais"></div>'
+    + '        <button class="btn" id="btn-proj-salvar" type="button">Salvar projeção</button>'
+    + '      </div></section>'
+    + '      <section class="cartao" id="sec-vendidos" hidden><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Já vendidos</span><span class="conta" id="conta-vendidos"></span></div><div id="lista-vendidos"></div>'
+    + '      </div></section>'
+    + '      <section class="cartao" id="sec-canais" hidden><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Onde o lucro está vindo</span></div><div id="por-canal"></div>'
+    + '      </div></section>'
+    + '      <section class="cartao"><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Taxas de cada canal</span></div>'
+    + '        <p style="font-size:12.5px;color:var(--ink-2);margin-bottom:14px;line-height:1.5">Mudou a comissão do Mercado Livre? Ajuste aqui e todas as contas se refazem. <b>Tarifa fixa</b> é o valor cobrado por unidade quando o preço fica abaixo do limite. <b>Frete</b> é o que sai do seu bolso quando a venda passa do valor mínimo.</p>'
+    + '        <div class="ajuste-linha ajuste-cabs"><div class="ajuste-cab">Canal</div><div class="ajuste-cab">Comissão %</div><div class="ajuste-cab">Tarifa fixa</div><div class="ajuste-cab">Fixa se &lt;</div><div class="ajuste-cab">Frete</div></div>'
+    + '        <div id="ajustes"></div>'
+    + '        <button class="btn" id="btn-taxas" type="button" style="margin-top:14px">Salvar taxas</button>'
+    + '      </div></section>'
+    + '      <section class="cartao"><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Backup dos seus dados</span></div>'
+    + '        <p class="proj-nota">Seus lançamentos existem só dentro desta página. Baixe um backup de vez em quando — é um arquivo de texto com tudo, e serve tanto para restaurar quanto para levar os dados para outro lugar.</p>'
+    + '        <div class="backup-caixa"><button class="btn" id="btn-backup" type="button">Baixar backup</button></div>'
+    + '        <details class="mais"><summary>Restaurar a partir de um backup</summary><div>'
+    + '          <p style="font-size:12px;color:var(--ink-3);line-height:1.5;margin-bottom:9px">Abra o arquivo de backup num editor de texto, copie tudo e cole aqui. <b>Isto substitui todos os dados atuais.</b></p>'
+    + '          <textarea class="backup-cola" id="backup-cola" placeholder="cole aqui o conteúdo do arquivo de backup" spellcheck="false" aria-label="conteúdo do backup"></textarea>'
+    + '          <button class="btn" id="btn-restaurar" type="button" style="margin-top:9px">Restaurar</button>'
+    + '        </div></details>'
+    + '      </div></section>'
+    + '      <div class="rodape">Os percentuais que já vêm preenchidos são <b>referências de mercado</b>, não os seus. Confira na central de vendedores de cada plataforma — a comissão muda por categoria e por reputação.</div>'
+    + '    </div>'
+    + '  </div>'
+    + '</div>';
+
+  // ---------- desenhar ----------
+  function htmlCanais(nomeGrupo) {
+    var h = '';
+    for (var i = 0; i < DADOS.canais.length; i++) {
+      var c = DADOS.canais[i];
+      h += '<label class="canal" style="--marca:' + esc(c.cor) + ';--marca-txt:' + esc(c.fg) + '">'
+        + '<input type="radio" name="' + nomeGrupo + '" value="' + esc(c.id) + '">'
+        + '<span class="canal-face"><span class="ponto" style="background:' + esc(c.cor) + '"></span>' + esc(c.curto) + '</span></label>';
+    }
+    return h;
+  }
+  function desenharCanais() {
+    $('#v-canais').innerHTML = htmlCanais('canal-venda');
+    $('#ed-canais').innerHTML = htmlCanais('canal-edit');
+    var rs = $('#v-canais').querySelectorAll('input');
+    for (var j = 0; j < rs.length; j++) rs[j].addEventListener('change', desenharCupom);
+  }
+  function canalEscolhido() {
+    var r = document.querySelector('#v-canais input:checked');
+    return r ? canalDe(r.value) : null;
+  }
+
+  function desenharCupom() {
+    var el = $('#cupom');
+    var it = vendendo ? itemDe(vendendo) : null;
+    if (!it) { el.innerHTML = ''; return; }
+    var canal = canalEscolhido();
+    var custo = num($('#v-custo-edit').value);
+    var preco = num($('#v-preco').value);
+    var freteTxt = $('#v-frete').value.trim();
+
+    if (!canal || preco <= 0) {
+      el.innerHTML = '<div class="cupom-vazio">' + (canal
+        ? 'Digite por quanto o produto saiu e a conta aparece aqui.'
+        : 'Escolha onde vendeu e digite o valor.<br>A taxa e o frete entram sozinhos.') + '</div>';
+      return;
+    }
+    var c = conta(custo, preco, canal, freteTxt === '' ? null : num(freteTxt));
+    var temFixa = preco < num(canal.limite) && num(canal.fixa) > 0;
+    var auto = freteTxt === '';
+    var h = '<div class="cupom-topo"><span>' + esc(canal.nome) + '</span><span>' + pc(num(canal.pct)) + ' de comissão</span></div>'
+      + '<div class="linha"><b>Você recebe</b><span class="val">' + brl(preco) + '</span></div>'
+      + '<div class="linha linha-neg"><span>Taxa do canal</span><span class="val">− ' + brl(c.taxa) + '</span></div>';
+    // limite altissimo é como se marca "cobra sempre" — nao faz sentido mostrar o numero
+    if (temFixa) {
+      h += '<div class="linha linha-nota">' + (num(canal.limite) >= 100000
+        ? 'inclui a tarifa fixa de ' + brl(num(canal.fixa)) + ' por item, que esse canal cobra em toda venda'
+        : 'inclui tarifa fixa de ' + brl(num(canal.fixa)) + ', porque a venda ficou abaixo de ' + brl(num(canal.limite))) + '</div>';
+    }
+    h += '<div class="linha linha-neg"><span>Frete' + (auto ? '' : ' (você ajustou)') + '</span><span class="val">− ' + brl(c.frete) + '</span></div>';
+    if (auto && c.frete > 0) h += '<div class="linha linha-nota">o frete é por sua conta acima de ' + brl(num(canal.freteMin)) + '</div>';
+    if (auto && c.frete === 0 && num(canal.frete) > 0) h += '<div class="linha linha-nota">abaixo de ' + brl(num(canal.freteMin)) + ' quem paga o frete é o comprador</div>';
+    h += '<div class="regua"></div>'
+      + '<div class="linha"><span>Cai na sua conta</span><span class="val">' + brl(c.liquido) + '</span></div>'
+      + '<div class="linha linha-neg"><span>O que o produto custou</span><span class="val">− ' + brl(c.custo) + '</span></div>'
+      + '<div class="regua"></div>'
+      + '<div class="linha linha-total"><b>' + (c.lucro < 0 ? 'Prejuízo' : 'Sobra pra você') + '</b>'
+      + '<span class="val ' + (c.lucro < 0 ? 'val-neg' : 'val-pos') + '">' + brl(c.lucro) + '</span></div>';
+    if (custo > 0) {
+      h += '<div class="chips-cupom">'
+        + '<span class="chip">margem <b>' + pc(c.margem) + '</b></span>'
+        + '<span class="chip">retorno <b>' + pc(c.roi) + '</b></span>'
+        + '<span class="chip">taxas <b>' + pc((c.taxa + c.frete) / preco) + '</b> da venda</span></div>';
+      var alvoM = num($('#v-margem') ? $('#v-margem').value : 30) || 30;
+      var pAlvo = precoAlvo(custo, canal, alvoM / 100);
+      h += '<div class="sugestao">Para lucrar <input id="v-margem" type="number" min="1" max="90" step="1" value="' + alvoM + '" aria-label="margem desejada em %">% cobre <span class="alvo">' + (isFinite(pAlvo) ? brl(pAlvo) : '—') + '</span></div>';
+    }
+    el.innerHTML = h;
+    var mi = $('#v-margem');
+    if (mi) mi.addEventListener('input', desenharCupom);
+  }
+
+  // mostra o rateio ao vivo enquanto ele digita quantidade e valor total
+  function desenharDicaEntrada() {
+    var qtd = Math.max(1, Math.round(num($('#e-qtd').value) || 1));
+    var total = num($('#e-custo').value);
+    $('#e-custo-rot').textContent = qtd > 1 ? 'Quanto custou no total' : 'Quanto custou';
+    var d = $('#e-dica');
+    if (qtd > 1 && total > 0) {
+      var f = ratear(total, qtd);
+      var iguais = f[0] === f[f.length - 1];
+      d.innerHTML = '<span>↳</span><span>Vira <b>' + qtd + '</b> unidades separadas de <b>' + brl(f[0]) + '</b> cada'
+        + (iguais ? '' : ', com algumas de <b>' + brl(f[f.length - 1]) + '</b> pra fechar o total exato') + '.</span>';
+      d.hidden = false;
+    } else if (qtd > 1) {
+      d.innerHTML = '<span>↳</span><span>Vira <b>' + qtd + '</b> unidades separadas. Digite o valor <b>total</b> pago que eu divido.</span>';
+      d.hidden = false;
+    } else {
+      d.hidden = true;
+    }
+  }
+
+  function desenharTiles() {
+    var vend = porFase('vendido'), est = porFase('estoque'), cam = porFase('caminho');
+    var fat = 0, lucro = 0, taxas = 0, parado = 0, investido = 0;
+    var i, c;
+    for (i = 0; i < vend.length; i++) {
+      c = contaDoItem(vend[i]);
+      fat += c.preco; lucro += c.lucro; taxas += c.taxa + c.frete; investido += c.custo;
+    }
+    for (i = 0; i < est.length; i++) { parado += num(est[i].custo); investido += num(est[i].custo); }
+    for (i = 0; i < cam.length; i++) { parado += num(cam[i].custo); investido += num(cam[i].custo); }
+
+    var t = [
+      { r: 'Sobrou no total', n: brl(lucro), s: plural(vend.length, 'venda', 'vendas'), d: true, cor: lucro < 0 ? 'var(--neg)' : 'var(--pos)' },
+      { r: 'Dinheiro parado', n: brl(parado), s: plural(est.length + cam.length, 'produto sem vender', 'produtos sem vender'), cor: parado > 0 ? 'var(--warn)' : '' },
+      { r: 'Faturamento', n: brl(fat), s: 'entrou bruto' },
+      { r: 'Margem média', n: fat > 0 ? pc(lucro / fat) : '—', s: 'do que entra, sobra isso' },
+      { r: 'Taxas e frete', n: brl(taxas), s: fat > 0 ? pc(taxas / fat) + ' do faturamento' : 'nada ainda' },
+      { r: 'Investido', n: brl(investido), s: 'custo de tudo que comprou' }
+    ];
+    var h = '';
+    for (var k = 0; k < t.length; k++) {
+      h += '<div class="tile' + (t[k].d ? ' tile-destaque' : '') + '"><div class="rot">' + t[k].r + '</div>'
+        + '<div class="num"' + (t[k].cor ? ' style="color:' + t[k].cor + '"' : '') + '>' + t[k].n + '</div>'
+        + '<div class="sub">' + t[k].s + '</div></div>';
+    }
+    $('#tiles').innerHTML = h;
+  }
+
+  // botoes presentes em toda linha de produto
+  function acoesComuns(it) {
+    return '<button class="icone" type="button" data-editar="' + esc(it.id) + '" aria-label="Alterar ' + esc(it.produto) + '" title="Alterar">✎</button>'
+      + '<button class="icone" type="button" data-duplicar="' + esc(it.id) + '" aria-label="Duplicar ' + esc(it.produto) + '" title="Duplicar">⧉</button>'
+      + '<button class="icone icone-perigo" type="button" data-apagar="' + esc(it.id) + '" aria-label="Apagar ' + esc(it.produto) + '" title="Apagar">×</button>';
+  }
+  function formDuplicar(it) {
+    return '<div class="item-form" id="form-dup-' + esc(it.id) + '" hidden>'
+      + '<label for="qtd-dup-' + esc(it.id) + '">Quantas cópias?</label>'
+      + '<input type="number" id="qtd-dup-' + esc(it.id) + '" min="1" max="200" step="1" value="1">'
+      + '<button class="btn btn-mini btn-forte" type="button" data-confirma-dup="' + esc(it.id) + '">Duplicar</button>'
+      + '<button class="btn btn-mini btn-fantasma" type="button" data-cancela-dup="' + esc(it.id) + '">Cancelar</button>'
+      + '</div>';
+  }
+
+  function desenharCaminho() {
+    var itens = porFase('caminho');
+    $('#sec-caminho').hidden = itens.length === 0;
+    $('#conta-caminho').textContent = itens.length ? plural(itens.length, 'produto', 'produtos') : '';
+    if (!itens.length) { $('#lista-caminho').innerHTML = ''; return; }
+    itens.sort(function (a, b) { return (a.dCompra || '').localeCompare(b.dCompra || ''); });
+    var h = '';
+    for (var i = 0; i < itens.length; i++) {
+      var it = itens[i], d = dias(it.dCompra);
+      var meta = [];
+      if (it.fornecedor) meta.push(esc(it.fornecedor));
+      if (it.dCompra) meta.push('comprado ' + dataBR(it.dCompra));
+      if (d != null && d >= 0) meta.push(plural(d, 'dia a caminho', 'dias a caminho'));
+      h += '<div class="item"><div><div class="item-nome">' + esc(it.produto) + '</div>'
+        + '<div class="item-meta">' + selo(it) + '<span>' + meta.join(' · ') + '</span></div></div>'
+        + '<div class="item-valor">' + brl(num(it.custo)) + '</div>'
+        + '<div class="item-acoes"><button class="btn btn-mini" type="button" data-chegou="' + esc(it.id) + '">Chegou</button>'
+        + acoesComuns(it) + '</div>'
+        + '<div class="item-form" id="form-chegada-' + esc(it.id) + '" hidden>'
+        + '<label for="data-chegada-' + esc(it.id) + '">Chegou em</label>'
+        + '<input type="date" id="data-chegada-' + esc(it.id) + '" value="' + hoje() + '">'
+        + '<button class="btn btn-mini btn-forte" type="button" data-confirma-chegada="' + esc(it.id) + '">Confirmar</button>'
+        + '<button class="btn btn-mini btn-fantasma" type="button" data-cancela-chegada="' + esc(it.id) + '">Cancelar</button>'
+        + '</div>' + formDuplicar(it) + '</div>';
+    }
+    $('#lista-caminho').innerHTML = h;
+  }
+
+  function desenharEstoque() {
+    var itens = porFase('estoque');
+    $('#conta-estoque').textContent = itens.length ? plural(itens.length, 'produto', 'produtos') : '';
+    if (!itens.length) {
+      $('#lista-estoque').innerHTML = '<div class="vazio"><strong>Nada em estoque agora</strong>'
+        + '<p>Dá entrada num produto ao lado. Quando ele chegar, aparece aqui com o botão pra registrar a venda.</p></div>';
+      return;
+    }
+    itens.sort(function (a, b) { return (a.dChegada || '').localeCompare(b.dChegada || ''); });
+    var h = '';
+    for (var i = 0; i < itens.length; i++) {
+      var it = itens[i], d = dias(it.dChegada);
+      var meta = [];
+      if (it.dChegada) meta.push('chegou ' + dataBR(it.dChegada));
+      if (d != null && d >= 0) {
+        var txt = plural(d, 'dia parado', 'dias parados');
+        meta.push(d > 60 ? '<span class="encalhe">' + txt + '</span>' : txt);
+      }
+      h += '<div class="item"><div><div class="item-nome">' + esc(it.produto) + '</div>'
+        + '<div class="item-meta">' + selo(it) + '<span>' + meta.join(' · ') + '</span></div></div>'
+        + '<div class="item-valor">' + brl(num(it.custo)) + '</div>'
+        + '<div class="item-acoes"><button class="btn btn-mini btn-forte" type="button" data-vender="' + esc(it.id) + '">Vender</button>'
+        + '<button class="icone" type="button" data-voltar="' + esc(it.id) + '" aria-label="Desfazer chegada de ' + esc(it.produto) + '" title="Não chegou ainda (desfazer)">↺</button>'
+        + acoesComuns(it) + '</div>' + formDuplicar(it) + '</div>';
+    }
+    $('#lista-estoque').innerHTML = h;
+  }
+
+  function desenharVendidos() {
+    var itens = porFase('vendido');
+    $('#sec-vendidos').hidden = itens.length === 0;
+    $('#conta-vendidos').textContent = itens.length ? plural(itens.length, 'venda', 'vendas') : '';
+    if (!itens.length) { $('#lista-vendidos').innerHTML = ''; return; }
+    itens.sort(function (a, b) { return (b.dVenda || '').localeCompare(a.dVenda || ''); });
+    var h = '<div class="tabela-caixa"><table><thead><tr>'
+      + '<th>Produto</th><th>Custo</th><th>Venda</th><th>Taxa</th><th>Frete</th><th>Sobrou</th><th>Margem</th><th></th>'
+      + '</tr></thead><tbody>';
+    var tFat = 0, tLucro = 0, tTaxa = 0, tFrete = 0, tCusto = 0;
+    for (var i = 0; i < itens.length; i++) {
+      var it = itens[i], cn = canalDe(it.canal), c = contaDoItem(it);
+      tFat += c.preco; tLucro += c.lucro; tTaxa += c.taxa; tFrete += c.frete; tCusto += c.custo;
+      var giro = dias(it.dChegada || it.dCompra, it.dVenda);
+      var meta = [];
+      var g = grupoDe(it);
+      if (g) meta.push('unidade ' + g.idx + ' de ' + g.total);
+      if (cn) meta.push(cn.curto);
+      if (it.dVenda) meta.push(dataBR(it.dVenda));
+      if (giro != null && giro >= 0) meta.push('parado ' + plural(giro, 'dia', 'dias'));
+      h += '<tr>'
+        + '<td data-l="Produto"><span class="prod">' + esc(it.produto) + '<small>' + meta.join(' · ') + '</small></span></td>'
+        + '<td data-l="Custo" class="num-cel">' + brl(c.custo) + '</td>'
+        + '<td data-l="Venda" class="num-cel">' + brl(c.preco) + '</td>'
+        + '<td data-l="Taxa" class="num-cel">' + brl(c.taxa) + '</td>'
+        + '<td data-l="Frete" class="num-cel">' + brl(c.frete) + '</td>'
+        + '<td data-l="Sobrou" class="num-cel lucro-cel" style="color:' + (c.lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(c.lucro) + '</td>'
+        + '<td data-l="Margem" class="num-cel">' + pc(c.margem) + '</td>'
+        + '<td data-l=""><span class="acoes-cel">'
+        + '<button class="icone" type="button" data-devolver="' + esc(it.id) + '" aria-label="Desfazer venda de ' + esc(it.produto) + '" title="Devolvido: volta pro estoque">↺</button>'
+        + acoesComuns(it) + '</span></td></tr>';
+    }
+    h += '</tbody><tfoot><tr><td>' + plural(itens.length, 'venda', 'vendas') + '</td>'
+      + '<td data-l="Custo" class="num-cel">' + brl(tCusto) + '</td>'
+      + '<td data-l="Venda" class="num-cel">' + brl(tFat) + '</td>'
+      + '<td data-l="Taxa" class="num-cel">' + brl(tTaxa) + '</td>'
+      + '<td data-l="Frete" class="num-cel">' + brl(tFrete) + '</td>'
+      + '<td data-l="Sobrou" class="num-cel" style="color:' + (tLucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(tLucro) + '</td>'
+      + '<td data-l="Margem" class="num-cel">' + pc(tFat > 0 ? tLucro / tFat : NaN) + '</td><td></td></tr></tfoot></table></div>';
+    $('#lista-vendidos').innerHTML = h;
+  }
+
+  function desenharPorCanal() {
+    var vend = porFase('vendido');
+    $('#sec-canais').hidden = vend.length === 0;
+    if (!vend.length) { $('#por-canal').innerHTML = ''; return; }
+    var mapa = {}, maior = 0, k;
+    for (var i = 0; i < vend.length; i++) {
+      var cn = canalDe(vend[i].canal);
+      if (!cn) continue;
+      var c = contaDoItem(vend[i]);
+      if (!mapa[cn.id]) mapa[cn.id] = { c: cn, n: 0, fat: 0, lucro: 0 };
+      mapa[cn.id].n++; mapa[cn.id].fat += c.preco; mapa[cn.id].lucro += c.lucro;
+    }
+    var arr = [];
+    for (k in mapa) if (Object.prototype.hasOwnProperty.call(mapa, k)) { arr.push(mapa[k]); maior = Math.max(maior, Math.abs(mapa[k].lucro)); }
+    arr.sort(function (a, b) { return b.lucro - a.lucro; });
+    var h = '';
+    for (var j = 0; j < arr.length; j++) {
+      var a = arr[j], larg = maior > 0 ? Math.max(2, Math.abs(a.lucro) / maior * 100) : 2;
+      h += '<div class="canal-linha" style="--marca:' + esc(a.c.cor) + '">'
+        + '<div class="canal-nome"><span class="ponto" style="background:' + esc(a.c.cor) + '"></span>' + esc(a.c.curto) + '</div>'
+        + '<div class="canal-num" style="color:' + (a.lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(a.lucro) + '</div>'
+        + '<div class="barra"><i style="width:' + larg.toFixed(1) + '%' + (a.lucro < 0 ? ';background:var(--neg)' : '') + '"></i></div>'
+        + '<div class="canal-meta">' + plural(a.n, 'venda', 'vendas') + ' · ' + brl(a.fat) + ' faturados · margem ' + pc(a.fat > 0 ? a.lucro / a.fat : NaN) + '</div></div>';
+    }
+    $('#por-canal').innerHTML = h;
+  }
+
+  function desenharAjustes() {
+    var h = '';
+    for (var i = 0; i < DADOS.canais.length; i++) {
+      var c = DADOS.canais[i];
+      h += '<div class="ajuste-linha">'
+        + '<div class="canal-nome"><span class="ponto" style="background:' + esc(c.cor) + '"></span>' + esc(c.nome) + '</div>'
+        + '<label><span>Comissão %</span><input type="number" step="0.1" min="0" max="99" data-tx="pct" data-id="' + esc(c.id) + '" value="' + (num(c.pct) * 100).toFixed(1) + '"></label>'
+        + '<label><span>Tarifa fixa</span><input type="number" step="0.01" min="0" data-tx="fixa" data-id="' + esc(c.id) + '" value="' + num(c.fixa).toFixed(2) + '"></label>'
+        + '<label><span>Fixa se &lt;</span><input type="number" step="1" min="0" data-tx="limite" data-id="' + esc(c.id) + '" value="' + num(c.limite) + '"></label>'
+        + '<label><span>Frete</span><input type="number" step="0.01" min="0" data-tx="frete" data-id="' + esc(c.id) + '" value="' + num(c.frete).toFixed(2) + '"></label></div>';
+    }
+    $('#ajustes').innerHTML = h;
+  }
+
+  // ---------- projecao ----------
+  // agrupa o que AINDA NAO foi vendido por nome de produto: 7 unidades iguais viram
+  // uma linha so, com um preco previsto que vale para todas
+  var GRUPOS = [];
+
+  function gruposProjecao() {
+    var mapa = {}, ordem = [];
+    for (var i = 0; i < DADOS.itens.length; i++) {
+      var it = DADOS.itens[i];
+      if (fase(it) === 'vendido') continue;
+      var k = String(it.produto || '(sem nome)').trim().toLowerCase();
+      if (!mapa[k]) { mapa[k] = { nome: it.produto || '(sem nome)', itens: [], custo: 0 }; ordem.push(k); }
+      mapa[k].itens.push(it);
+      mapa[k].custo += num(it.custo);
+    }
+    var r = [];
+    for (var j = 0; j < ordem.length; j++) r.push(mapa[ordem[j]]);
+    return r;
+  }
+  function canalPadrao() {
+    // o canal que ele mais usou de verdade; sem historico, o primeiro da lista
+    var cont = {}, melhor = '', max = 0;
+    for (var i = 0; i < DADOS.itens.length; i++) {
+      var it = DADOS.itens[i];
+      if (!it.dVenda || !it.canal) continue;
+      cont[it.canal] = (cont[it.canal] || 0) + 1;
+      if (cont[it.canal] > max) { max = cont[it.canal]; melhor = it.canal; }
+    }
+    return melhor || (DADOS.canais[0] ? DADOS.canais[0].id : '');
+  }
+  function alvoDoGrupo(g) {
+    for (var i = 0; i < g.itens.length; i++) if (num(g.itens[i].alvo) > 0) return num(g.itens[i].alvo);
+    return 0;
+  }
+  function canalDoGrupo(g) {
+    for (var i = 0; i < g.itens.length; i++) if (g.itens[i].alvoCanal) return g.itens[i].alvoCanal;
+    return canalPadrao();
+  }
+
+  function desenharProjecao() {
+    GRUPOS = gruposProjecao();
+    $('#sec-projecao').hidden = GRUPOS.length === 0;
+    if (!GRUPOS.length) { $('#proj-lista').innerHTML = ''; $('#proj-totais').innerHTML = ''; return; }
+    var unidades = 0;
+    for (var u = 0; u < GRUPOS.length; u++) unidades += GRUPOS[u].itens.length;
+    $('#conta-proj').textContent = plural(unidades, 'produto', 'produtos');
+
+    var h = '';
+    for (var i = 0; i < GRUPOS.length; i++) {
+      var g = GRUPOS[i], fases = {};
+      for (var j = 0; j < g.itens.length; j++) fases[fase(g.itens[j])] = 1;
+      var onde = fases.caminho && fases.estoque ? 'parte a caminho, parte em estoque'
+        : (fases.caminho ? 'a caminho' : 'em estoque');
+      var sel = canalDoGrupo(g), opts = '';
+      for (var k = 0; k < DADOS.canais.length; k++) {
+        var c = DADOS.canais[k];
+        opts += '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.curto) + '</option>';
+      }
+      var alvo = alvoDoGrupo(g);
+      h += '<div class="proj-item">'
+        + '<div class="proj-id"><div class="item-nome">' + esc(g.nome) + '</div>'
+        + '<div class="item-meta"><span>' + plural(g.itens.length, 'unidade', 'unidades') + ' · custo ' + brl(g.custo) + ' · ' + onde + '</span></div></div>'
+        + '<select class="proj-canal" data-g="' + i + '" aria-label="Canal previsto para ' + esc(g.nome) + '">' + opts + '</select>'
+        + '<div class="com-prefixo"><span class="prefixo">R$</span>'
+        + '<input class="entrada entrada-dinheiro proj-preco" data-g="' + i + '" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"'
+        + ' aria-label="Preço previsto por unidade de ' + esc(g.nome) + '" value="' + (alvo > 0 ? paraCampo(alvo) : '') + '"></div>'
+        + '<div class="proj-res" id="proj-res-' + i + '"></div></div>';
+    }
+    $('#proj-lista').innerHTML = h;
+    var campos = $('#proj-lista').querySelectorAll('.proj-preco, .proj-canal');
+    for (var m = 0; m < campos.length; m++) {
+      campos[m].addEventListener('input', recalcProjecao);
+      campos[m].addEventListener('change', recalcProjecao);
+    }
+    recalcProjecao();
+  }
+
+  function recalcProjecao() {
+    var fat = 0, taxas = 0, custo = 0, lucro = 0, semPreco = 0;
+    for (var i = 0; i < GRUPOS.length; i++) {
+      var g = GRUPOS[i];
+      var inp = document.querySelector('.proj-preco[data-g="' + i + '"]');
+      var sel = document.querySelector('.proj-canal[data-g="' + i + '"]');
+      var res = document.getElementById('proj-res-' + i);
+      var preco = inp ? num(inp.value) : 0;
+      var canal = sel ? canalDe(sel.value) : null;
+      if (preco <= 0 || !canal) {
+        semPreco++;
+        if (res) res.innerHTML = '<span class="proj-vazio">defina o preço</span>';
+        continue;
+      }
+      var gFat = 0, gTaxa = 0, gLucro = 0;
+      for (var j = 0; j < g.itens.length; j++) {
+        var c = conta(num(g.itens[j].custo), preco, canal, null);
+        gFat += c.preco; gTaxa += c.taxa + c.frete; gLucro += c.lucro;
+      }
+      fat += gFat; taxas += gTaxa; custo += g.custo; lucro += gLucro;
+      if (res) {
+        res.innerHTML = '<div class="proj-lucro" style="color:' + (gLucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(gLucro) + '</div>'
+          + '<div class="proj-sub">' + brl(gLucro / g.itens.length) + ' por unidade · margem ' + pc(gFat > 0 ? gLucro / gFat : NaN) + '</div>';
+      }
+    }
+
+    var realizado = 0, vend = porFase('vendido');
+    for (var v = 0; v < vend.length; v++) realizado += contaDoItem(vend[v]).lucro;
+
+    // arredonda para centavos ANTES de exibir e somar: senao as parcelas na tela
+    // nao fecham com o total, e a conta toda parece errada mesmo estando certa
+    var c2 = function (x) { return Math.round(x * 100) / 100; };
+    fat = c2(fat); taxas = c2(taxas); custo = c2(custo); realizado = c2(realizado);
+    lucro = c2(fat - taxas - custo);
+
+    var t = '';
+    if (fat > 0) {
+      t += '<div class="proj-caixa">'
+        + '<div class="proj-linha"><span>Faturamento projetado</span><span class="v">' + brl(fat) + '</span></div>'
+        + '<div class="proj-linha neg"><span>(−) Taxas e frete</span><span class="v">− ' + brl(taxas) + '</span></div>'
+        + '<div class="proj-linha neg"><span>(−) Custo dos produtos</span><span class="v">− ' + brl(custo) + '</span></div>'
+        + '<div class="regua"></div>'
+        + '<div class="proj-linha destaque"><b>Lucro projetado</b><span class="v" style="color:' + (lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(lucro) + '</span></div>'
+        + '<div class="proj-linha"><span>margem projetada</span><span class="v">' + pc(fat > 0 ? lucro / fat : NaN) + '</span></div>'
+        + '</div>';
+    }
+    if (semPreco > 0) {
+      t += '<div class="proj-alerta">' + (semPreco === 1
+        ? '1 produto ainda está sem preço previsto e não entrou na conta.'
+        : semPreco + ' produtos ainda estão sem preço previsto e não entraram na conta.') + '</div>';
+    }
+    if (fat > 0) {
+      t += '<div class="proj-somatorio">Vendendo tudo pelo preço previsto, o lucro do negócio sairia de <b>' + brl(realizado)
+        + '</b> (o que você já realizou) para <b>' + brl(realizado + lucro) + '</b>.</div>';
+    }
+    $('#proj-totais').innerHTML = t;
+  }
+
+  // preenche so os campos vazios, mirando a margem que ele digitou
+  function sugerirPrecos() {
+    var alvoM = num($('#proj-margem').value) || 30;
+    if (alvoM < 1 || alvoM > 90) { erro('<b>Margem inválida.</b> Use um número entre 1 e 90.'); return; }
+    $('#aviso-erro').hidden = true;
+    for (var i = 0; i < GRUPOS.length; i++) {
+      var inp = document.querySelector('.proj-preco[data-g="' + i + '"]');
+      var sel = document.querySelector('.proj-canal[data-g="' + i + '"]');
+      if (!inp || num(inp.value) > 0) continue;
+      var canal = sel ? canalDe(sel.value) : null;
+      // usa o custo medio do grupo como base do preco sugerido
+      var medio = GRUPOS[i].custo / GRUPOS[i].itens.length;
+      var sugerido = precoAlvo(medio, canal, alvoM / 100);
+      if (isFinite(sugerido)) inp.value = paraCampo(sugerido);
+    }
+    recalcProjecao();
+  }
+
+  function salvarProjecao() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var antes = [];
+    for (var a = 0; a < DADOS.itens.length; a++) antes.push({ alvo: DADOS.itens[a].alvo, alvoCanal: DADOS.itens[a].alvoCanal });
+    for (var i = 0; i < GRUPOS.length; i++) {
+      var inp = document.querySelector('.proj-preco[data-g="' + i + '"]');
+      var sel = document.querySelector('.proj-canal[data-g="' + i + '"]');
+      var preco = inp ? num(inp.value) : 0;
+      var canal = sel ? sel.value : '';
+      for (var j = 0; j < GRUPOS[i].itens.length; j++) {
+        GRUPOS[i].itens[j].alvo = preco > 0 ? preco : 0;
+        GRUPOS[i].itens[j].alvoCanal = canal;
+      }
+    }
+    persistir($('#btn-proj-salvar'), 'Salvar projeção', function () {
+      for (var b = 0; b < DADOS.itens.length && b < antes.length; b++) {
+        DADOS.itens[b].alvo = antes[b].alvo;
+        DADOS.itens[b].alvoCanal = antes[b].alvoCanal;
+      }
+      desenharProjecao();
+    });
+  }
+
+  function desenharTudo() {
+    desenharTiles(); desenharCaminho(); desenharEstoque(); desenharProjecao(); desenharVendidos(); desenharPorCanal();
+    ligarBotoesDeItem();
+  }
+
+  // ---------- persistencia: a pagina republica a si mesma ----------
+  function paginaHTML() {
+    var css = document.getElementById('css').textContent;
+    var app = document.getElementById('app').textContent;
+    var json = JSON.stringify(DADOS).replace(/</g, '\\u003c');
+    return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<title>Quanto Sobrou</title><style id="css">' + css + '</style></head><body>'
+      + '<div id="root"></div>'
+      + '<script id="dados" type="application/json">' + json + '<\/script>'
+      + '<script id="app">' + app + '<\/script></body></html>';
+  }
+
+  function erro(msg) { $('#aviso-erro-txt').innerHTML = msg; $('#aviso-erro').hidden = false; }
+
+  function salvarLocal() {
+    try { localStorage.setItem(CHAVE_LOCAL, JSON.stringify(DADOS)); return true; } catch (e) { return false; }
+  }
+
+  // no artifact o download tem que passar pela capability (o sandbox bloqueia <a download>);
+  // fora dele, o jeito normal do navegador funciona
+  function baixarArquivo(nome, texto, tipo) {
+    if (typeof window.claude !== 'undefined' && window.claude.use) {
+      return window.claude.use('downloads').then(function (d) {
+        if (!d) throw new Error('sem downloads');
+        return d.save({ filename: nome, data: texto });
+      });
+    }
+    return new Promise(function (resolve, reject) {
+      try {
+        var b = new Blob([texto], { type: tipo || 'text/plain;charset=utf-8' });
+        var u = URL.createObjectURL(b);
+        var a = document.createElement('a');
+        a.href = u; a.download = nome;
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(u); }, 0);
+        resolve();
+      } catch (e) { reject(e); }
+    });
+  }
+
+  function aoBackup() {
+    var btn = $('#btn-backup');
+    btn.disabled = true;
+    baixarArquivo('quanto-sobrou-backup.json', JSON.stringify(DADOS, null, 1), 'application/json')
+      .then(function () { btn.disabled = false; })
+      .catch(function () { btn.disabled = false; erro('<b>O backup não foi baixado.</b> Ou você cancelou, ou esta visualização não permite baixar arquivos.'); });
+  }
+
+  function aoRestaurar() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var txt = $('#backup-cola').value.trim();
+    if (!txt) { erro('<b>Cole o conteúdo do backup primeiro.</b>'); return; }
+    var novo;
+    try { novo = JSON.parse(txt); } catch (e) {
+      erro('<b>Esse texto não é um backup válido.</b> Copie o arquivo inteiro, do primeiro ao último caractere.');
+      return;
+    }
+    if (!novo || !Array.isArray(novo.itens) || !Array.isArray(novo.canais)) {
+      erro('<b>Esse arquivo não parece um backup do Quanto Sobrou.</b> Faltam os produtos ou os canais.');
+      return;
+    }
+    var antes = DADOS;
+    DADOS = novo;
+    if (!DADOS.itens) DADOS.itens = [];
+    fecharPaineis();
+    desenharCanais(); desenharAjustes(); desenharTudo();
+    $('#backup-cola').value = '';
+    persistir($('#btn-restaurar'), 'Restaurar', function () {
+      DADOS = antes;
+      desenharCanais(); desenharAjustes(); desenharTudo();
+    });
+  }
+
+  // confirmacao em dois toques. NAO usar window.confirm: dentro do iframe do artifact
+  // ele devolve false sem abrir nada, e a acao morre em silencio.
+  function desarmar(b) {
+    clearTimeout(+b.getAttribute("data-timer"));
+    if (b.getAttribute("data-original") !== null) b.innerHTML = b.getAttribute("data-original");
+    b.removeAttribute("data-armado");
+    b.classList.remove("armado");
+    if (b.getAttribute("data-rotulo") !== null) b.setAttribute("aria-label", b.getAttribute("data-rotulo"));
+  }
+  function doisToques(botao, rotulo, aoConfirmar) {
+    if (botao.getAttribute("data-armado")) { desarmar(botao); aoConfirmar(); return; }
+    var outros = document.querySelectorAll("[data-armado]");
+    for (var i = 0; i < outros.length; i++) desarmar(outros[i]);
+    botao.setAttribute("data-original", botao.innerHTML);
+    botao.setAttribute("data-rotulo", botao.getAttribute("aria-label") || "");
+    botao.setAttribute("data-armado", "1");
+    botao.classList.add("armado");
+    botao.innerHTML = rotulo;
+    botao.setAttribute("aria-label", rotulo + " " + (botao.getAttribute("data-rotulo") || ""));
+    botao.setAttribute("data-timer", setTimeout(function () { desarmar(botao); }, 5000));
+  }
+
+  function persistir(botao, textoOriginal, aoFalhar, aoSucesso) {
+    if (MODO_LOCAL) {
+      if (salvarLocal()) { if (aoSucesso) aoSucesso(); }
+      else {
+        if (aoFalhar) aoFalhar();
+        erro('<b>Não deu pra salvar neste navegador.</b> O armazenamento local está cheio ou bloqueado.');
+      }
+      return;
+    }
+    if (soLeitura || !NS) {
+      if (aoFalhar) aoFalhar();
+      erro('<b>Não deu pra salvar.</b> Esta página está em modo somente leitura nesta sessão.');
+      return;
+    }
+    salvando = true;
+    if (botao) { botao.disabled = true; botao.innerHTML = '<span class="salvando"></span> Salvando…'; }
+    // a shell recarrega a view depois de um publish bem-sucedido, mas nao contamos com isso:
+    // sem destravar aqui, um reload lento ou que nao venha deixaria o app engasgado pra sempre
+    NS.publish(paginaHTML()).then(function () {
+      salvando = false;
+      if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
+      try { sessionStorage.removeItem('qs-pendente'); } catch (e) {}
+      if (aoSucesso) aoSucesso();
+    }).catch(function (e) {
+      salvando = false;
+      if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
+      var cod = (e && e.code) || 'upstream_error';
+      if (cod === 'conflict') return;  // a shell ja recarrega para a versao vencedora
+      if (aoFalhar) aoFalhar();
+      if (cod === 'not_writer' || cod === 'not_granted' || cod === 'consent_required' || cod === 'not_declared') {
+        soLeitura = true; $('#aviso-leitura').hidden = false;
+      } else if (cod === 'rate_limited') {
+        erro('<b>Você salvou rápido demais.</b> Espere alguns segundos e tente de novo.');
+      } else if (cod === 'too_large') {
+        erro('<b>O histórico ficou grande demais pra salvar.</b> Baixe a planilha e apague os produtos mais antigos.');
+      } else {
+        erro('<b>Não deu pra salvar agora.</b> Verifique a conexão e tente de novo.');
+      }
+    });
+  }
+
+  function tirarPorId(id) {
+    for (var i = DADOS.itens.length - 1; i >= 0; i--) if (DADOS.itens[i].id === id) { DADOS.itens.splice(i, 1); return; }
+  }
+
+  // ---------- 1 · dar entrada ----------
+  function aoDarEntrada() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true; $('#aviso-pendente').hidden = true;
+    var nome = $('#e-produto').value.trim();
+    if (!nome) { erro('<b>Falta o nome do produto.</b> Escreva o que você comprou.'); $('#e-produto').focus(); return; }
+    var total = num($('#e-custo').value);
+    if (total <= 0) { erro('<b>Falta o custo.</b> Digite quanto você pagou.'); $('#e-custo').focus(); return; }
+    var qtd = Math.round(num($('#e-qtd').value) || 1);
+    if (qtd < 1 || qtd > 200) { erro('<b>Quantidade inválida.</b> Use um número de 1 a 200.'); $('#e-qtd').focus(); return; }
+
+    var dCompra = $('#e-dcompra').value || hoje();
+    var chegou = $('#e-jachegou').checked ? dCompra : '';
+    var fornecedor = $('#e-fornecedor').value.trim();
+    var fatias = ratear(total, qtd);
+    var grupo = qtd > 1 ? novoId('g') : '';
+    var novos = [];
+    for (var i = 0; i < qtd; i++) {
+      novos.push({
+        id: novoId('i'), produto: nome, custo: fatias[i], fornecedor: fornecedor,
+        dCompra: dCompra, dChegada: chegou, grupo: grupo,
+        canal: '', preco: 0, frete: null, dVenda: ''
+      });
+    }
+    try {
+      sessionStorage.setItem('qs-pendente', JSON.stringify({
+        produto: nome, custo: total, qtd: qtd, fornecedor: fornecedor, dCompra: dCompra, dChegada: chegou
+      }));
+    } catch (e) {}
+    for (var j = 0; j < novos.length; j++) DADOS.itens.push(novos[j]);
+    desenharTudo();
+    persistir($('#btn-entrada'), 'Dar entrada', function () {
+      for (var k = 0; k < novos.length; k++) tirarPorId(novos[k].id);
+      desenharTudo();
+    }, limparEntrada);
+  }
+
+  function limparEntrada() {
+    $('#e-produto').value = '';
+    $('#e-custo').value = '';
+    $('#e-qtd').value = '1';
+    $('#e-fornecedor').value = '';
+    $('#e-jachegou').checked = false;
+    $('#e-dcompra').value = hoje();
+    desenharDicaEntrada();
+    $('#e-produto').focus();
+  }
+
+  // ---------- 2 · chegada ----------
+  function abrirChegada(id) {
+    var f = document.getElementById('form-chegada-' + id);
+    if (f) { f.hidden = false; f.querySelector('input').focus(); }
+  }
+  function confirmarChegada(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var campo = document.getElementById('data-chegada-' + id);
+    var d = (campo && campo.value) || hoje();
+    if (it.dCompra && d < it.dCompra) {
+      erro('<b>A data de chegada é anterior à da compra.</b> Confira: comprado em ' + dataBR(it.dCompra) + '.');
+      return;
+    }
+    $('#aviso-erro').hidden = true;
+    it.dChegada = d;
+    desenharTudo();
+    persistir(null, '', function () { it.dChegada = ''; desenharTudo(); });
+  }
+  function desfazerChegada(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var antes = it.dChegada;
+    it.dChegada = '';
+    desenharTudo();
+    persistir(null, '', function () { it.dChegada = antes; desenharTudo(); });
+  }
+
+  // ---------- 3 · saida ----------
+  function fecharPaineis() {
+    vendendo = null; editando = null;
+    $('#painel-venda').hidden = true;
+    $('#painel-editar').hidden = true;
+    $('#painel-entrada').hidden = false;
+    $('#cupom').innerHTML = '';
+  }
+  function irPara(painel) {
+    var suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    painel.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'start' });
+  }
+  function abrirVenda(id) {
+    var it = itemDe(id); if (!it) return;
+    editando = null; $('#painel-editar').hidden = true;
+    vendendo = id;
+    $('#v-nome').textContent = it.produto;
+    var meta = [];
+    var g = grupoDe(it);
+    if (g) meta.push('unidade ' + g.idx + ' de ' + g.total);
+    if (it.fornecedor) meta.push(it.fornecedor);
+    if (it.dChegada) meta.push('chegou ' + dataBR(it.dChegada));
+    var d = dias(it.dChegada);
+    if (d != null && d >= 0) meta.push(plural(d, 'dia parado', 'dias parados'));
+    $('#v-meta').textContent = meta.join(' · ');
+    $('#v-custo').textContent = brl(num(it.custo));
+    $('#v-custo-edit').value = paraCampo(it.custo);
+    $('#v-preco').value = '';
+    $('#v-frete').value = '';
+    $('#v-dvenda').value = hoje();
+    var m = document.querySelector('#v-canais input:checked'); if (m) m.checked = false;
+    $('#painel-entrada').hidden = true;
+    $('#painel-venda').hidden = false;
+    desenharCupom();
+    irPara($('#painel-venda'));
+    $('#v-preco').focus();
+  }
+  function confirmarVenda() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var it = itemDe(vendendo); if (!it) return;
+    var canal = canalEscolhido();
+    if (!canal) { erro('<b>Falta escolher o canal.</b> Toque no app onde a venda aconteceu.'); return; }
+    var preco = num($('#v-preco').value);
+    if (preco <= 0) { erro('<b>Falta o valor da venda.</b> Digite por quanto o produto saiu.'); $('#v-preco').focus(); return; }
+    var dVenda = $('#v-dvenda').value || hoje();
+    if (it.dChegada && dVenda < it.dChegada) {
+      erro('<b>A data da saída é anterior à da chegada.</b> Confira: chegou em ' + dataBR(it.dChegada) + '.');
+      return;
+    }
+    var freteTxt = $('#v-frete').value.trim();
+    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda, custo: it.custo };
+    it.canal = canal.id;
+    it.preco = preco;
+    it.frete = freteTxt === '' ? null : num(freteTxt);
+    it.dVenda = dVenda;
+    it.custo = num($('#v-custo-edit').value);
+    fecharPaineis();
+    desenharTudo();
+    persistir($('#btn-entrada'), 'Dar entrada', function () {
+      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete;
+      it.dVenda = antes.dVenda; it.custo = antes.custo;
+      desenharTudo();
+    });
+  }
+  function desfazerVenda(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda };
+    it.canal = ''; it.preco = 0; it.frete = null; it.dVenda = '';
+    desenharTudo();
+    persistir(null, '', function () {
+      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete; it.dVenda = antes.dVenda;
+      desenharTudo();
+    });
+  }
+
+  // ---------- alterar ----------
+  function abrirEdicao(id) {
+    var it = itemDe(id); if (!it) return;
+    vendendo = null; $('#painel-venda').hidden = true; $('#cupom').innerHTML = '';
+    editando = id;
+    var g = grupoDe(it);
+    $('#ed-selo').textContent = g ? g.idx + ' de ' + g.total : '';
+    $('#ed-produto').value = it.produto || '';
+    $('#ed-custo').value = paraCampo(it.custo);
+    $('#ed-fornecedor').value = it.fornecedor || '';
+    $('#ed-dcompra').value = it.dCompra || '';
+    $('#ed-dchegada').value = it.dChegada || '';
+    var dg = $('#ed-dica-grupo');
+    if (g) {
+      dg.innerHTML = '<span>↳</span><span>Isto muda <b>só esta unidade</b>. As outras ' + (g.total - 1) + ' continuam como estão.</span>';
+      dg.hidden = false;
+    } else { dg.hidden = true; }
+
+    var vendido = fase(it) === 'vendido';
+    $('#ed-bloco-venda').hidden = !vendido;
+    var atual = document.querySelector('#ed-canais input:checked');
+    if (atual) atual.checked = false;
+    if (vendido) {
+      $('#ed-preco').value = paraCampo(it.preco);
+      $('#ed-dvenda').value = it.dVenda || '';
+      $('#ed-frete').value = it.frete == null ? '' : paraCampo(it.frete);
+      var rad = document.querySelector('#ed-canais input[value="' + it.canal + '"]');
+      if (rad) rad.checked = true;
+    }
+    $('#painel-entrada').hidden = true;
+    $('#painel-editar').hidden = false;
+    irPara($('#painel-editar'));
+    $('#ed-produto').focus();
+  }
+
+  function salvarEdicao() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var it = itemDe(editando); if (!it) return;
+    var nome = $('#ed-produto').value.trim();
+    if (!nome) { erro('<b>Falta o nome do produto.</b>'); $('#ed-produto').focus(); return; }
+    var custo = num($('#ed-custo').value);
+    if (custo <= 0) { erro('<b>Falta o custo.</b> Digite quanto esta unidade custou.'); $('#ed-custo').focus(); return; }
+    var dCompra = $('#ed-dcompra').value || '';
+    var dChegada = $('#ed-dchegada').value || '';
+    if (dCompra && dChegada && dChegada < dCompra) {
+      erro('<b>A chegada não pode ser antes da compra.</b> Comprado em ' + dataBR(dCompra) + '.');
+      return;
+    }
+    var vendido = fase(it) === 'vendido';
+    var canal = it.canal, preco = it.preco, frete = it.frete, dVenda = it.dVenda;
+    if (vendido) {
+      var r = document.querySelector('#ed-canais input:checked');
+      if (!r) { erro('<b>Falta o canal da venda.</b>'); return; }
+      canal = r.value;
+      preco = num($('#ed-preco').value);
+      if (preco <= 0) { erro('<b>Falta o valor da venda.</b>'); $('#ed-preco').focus(); return; }
+      dVenda = $('#ed-dvenda').value || '';
+      if (!dVenda) { erro('<b>Falta a data da saída.</b>'); $('#ed-dvenda').focus(); return; }
+      if (dChegada && dVenda < dChegada) {
+        erro('<b>A saída não pode ser antes da chegada.</b> Chegou em ' + dataBR(dChegada) + '.');
+        return;
+      }
+      var ft = $('#ed-frete').value.trim();
+      frete = ft === '' ? null : num(ft);
+    }
+
+    var antes = {
+      produto: it.produto, custo: it.custo, fornecedor: it.fornecedor, dCompra: it.dCompra,
+      dChegada: it.dChegada, canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda
+    };
+    it.produto = nome; it.custo = custo; it.fornecedor = $('#ed-fornecedor').value.trim();
+    it.dCompra = dCompra; it.dChegada = dChegada;
+    it.canal = canal; it.preco = preco; it.frete = frete; it.dVenda = dVenda;
+    fecharPaineis();
+    desenharTudo();
+    persistir($('#btn-entrada'), 'Dar entrada', function () {
+      for (var k in antes) if (Object.prototype.hasOwnProperty.call(antes, k)) it[k] = antes[k];
+      desenharTudo();
+    });
+  }
+
+  // ---------- duplicar ----------
+  function abrirDuplicar(id) {
+    var f = document.getElementById('form-dup-' + id);
+    if (f) { f.hidden = false; var i = f.querySelector('input'); i.focus(); i.select(); }
+  }
+  function confirmarDuplicar(id) {
+    if (salvando) return;
+    var src = itemDe(id); if (!src) return;
+    var campo = document.getElementById('qtd-dup-' + id);
+    var qtd = Math.round(num(campo && campo.value) || 1);
+    if (qtd < 1 || qtd > 200) { erro('<b>Quantidade inválida.</b> Use um número de 1 a 200.'); return; }
+    $('#aviso-erro').hidden = true;
+
+    // a copia herda a compra, nunca a venda: e outra unidade, que ainda esta pra sair
+    var grupoAntes = src.grupo;
+    if (!src.grupo) src.grupo = novoId('g');
+    var novos = [];
+    for (var i = 0; i < qtd; i++) {
+      novos.push({
+        id: novoId('i'), produto: src.produto, custo: num(src.custo), fornecedor: src.fornecedor,
+        dCompra: src.dCompra, dChegada: src.dChegada, grupo: src.grupo,
+        canal: '', preco: 0, frete: null, dVenda: ''
+      });
+    }
+    for (var j = 0; j < novos.length; j++) DADOS.itens.push(novos[j]);
+    desenharTudo();
+    persistir(null, '', function () {
+      for (var k = 0; k < novos.length; k++) tirarPorId(novos[k].id);
+      src.grupo = grupoAntes;
+      desenharTudo();
+    });
+  }
+
+  function apagarItem(id) {
+    if (salvando) return;
+    var idx = -1;
+    for (var i = 0; i < DADOS.itens.length; i++) if (DADOS.itens[i].id === id) { idx = i; break; }
+    if (idx < 0) return;
+    if (vendendo === id || editando === id) fecharPaineis();
+    var guardado = DADOS.itens.splice(idx, 1)[0];
+    desenharTudo();
+    persistir(null, '', function () { DADOS.itens.splice(idx, 0, guardado); desenharTudo(); });
+  }
+
+  // ---------- taxas ----------
+  function aoSalvarTaxas() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var antes = JSON.parse(JSON.stringify(DADOS.canais));
+    var ins = $('#ajustes').querySelectorAll('input[data-tx]');
+    for (var i = 0; i < ins.length; i++) {
+      var c = canalDe(ins[i].getAttribute('data-id'));
+      if (!c) continue;
+      var campo = ins[i].getAttribute('data-tx'), v = num(ins[i].value);
+      c[campo] = campo === 'pct' ? v / 100 : v;
+    }
+    desenharCanais(); desenharTudo(); desenharCupom();
+    persistir($('#btn-taxas'), 'Salvar taxas', function () {
+      DADOS.canais = antes; desenharAjustes(); desenharCanais(); desenharTudo(); desenharCupom();
+    });
+  }
+
+  // ---------- exportar ----------
+  function aoBaixar() {
+    var linhas = [['Produto', 'Unidade', 'Situação', 'Onde comprou', 'Canal de venda', 'Data compra', 'Data chegada', 'Data saída',
+      'Dias a caminho', 'Dias parado', 'Custo', 'Preço previsto', 'Venda', 'Taxa', 'Frete', 'Sobrou', 'Margem %', 'Retorno %']];
+    var nomes = { caminho: 'A caminho', estoque: 'Em estoque', vendido: 'Vendido' };
+    var dec = function (n) { return n.toFixed(2).replace('.', ','); };
+    for (var i = 0; i < DADOS.itens.length; i++) {
+      var it = DADOS.itens[i], f = fase(it), cn = canalDe(it.canal), c = contaDoItem(it);
+      var g = grupoDe(it);
+      var dCam = dias(it.dCompra, it.dChegada || null);
+      var dPar = it.dChegada ? dias(it.dChegada, it.dVenda || null) : null;
+      linhas.push([
+        it.produto || '', g ? g.idx + ' de ' + g.total : '', nomes[f], it.fornecedor || '', cn ? cn.nome : '',
+        dataBR(it.dCompra), dataBR(it.dChegada), dataBR(it.dVenda),
+        dCam == null ? '' : dCam, dPar == null ? '' : dPar,
+        dec(num(it.custo)),
+        f !== 'vendido' && num(it.alvo) > 0 ? dec(num(it.alvo)) : '',
+        f === 'vendido' ? dec(c.preco) : '', f === 'vendido' ? dec(c.taxa) : '',
+        f === 'vendido' ? dec(c.frete) : '', f === 'vendido' ? dec(c.lucro) : '',
+        f === 'vendido' && isFinite(c.margem) ? (c.margem * 100).toFixed(1).replace('.', ',') : '',
+        f === 'vendido' && isFinite(c.roi) ? (c.roi * 100).toFixed(1).replace('.', ',') : ''
+      ]);
+    }
+    var csv = linhas.map(function (l) {
+      return l.map(function (x) { return '"' + String(x).replace(/"/g, '""') + '"'; }).join(';');
+    }).join('\r\n');
+
+    var btn = $('#btn-csv');
+    btn.disabled = true;
+    baixarArquivo('quanto-sobrou.csv', '\ufeff' + csv, 'text/csv;charset=utf-8')
+      .then(function () { btn.disabled = false; })
+      .catch(function () {
+        btn.disabled = false;
+        erro('<b>O download não foi concluído.</b> Ou você cancelou, ou esta visualização não permite baixar arquivos.');
+      });
+  }
+
+  // ---------- eventos das linhas (redesenhadas a cada mudanca) ----------
+  function ligarBotoesDeItem() {
+    var liga = function (attr, fn) {
+      var bs = document.querySelectorAll('[' + attr + ']');
+      for (var i = 0; i < bs.length; i++) {
+        (function (b) { b.addEventListener('click', function () { fn(b.getAttribute(attr), b); }); })(bs[i]);
+      }
+    };
+    liga('data-chegou', abrirChegada);
+    liga('data-confirma-chegada', confirmarChegada);
+    liga('data-cancela-chegada', function (id) { var f = document.getElementById('form-chegada-' + id); if (f) f.hidden = true; });
+    liga('data-vender', abrirVenda);
+    liga('data-voltar', desfazerChegada);
+    liga('data-devolver', function (id, b) { doisToques(b, 'Desfazer?', function () { desfazerVenda(id); }); });
+    liga('data-editar', abrirEdicao);
+    liga('data-duplicar', abrirDuplicar);
+    liga('data-confirma-dup', confirmarDuplicar);
+    liga('data-cancela-dup', function (id) { var f = document.getElementById('form-dup-' + id); if (f) f.hidden = true; });
+    liga('data-apagar', function (id, b) { doisToques(b, 'Apagar?', function () { apagarItem(id); }); });
+  }
+
+  // ---------- ligar tudo ----------
+  document.getElementById('root').innerHTML = SHELL;
+  desenharCanais();
+  desenharAjustes();
+  desenharTudo();
+  $('#e-dcompra').value = hoje();
+  desenharDicaEntrada();
+
+  ['v-preco', 'v-frete', 'v-custo-edit'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', desenharCupom);
+  });
+  ['e-qtd', 'e-custo'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', desenharDicaEntrada);
+  });
+  $('#btn-entrada').addEventListener('click', aoDarEntrada);
+  $('#btn-venda').addEventListener('click', confirmarVenda);
+  $('#btn-cancelar-venda').addEventListener('click', fecharPaineis);
+  $('#btn-editar-salvar').addEventListener('click', salvarEdicao);
+  $('#btn-editar-cancelar').addEventListener('click', fecharPaineis);
+  $('#btn-taxas').addEventListener('click', aoSalvarTaxas);
+  $('#btn-proj-sugerir').addEventListener('click', sugerirPrecos);
+  $('#btn-proj-salvar').addEventListener('click', salvarProjecao);
+  $('#btn-csv').addEventListener('click', aoBaixar);
+  $('#btn-backup').addEventListener('click', aoBackup);
+  $('#btn-restaurar').addEventListener('click', aoRestaurar);
+  $('#e-produto').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#e-custo').focus(); });
+  $('#e-custo').addEventListener('keydown', function (e) { if (e.key === 'Enter') aoDarEntrada(); });
+
+  // devolve ao formulario uma entrada que nao chegou a ser salva
+  try {
+    var pend = sessionStorage.getItem('qs-pendente');
+    if (pend) {
+      sessionStorage.removeItem('qs-pendente');
+      var p = JSON.parse(pend);
+      $('#e-produto').value = p.produto || '';
+      if (p.custo) $('#e-custo').value = String(p.custo).replace('.', ',');
+      $('#e-qtd').value = p.qtd || 1;
+      $('#e-fornecedor').value = p.fornecedor || '';
+      $('#e-dcompra').value = p.dCompra || hoje();
+      $('#e-jachegou').checked = !!p.dChegada;
+      $('#aviso-pendente').hidden = false;
+      desenharDicaEntrada();
+    }
+  } catch (e) {}
+
+  if (typeof window.claude !== 'undefined' && window.claude.use) {
+    window.claude.use('artifact').then(function (ns) {
+      NS = ns;
+      if (!ns) { soLeitura = true; $('#aviso-leitura').hidden = false; }
+    }).catch(function () { soLeitura = true; $('#aviso-leitura').hidden = false; });
+  } else {
+    // fora do Claude: guarda tudo no proprio navegador
+    MODO_LOCAL = true;
+    $('#aviso-local').hidden = false;
+    try {
+      var guardado = localStorage.getItem(CHAVE_LOCAL);
+      if (guardado) {
+        var d = JSON.parse(guardado);
+        if (d && Array.isArray(d.itens) && Array.isArray(d.canais)) {
+          DADOS = d;
+          desenharCanais(); desenharAjustes(); desenharTudo();
+        }
+      }
+    } catch (e) {}
+  }
+})();
+</script>
+
+</body>
+</html>
