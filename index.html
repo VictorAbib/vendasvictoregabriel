@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quanto Sobrou</title>
 
 <style id="css">
@@ -43,9 +48,83 @@ img{max-width:100%}
 body{
   background:var(--bg); color:var(--ink); font-family:var(--sans);
   font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
-  padding:20px 16px 64px;
 }
-.wrap{max-width:1180px;margin:0 auto}
+.wrap{width:100%;padding-bottom:60px}
+
+/* ---------- barra do sistema ---------- */
+.barra{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:11px 24px;background:var(--surface);border-bottom:1px solid var(--line);
+}
+.barra .marca-min{font-size:16.5px;font-weight:740;letter-spacing:-.022em;white-space:nowrap}
+.barra .espaco{flex:1}
+
+/* ---------- abas dos modulos ---------- */
+.modulos{
+  display:flex;gap:2px;padding:0 24px;background:var(--surface);
+  border-bottom:1px solid var(--line);overflow-x:auto;
+}
+.modulo-aba{
+  border:none;background:none;cursor:pointer;white-space:nowrap;
+  padding:13px 17px 11px;font-size:14px;font-weight:620;color:var(--ink-3);
+  border-bottom:2.5px solid transparent;transition:color .13s,border-color .13s;
+}
+.modulo-aba:hover{color:var(--ink)}
+.modulo-aba[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.modulo-aba .badge{
+  display:inline-block;margin-left:7px;font-family:var(--mono);font-size:10.5px;font-weight:700;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:0 6px;color:var(--ink-2);
+}
+.modulo-aba[aria-selected="true"] .badge{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+
+.area{padding:20px 24px 0}
+.modulo[hidden]{display:none}
+.tit{font-size:19px;font-weight:700;letter-spacing:-.022em;margin-bottom:3px}
+.tit-sub{font-size:13px;color:var(--ink-2);margin-bottom:18px;max-width:74ch}
+
+/* ---------- colunas ---------- */
+.colunas{display:grid;gap:18px;align-items:start}
+.col-2{grid-template-columns:1fr 1fr}
+.col-form{grid-template-columns:minmax(290px,350px) 1fr}
+.col-graf{grid-template-columns:2fr 1fr}
+@media (max-width:1100px){ .col-2,.col-form,.col-graf{grid-template-columns:1fr} }
+
+/* ---------- grafico ---------- */
+.graf-caixa{padding:4px 2px 0}
+.graf svg{display:block;width:100%;height:auto;overflow:visible}
+.graf .eixo{stroke:var(--line-2);stroke-width:1}
+.graf .grade-linha{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
+.graf .rotulo{font-family:var(--sans);font-size:10.5px;fill:var(--ink-3)}
+.graf .valor-topo{font-family:var(--mono);font-size:10.5px;font-weight:700;fill:var(--ink-2)}
+.graf .barra-dia{fill:var(--accent);transition:opacity .12s}
+.graf .barra-dia:hover{opacity:.75}
+.graf-vazio{padding:40px 20px;text-align:center;color:var(--ink-3);font-size:13px}
+.graf-legenda{font-size:11.5px;color:var(--ink-3);margin-top:8px;display:flex;gap:14px;flex-wrap:wrap}
+.graf-legenda i{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent);margin-right:5px;vertical-align:-1px}
+
+/* ---------- caixa ---------- */
+.dinheiro-linha{
+  display:grid;grid-template-columns:1fr auto auto;gap:8px 14px;align-items:center;
+  padding:12px 0;border-bottom:1px solid var(--line);
+}
+.dinheiro-linha:last-of-type{border-bottom:none}
+.dinheiro-nome{font-weight:620;line-height:1.3}
+.dinheiro-meta{font-size:11.5px;color:var(--ink-3);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.dinheiro-val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;white-space:nowrap}
+.selo-espera{
+  font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn);
+  border-radius:20px;padding:2px 9px;white-space:nowrap;
+}
+.selo-caiu{
+  font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:color-mix(in srgb,var(--pos) 16%,transparent);color:var(--pos);
+  border-radius:20px;padding:2px 9px;white-space:nowrap;
+}
+@media (max-width:719px){
+  .dinheiro-linha{grid-template-columns:1fr auto}
+  .dinheiro-linha .item-acoes{grid-column:1/-1;justify-content:flex-end}
+}
 
 /* ---------- cabecalho ---------- */
 .topo{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
@@ -448,6 +527,8 @@ tfoot td:first-child{text-align:left}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
 </style>
 
+</head>
+<body>
 <div id="root"></div>
 
 <script id="dados" type="application/json">{"v":4,"pessoas":[]}</script>
@@ -727,6 +808,7 @@ tfoot td:first-child{text-align:left}
 
   // ---------- a casca da pagina ----------
   var SHELL = ''
+    /* ---------------- tela de entrada ---------------- */
     + '<div class="login-tela" id="login">'
     + '  <div class="login-caixa">'
     + '    <h2>Quanto Sobrou</h2>'
@@ -739,147 +821,200 @@ tfoot td:first-child{text-align:left}
     + '    <div class="login-erro" id="login-erro"></div>'
     + '  </div>'
     + '</div>'
+
     + '<div class="wrap" id="app" hidden>'
-    + '  <header class="topo">'
-    + '    <div class="marca"><h1>Quanto Sobrou</h1>'
-    + '      <p>Dá entrada quando compra, avisa quando chega, registra quando vende. A taxa do canal e o frete entram sozinhos na hora da saída.</p></div>'
-    + '    <div class="topo-acoes">'
-    + '      <span class="sessao" id="sessao"></span>'
-    + '      <button class="btn" id="btn-csv" type="button">Baixar planilha</button></div>'
-    + '  </header>'
-    + '  <div class="abas" id="abas" role="tablist" aria-label="De quem é o controle"></div>'
-    + '  <div class="aviso-alheio" id="aviso-alheio" hidden><span>🔒</span><div id="aviso-alheio-txt"></div></div>'
-    + '  <div class="aviso aviso-alerta" id="aviso-leitura" hidden><span>👀</span><div><b>Modo somente leitura.</b> Você pode mexer à vontade, mas nada que registrar aqui vai ser guardado — só o dono desta página consegue salvar.</div></div>'
-    + '  <div class="aviso aviso-erro" id="aviso-erro" hidden><span>⚠️</span><div id="aviso-erro-txt"></div></div>'
-    + '  <div class="aviso aviso-info" id="aviso-pendente" hidden><span>↩️</span><div><b>Isso não chegou a ser salvo.</b> Devolvi os dados ao formulário — confira e registre de novo.</div></div>'
-    + '  <div class="grade">'
-    + '    <div class="coluna-esq">'
+    /* ---------------- barra do sistema ---------------- */
+    + '  <div class="barra">'
+    + '    <span class="marca-min">Quanto Sobrou</span>'
+    + '    <div class="abas" id="abas" role="tablist" aria-label="De quem é o controle"></div>'
+    + '    <span class="espaco"></span>'
+    + '    <span class="sessao" id="sessao"></span>'
+    + '    <button class="btn" id="btn-csv" type="button">Baixar planilha</button>'
+    + '  </div>'
+    + '  <nav class="modulos" id="modulos" role="tablist" aria-label="Áreas do sistema"></nav>'
 
-    /* ---- painel 1: dar entrada ---- */
-    + '      <section class="cartao" id="painel-entrada"><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>1 · Dar entrada num produto</span></div>'
-    + '        <div class="campo"><label for="e-produto">O que você comprou</label>'
-    + '          <input class="entrada" id="e-produto" type="text" placeholder="Fone bluetooth, iPhone 11…" autocomplete="off"></div>'
-    + '        <div class="campo"><div class="qtd-custo">'
-    + '          <div><label for="e-qtd">Quantas</label>'
-    + '            <input class="entrada entrada-dinheiro" id="e-qtd" type="number" min="1" max="200" step="1" value="1" style="text-align:center"></div>'
-    + '          <div><label for="e-custo" id="e-custo-rot">Quanto custou</label>'
-    + '            <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '            <input class="entrada entrada-dinheiro" id="e-custo" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>'
-    + '        </div><div class="dica" id="e-dica" hidden></div></div>'
-    + '        <div class="campo dupla">'
-    + '          <div><label for="e-dcompra">Data da compra</label><input class="entrada" id="e-dcompra" type="date"></div>'
-    + '          <div><label for="e-fornecedor">Onde comprou</label><input class="entrada" id="e-fornecedor" type="text" placeholder="opcional" autocomplete="off"></div>'
-    + '        </div>'
-    + '        <div class="campo"><label class="marcar"><input type="checkbox" id="e-jachegou">'
-    + '          <span>Já está comigo<small>marque se comprou pessoalmente ou o produto já chegou</small></span></label></div>'
-    + '        <button class="btn btn-forte btn-larg" id="btn-entrada" type="button">Dar entrada</button>'
-    + '      </div></section>'
+    + '  <div class="area">'
+    + '    <div class="aviso-alheio" id="aviso-alheio" hidden><span>🔒</span><div id="aviso-alheio-txt"></div></div>'
+    + '    <div class="aviso aviso-alerta" id="aviso-leitura" hidden><span>👀</span><div><b>Modo somente leitura.</b></div></div>'
+    + '    <div class="aviso aviso-erro" id="aviso-erro" hidden><span>⚠️</span><div id="aviso-erro-txt"></div></div>'
+    + '    <div class="aviso aviso-info" id="aviso-pendente" hidden><span>↩️</span><div><b>Isso não chegou a ser salvo.</b> Confira e registre de novo.</div></div>'
 
-    /* ---- painel 2: dar saida ---- */
-    + '      <section class="cartao" id="painel-venda" hidden><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>3 · Dar saída</span></div>'
-    + '        <div class="venda-alvo"><div><div class="nome" id="v-nome"></div><div class="meta" id="v-meta"></div></div>'
-    + '          <div class="custo" id="v-custo"></div></div>'
-    + '        <div class="campo"><span class="rot">Onde você vendeu</span><div class="canais" id="v-canais" role="radiogroup" aria-label="Canal de venda"></div></div>'
-    + '        <div class="campo dupla">'
-    + '          <div><label for="v-preco">Por quanto saiu</label>'
-    + '            <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '            <input class="entrada entrada-dinheiro" id="v-preco" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>'
-    + '          <div><label for="v-dvenda">Data da saída</label><input class="entrada" id="v-dvenda" type="date"></div>'
-    + '        </div>'
-    + '        <div class="cupom-area"><div class="cupom" id="cupom"></div></div>'
-    + '        <details class="mais"><summary>Ajustar frete ou o custo do produto</summary><div>'
-    + '          <div class="campo dupla">'
-    + '            <div><label for="v-frete">Frete do seu bolso</label>'
-    + '              <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '              <input class="entrada entrada-dinheiro" id="v-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
-    + '            <div><label for="v-custo-edit">Custo total</label>'
-    + '              <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '              <input class="entrada entrada-dinheiro" id="v-custo-edit" type="text" inputmode="decimal" autocomplete="off"></div></div>'
-    + '          </div>'
-    + '          <p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin-top:-4px">Some no custo o que gastou depois: conserto, peça, embalagem, imposto de importação.</p>'
-    + '        </div></details>'
-    + '        <div class="botoes-par"><button class="btn btn-forte" id="btn-venda" type="button">Confirmar saída</button>'
-    + '          <button class="btn btn-fantasma" id="btn-cancelar-venda" type="button">Cancelar</button></div>'
-    + '      </div></section>'
-
-    /* ---- painel 3: alterar ---- */
-    + '      <section class="cartao" id="painel-editar" hidden><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>Alterar produto</span><span class="conta" id="ed-selo"></span></div>'
-    + '        <div class="campo"><label for="ed-produto">Produto</label>'
-    + '          <input class="entrada" id="ed-produto" type="text" autocomplete="off"></div>'
-    + '        <div class="campo"><label for="ed-custo">Quanto custou esta unidade</label>'
-    + '          <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '          <input class="entrada entrada-dinheiro" id="ed-custo" type="text" inputmode="decimal" autocomplete="off"></div>'
-    + '          <div class="dica" id="ed-dica-grupo" hidden></div></div>'
-    + '        <div class="campo dupla">'
-    + '          <div><label for="ed-dcompra">Data da compra</label><input class="entrada" id="ed-dcompra" type="date"></div>'
-    + '          <div><label for="ed-fornecedor">Onde comprou</label><input class="entrada" id="ed-fornecedor" type="text" placeholder="opcional" autocomplete="off"></div>'
-    + '        </div>'
-    + '        <div class="campo"><label for="ed-dchegada">Data da chegada</label><input class="entrada" id="ed-dchegada" type="date">'
-    + '          <div class="dica" style="color:var(--ink-3);font-weight:500"><span>↳</span><span>Deixe vazio se ainda está a caminho.</span></div></div>'
-    + '        <div id="ed-bloco-venda" hidden>'
-    + '          <div class="sub-secao">Dados da venda</div>'
-    + '          <div class="campo"><span class="rot">Onde vendeu</span><div class="canais" id="ed-canais" role="radiogroup" aria-label="Canal de venda"></div></div>'
-    + '          <div class="campo dupla">'
-    + '            <div><label for="ed-preco">Por quanto saiu</label>'
-    + '              <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '              <input class="entrada entrada-dinheiro" id="ed-preco" type="text" inputmode="decimal" autocomplete="off"></div></div>'
-    + '            <div><label for="ed-dvenda">Data da saída</label><input class="entrada" id="ed-dvenda" type="date"></div>'
-    + '          </div>'
-    + '          <div class="campo"><label for="ed-frete">Frete do seu bolso</label>'
-    + '            <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '            <input class="entrada entrada-dinheiro" id="ed-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
-    + '        </div>'
-    + '        <div class="botoes-par"><button class="btn btn-forte" id="btn-editar-salvar" type="button">Salvar alterações</button>'
-    + '          <button class="btn btn-fantasma" id="btn-editar-cancelar" type="button">Cancelar</button></div>'
-    + '      </div></section>'
-    + '    </div>'
-
-    + '    <div class="coluna-dir">'
+    /* ================= PAINEL ================= */
+    + '    <section class="modulo" id="mod-painel">'
+    + '      <div class="tit">Painel</div>'
+    + '      <div class="tit-sub">Como o negócio está agora. Faturamento e lucro contam só venda registrada de verdade.</div>'
     + '      <div class="tiles" id="tiles"></div>'
-    + '      <section class="cartao" id="sec-caminho" hidden><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>2 · A caminho</span><span class="conta" id="conta-caminho"></span></div><div id="lista-caminho"></div>'
-    + '      </div></section>'
-    + '      <section class="cartao" id="sec-estoque"><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>Em estoque, pronto pra vender</span><span class="conta" id="conta-estoque"></span></div><div id="lista-estoque"></div>'
-    + '      </div></section>'
-    + '      <section class="cartao" id="sec-projecao" hidden><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>Projeção · o que ainda pode entrar</span><span class="conta" id="conta-proj"></span></div>'
-    + '        <p class="proj-nota">Diga por quanto pretende vender cada produto e por onde. <b>Nada daqui entra no faturamento nem no lucro lá de cima</b> — isso só acontece quando você dá a saída de verdade.</p>'
-    + '        <div id="proj-lista"></div>'
-    + '        <div class="proj-ferramentas"><span>Não sabe o preço? Preencher os vazios mirando</span>'
-    + '          <input id="proj-margem" type="number" min="1" max="90" step="1" value="30" aria-label="margem desejada em %"><span>% de margem</span>'
-    + '          <button class="btn btn-mini" id="btn-proj-sugerir" type="button">Preencher</button></div>'
-    + '        <div id="proj-totais"></div>'
-    + '        <button class="btn" id="btn-proj-salvar" type="button">Salvar projeção</button>'
-    + '      </div></section>'
-    + '      <section class="cartao" id="sec-vendidos" hidden><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>Já vendidos</span><span class="conta" id="conta-vendidos"></span></div><div id="lista-vendidos"></div>'
-    + '      </div></section>'
-    + '      <section class="cartao" id="sec-canais" hidden><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>Onde o lucro está vindo</span></div><div id="por-canal"></div>'
-    + '      </div></section>'
-    + '      <section class="cartao"><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>Taxas de cada canal</span></div>'
-    + '        <p style="font-size:12.5px;color:var(--ink-2);margin-bottom:14px;line-height:1.5">Mudou a comissão do Mercado Livre? Ajuste aqui e todas as contas se refazem. <b>Tarifa fixa</b> é o valor cobrado por unidade quando o preço fica abaixo do limite. <b>Frete</b> é o que sai do seu bolso quando a venda passa do valor mínimo.</p>'
-    + '        <div class="ajuste-linha ajuste-cabs"><div class="ajuste-cab">Canal</div><div class="ajuste-cab">Comissão %</div><div class="ajuste-cab">Tarifa fixa</div><div class="ajuste-cab">Fixa se &lt;</div><div class="ajuste-cab">Frete</div></div>'
-    + '        <div id="ajustes"></div>'
-    + '        <button class="btn" id="btn-taxas" type="button" style="margin-top:14px">Salvar taxas</button>'
-    + '      </div></section>'
-    + '      <section class="cartao"><div class="cartao-corpo">'
-    + '        <div class="rotulo-secao"><span>Backup dos seus dados</span></div>'
-    + '        <p class="proj-nota">Seus lançamentos existem só dentro desta página. Baixe um backup de vez em quando — é um arquivo de texto com tudo, e serve tanto para restaurar quanto para levar os dados para outro lugar.</p>'
-    + '        <div class="backup-caixa"><button class="btn" id="btn-backup" type="button">Baixar backup</button></div>'
-    + '        <details class="mais"><summary>Restaurar a partir de um backup</summary><div>'
-    + '          <p style="font-size:12px;color:var(--ink-3);line-height:1.5;margin-bottom:9px">Abra o arquivo de backup num editor de texto, copie tudo e cole aqui. <b>Isto substitui os dados das duas abas</b>, não só os da sua — inclusive o que a outra pessoa registrou depois desse backup.</p>'
-    + '          <textarea class="backup-cola" id="backup-cola" placeholder="cole aqui o conteúdo do arquivo de backup" spellcheck="false" aria-label="conteúdo do backup"></textarea>'
-    + '          <button class="btn" id="btn-restaurar" type="button" style="margin-top:9px">Restaurar</button>'
-    + '        </div></details>'
-    + '      </div></section>'
-    + '      <div class="rodape">Os percentuais que já vêm preenchidos são <b>referências de mercado</b>, não os seus. Confira na central de vendedores de cada plataforma — a comissão muda por categoria e por reputação.</div>'
-    + '    </div>'
+    + '      <div class="colunas col-graf">'
+    + '        <section class="cartao"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Faturamento por dia</span><span class="conta" id="graf-periodo"></span></div>'
+    + '          <div class="graf" id="graf-diario"></div>'
+    + '        </div></section>'
+    + '        <section class="cartao"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Onde o lucro está vindo</span></div><div id="por-canal"></div>'
+    + '        </div></section>'
+    + '      </div>'
+    + '    </section>'
+
+    /* ================= COMPRAS E ESTOQUE ================= */
+    + '    <section class="modulo" id="mod-compras" hidden>'
+    + '      <div class="tit">Compras e Estoque</div>'
+    + '      <div class="tit-sub">Onde o produto entra. Lance a compra, marque quando chegou, e acompanhe quanto tempo cada etapa costuma levar.</div>'
+    + '      <div class="tiles" id="tiles-tempo"></div>'
+    + '      <div class="colunas col-form">'
+    + '        <section class="cartao" id="painel-entrada"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Dar entrada num produto</span></div>'
+    + '          <div class="campo"><label for="e-produto">O que você comprou</label>'
+    + '            <input class="entrada" id="e-produto" type="text" placeholder="Fone bluetooth, iPhone 11…" autocomplete="off"></div>'
+    + '          <div class="campo"><div class="qtd-custo">'
+    + '            <div><label for="e-qtd">Quantas</label>'
+    + '              <input class="entrada entrada-dinheiro" id="e-qtd" type="number" min="1" max="200" step="1" value="1" style="text-align:center"></div>'
+    + '            <div><label for="e-custo" id="e-custo-rot">Quanto custou</label>'
+    + '              <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '              <input class="entrada entrada-dinheiro" id="e-custo" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>'
+    + '          </div><div class="dica" id="e-dica" hidden></div></div>'
+    + '          <div class="campo dupla">'
+    + '            <div><label for="e-dcompra">Data da compra</label><input class="entrada" id="e-dcompra" type="date"></div>'
+    + '            <div><label for="e-fornecedor">Onde comprou</label><input class="entrada" id="e-fornecedor" type="text" placeholder="opcional" autocomplete="off"></div>'
+    + '          </div>'
+    + '          <div class="campo"><label class="marcar"><input type="checkbox" id="e-jachegou">'
+    + '            <span>Já está comigo<small>marque se comprou pessoalmente ou já chegou</small></span></label></div>'
+    + '          <button class="btn btn-forte btn-larg" id="btn-entrada" type="button">Dar entrada</button>'
+    + '        </div></section>'
+    + '        <div>'
+    + '          <div class="colunas col-2">'
+    + '            <section class="cartao" id="sec-caminho" hidden><div class="cartao-corpo">'
+    + '              <div class="rotulo-secao"><span>A caminho</span><span class="conta" id="conta-caminho"></span></div><div id="lista-caminho"></div>'
+    + '            </div></section>'
+    + '            <section class="cartao" id="sec-estoque"><div class="cartao-corpo">'
+    + '              <div class="rotulo-secao"><span>Em estoque</span><span class="conta" id="conta-estoque"></span></div><div id="lista-estoque"></div>'
+    + '            </div></section>'
+    + '          </div>'
+    + '          <section class="cartao" id="sec-projecao" hidden><div class="cartao-corpo">'
+    + '            <div class="rotulo-secao"><span>Projeção — o que ainda pode entrar</span><span class="conta" id="conta-proj"></span></div>'
+    + '            <p class="proj-nota">Diga por quanto pretende vender. <b>Nada aqui entra no faturamento nem no lucro</b> — isso só acontece quando você dá a saída de verdade.</p>'
+    + '            <div id="proj-lista"></div>'
+    + '            <div class="proj-ferramentas"><span>Não sabe o preço? Preencher com margem de</span>'
+    + '              <input id="proj-margem" type="number" min="1" max="90" step="1" value="30" aria-label="margem alvo">'
+    + '              <span>%</span><button class="btn btn-mini" id="btn-proj-sugerir" type="button">Preencher</button></div>'
+    + '            <div id="proj-totais"></div>'
+    + '            <button class="btn" id="btn-proj-salvar" type="button">Salvar projeção</button>'
+    + '          </div></section>'
+    + '        </div>'
+    + '      </div>'
+    + '    </section>'
+
+    /* ================= VENDAS ================= */
+    + '    <section class="modulo" id="mod-vendas" hidden>'
+    + '      <div class="tit">Vendas</div>'
+    + '      <div class="tit-sub">Onde o produto sai. Cada venda mostra o que o canal levou e o que sobrou pra você.</div>'
+    + '      <div class="colunas col-form">'
+    + '        <section class="cartao" id="painel-venda"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Dar saída</span></div>'
+    + '          <div id="venda-vazio" class="vazio" style="padding:22px 10px">'
+    + '            <strong>Escolha o que vendeu</strong><p>Vá em <b>Compras e Estoque</b> e clique em <b>Vender</b> no produto que saiu.</p></div>'
+    + '          <div id="venda-form" hidden>'
+    + '            <div class="venda-alvo"><div><div class="nome" id="v-nome"></div><div class="meta" id="v-meta"></div></div>'
+    + '              <div class="custo" id="v-custo"></div></div>'
+    + '            <div class="campo"><span class="rot">Onde você vendeu</span><div class="canais" id="v-canais" role="radiogroup" aria-label="Canal de venda"></div></div>'
+    + '            <div class="campo dupla">'
+    + '              <div><label for="v-preco">Por quanto saiu</label>'
+    + '                <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '                <input class="entrada entrada-dinheiro" id="v-preco" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>'
+    + '              <div><label for="v-dvenda">Data da saída</label><input class="entrada" id="v-dvenda" type="date"></div>'
+    + '            </div>'
+    + '            <div class="cupom-area"><div class="cupom" id="cupom"></div></div>'
+    + '            <details class="mais"><summary>Ajustar frete ou o custo</summary><div>'
+    + '              <div class="campo dupla">'
+    + '                <div><label for="v-frete">Frete do seu bolso</label>'
+    + '                  <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '                  <input class="entrada entrada-dinheiro" id="v-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
+    + '                <div><label for="v-custo-edit">Custo total</label>'
+    + '                  <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '                  <input class="entrada entrada-dinheiro" id="v-custo-edit" type="text" inputmode="decimal" autocomplete="off"></div></div>'
+    + '              </div>'
+    + '              <p style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin-top:-4px">Some o que gastou depois: conserto, peça, embalagem, imposto.</p>'
+    + '            </div></details>'
+    + '            <div class="botoes-par"><button class="btn btn-forte" id="btn-venda" type="button">Confirmar saída</button>'
+    + '              <button class="btn btn-fantasma" id="btn-cancelar-venda" type="button">Cancelar</button></div>'
+    + '          </div>'
+    + '        </div></section>'
+    + '        <section class="cartao" id="sec-vendidos"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Vendas registradas</span><span class="conta" id="conta-vendidos"></span></div><div id="lista-vendidos"></div>'
+    + '        </div></section>'
+    + '      </div>'
+    + '    </section>'
+
+    /* ================= CAIXA ================= */
+    + '    <section class="modulo" id="mod-caixa" hidden>'
+    + '      <div class="tit">Caixa</div>'
+    + '      <div class="tit-sub">Vender não é receber. Toda venda entra aqui esperando, e você dá baixa quando o dinheiro cai na conta.</div>'
+    + '      <div class="tiles" id="tiles-caixa"></div>'
+    + '      <div class="colunas col-2">'
+    + '        <section class="cartao"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Esperando cair</span><span class="conta" id="conta-receber"></span></div><div id="lista-receber"></div>'
+    + '        </div></section>'
+    + '        <section class="cartao"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Já caiu na conta</span><span class="conta" id="conta-recebido"></span></div><div id="lista-recebido"></div>'
+    + '        </div></section>'
+    + '      </div>'
+    + '    </section>'
+
+    /* ================= AJUSTES ================= */
+    + '    <section class="modulo" id="mod-ajustes" hidden>'
+    + '      <div class="tit">Ajustes</div>'
+    + '      <div class="tit-sub">As taxas mudam por categoria e reputação. Confira as suas na central de vendedores de cada plataforma.</div>'
+    + '      <div class="colunas col-2">'
+    + '        <section class="cartao"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Taxas de cada canal</span></div>'
+    + '          <p class="proj-nota"><b>Tarifa fixa</b> é o valor cobrado por unidade quando o preço fica abaixo do limite. <b>Frete</b> é o que sai do seu bolso quando a venda passa do valor mínimo.</p>'
+    + '          <div class="ajuste-linha ajuste-cabs"><div class="ajuste-cab">Canal</div><div class="ajuste-cab">Comissão %</div><div class="ajuste-cab">Tarifa fixa</div><div class="ajuste-cab">Fixa se &lt;</div><div class="ajuste-cab">Frete</div></div>'
+    + '          <div id="ajustes"></div>'
+    + '          <button class="btn" id="btn-taxas" type="button" style="margin-top:14px">Salvar taxas</button>'
+    + '        </div></section>'
+    + '        <section class="cartao"><div class="cartao-corpo">'
+    + '          <div class="rotulo-secao"><span>Backup dos seus dados</span></div>'
+    + '          <p class="proj-nota">Baixe de vez em quando. Serve para restaurar e para levar os dados para outro lugar.</p>'
+    + '          <div class="backup-caixa"><button class="btn" id="btn-backup" type="button">Baixar backup</button></div>'
+    + '          <details class="mais"><summary>Restaurar a partir de um backup</summary><div>'
+    + '            <p style="font-size:12px;color:var(--ink-3);line-height:1.5;margin-bottom:9px">Cole aqui o conteúdo do arquivo. <b>Isto substitui os dados das duas abas</b>, não só os da sua.</p>'
+    + '            <textarea class="backup-cola" id="backup-cola" placeholder="cole aqui o conteúdo do backup" spellcheck="false" aria-label="conteúdo do backup"></textarea>'
+    + '            <button class="btn" id="btn-restaurar" type="button" style="margin-top:9px">Restaurar</button>'
+    + '          </div></details>'
+    + '        </div></section>'
+    + '      </div>'
+    + '    </section>'
+
+    /* ---------------- alterar produto ---------------- */
+    + '    <section class="cartao" id="painel-editar" hidden style="max-width:430px;margin-top:18px"><div class="cartao-corpo">'
+    + '      <div class="rotulo-secao"><span>Alterar produto</span><span class="conta" id="ed-selo"></span></div>'
+    + '      <div class="campo"><label for="ed-produto">Produto</label>'
+    + '        <input class="entrada" id="ed-produto" type="text" autocomplete="off"></div>'
+    + '      <div class="campo"><label for="ed-custo">Quanto custou esta unidade</label>'
+    + '        <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '        <input class="entrada entrada-dinheiro" id="ed-custo" type="text" inputmode="decimal" autocomplete="off"></div>'
+    + '        <div class="dica" id="ed-dica-grupo" hidden></div></div>'
+    + '      <div class="campo dupla">'
+    + '        <div><label for="ed-dcompra">Data da compra</label><input class="entrada" id="ed-dcompra" type="date"></div>'
+    + '        <div><label for="ed-fornecedor">Onde comprou</label><input class="entrada" id="ed-fornecedor" type="text" placeholder="opcional" autocomplete="off"></div>'
+    + '      </div>'
+    + '      <div class="campo"><label for="ed-dchegada">Data da chegada</label><input class="entrada" id="ed-dchegada" type="date">'
+    + '        <div class="dica" style="color:var(--ink-3);font-weight:500"><span>↳</span><span>Vazio significa que ainda está a caminho.</span></div></div>'
+    + '      <div id="ed-bloco-venda" hidden>'
+    + '        <div class="sub-secao">Dados da venda</div>'
+    + '        <div class="campo"><span class="rot">Onde vendeu</span><div class="canais" id="ed-canais" role="radiogroup" aria-label="Canal de venda"></div></div>'
+    + '        <div class="campo dupla">'
+    + '          <div><label for="ed-preco">Por quanto saiu</label>'
+    + '            <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '            <input class="entrada entrada-dinheiro" id="ed-preco" type="text" inputmode="decimal" autocomplete="off"></div></div>'
+    + '          <div><label for="ed-dvenda">Data da saída</label><input class="entrada" id="ed-dvenda" type="date"></div>'
+    + '        </div>'
+    + '        <div class="campo"><label for="ed-frete">Frete do seu bolso</label>'
+    + '          <div class="com-prefixo"><span class="prefixo">R$</span>'
+    + '          <input class="entrada entrada-dinheiro" id="ed-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
+    + '      </div>'
+    + '      <div class="botoes-par"><button class="btn btn-forte" id="btn-editar-salvar" type="button">Salvar alterações</button>'
+    + '        <button class="btn btn-fantasma" id="btn-editar-cancelar" type="button">Cancelar</button></div>'
+    + '    </div></section>'
     + '  </div>'
     + '</div>';
 
@@ -1119,8 +1254,11 @@ tfoot td:first-child{text-align:left}
 
   function desenharPorCanal() {
     var vend = porFase('vendido');
-    $('#sec-canais').hidden = vend.length === 0;
-    if (!vend.length) { $('#por-canal').innerHTML = ''; return; }
+    if (!vend.length) {
+      $('#por-canal').innerHTML = '<div class="vazio" style="padding:30px 12px"><strong>Nenhuma venda ainda</strong>'
+        + '<p>Quando você registrar saídas, aqui aparece qual canal está realmente pagando a conta.</p></div>';
+      return;
+    }
     var mapa = {}, maior = 0, k;
     for (var i = 0; i < vend.length; i++) {
       var cn = canalDe(vend[i].canal);
@@ -1353,7 +1491,6 @@ tfoot td:first-child{text-align:left}
     for (var i = 0; i < trancar.length; i++) trancar[i].disabled = !meu;
     var proj = document.querySelectorAll('.proj-preco, .proj-canal');
     for (var j = 0; j < proj.length; j++) proj[j].disabled = !meu;
-    // restaurar troca as duas abas de uma vez, entao so aparece na aba de quem esta usando
     var restaurar = $('#btn-restaurar');
     if (restaurar) {
       var det = restaurar.closest('details');
@@ -1456,10 +1593,299 @@ tfoot td:first-child{text-align:left}
     $('#login-erro').textContent = '';
   }
 
+  // ============================ MODULOS ============================
+  var MODULO = 'painel';
+  var CHAVE_MODULO = 'quanto-sobrou-modulo';
+  var MODULOS = [
+    { id: 'painel',   nome: 'Painel' },
+    { id: 'compras',  nome: 'Compras e Estoque' },
+    { id: 'vendas',   nome: 'Vendas' },
+    { id: 'caixa',    nome: 'Caixa' },
+    { id: 'ajustes',  nome: 'Ajustes' }
+  ];
+
+  function desenharModulos() {
+    var h = '';
+    for (var i = 0; i < MODULOS.length; i++) {
+      var m = MODULOS[i], ativo = m.id === MODULO;
+      h += '<button class="modulo-aba" type="button" role="tab" data-mod="' + m.id + '"'
+        + ' aria-selected="' + (ativo ? 'true' : 'false') + '">' + esc(m.nome)
+        + (m.badge ? '<span class="badge">' + m.badge + '</span>' : '') + '</button>';
+    }
+    $('#modulos').innerHTML = h;
+    var bs = $('#modulos').querySelectorAll('.modulo-aba');
+    for (var j = 0; j < bs.length; j++) {
+      (function (b) { b.addEventListener('click', function () { irPara(b.getAttribute('data-mod')); }); })(bs[j]);
+    }
+  }
+
+  function irPara(id) {
+    MODULO = id;
+    try { localStorage.setItem(CHAVE_MODULO, id); } catch (e) {}
+    for (var i = 0; i < MODULOS.length; i++) {
+      var sec = document.getElementById('mod-' + MODULOS[i].id);
+      if (sec) sec.hidden = MODULOS[i].id !== id;
+    }
+    desenharModulos();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  // conta quantos pedidos esperam dinheiro, para o aviso na aba Caixa
+  function atualizarBadges() {
+    var esperando = 0;
+    for (var i = 0; i < DADOS.itens.length; i++) {
+      var it = DADOS.itens[i];
+      if (it.dVenda && !it.dRecebido) esperando++;
+    }
+    for (var j = 0; j < MODULOS.length; j++) {
+      if (MODULOS[j].id === 'caixa') MODULOS[j].badge = esperando ? String(esperando) : '';
+    }
+    desenharModulos();
+  }
+
+  // ============================ TEMPOS MEDIOS ============================
+  function mediaDias(pares) {
+    var soma = 0, n = 0;
+    for (var i = 0; i < pares.length; i++) {
+      var d = dias(pares[i][0], pares[i][1]);
+      if (d != null && d >= 0) { soma += d; n++; }
+    }
+    return n ? Math.round(soma / n) : null;
+  }
+
+  function desenharTempos() {
+    var chegaram = [], venderam = [], caiu = [];
+    for (var i = 0; i < DADOS.itens.length; i++) {
+      var it = DADOS.itens[i];
+      if (it.dCompra && it.dChegada) chegaram.push([it.dCompra, it.dChegada]);
+      if (it.dChegada && it.dVenda) venderam.push([it.dChegada, it.dVenda]);
+      if (it.dVenda && it.dRecebido) caiu.push([it.dVenda, it.dRecebido]);
+    }
+    var mc = mediaDias(chegaram), mv = mediaDias(venderam);
+    var parado = 0, nParado = 0;
+    for (var j = 0; j < DADOS.itens.length; j++) {
+      var x = DADOS.itens[j];
+      if (!x.dVenda) { parado += num(x.custo); nParado++; }
+    }
+    var t = [
+      { r: 'Da compra até chegar', n: mc == null ? '—' : mc + (mc === 1 ? ' dia' : ' dias'),
+        s: chegaram.length ? 'média de ' + plural(chegaram.length, 'produto', 'produtos') : 'nenhum chegou ainda' },
+      { r: 'Da chegada até vender', n: mv == null ? '—' : mv + (mv === 1 ? ' dia' : ' dias'),
+        s: venderam.length ? 'média de ' + plural(venderam.length, 'venda', 'vendas') : 'nenhuma venda ainda' },
+      { r: 'Parado agora', n: brl(parado), s: plural(nParado, 'produto sem vender', 'produtos sem vender'),
+        cor: parado > 0 ? 'var(--warn)' : '' }
+    ];
+    $('#tiles-tempo').innerHTML = htmlTiles(t);
+  }
+
+  function htmlTiles(t) {
+    var h = '';
+    for (var k = 0; k < t.length; k++) {
+      h += '<div class="tile' + (t[k].d ? ' tile-destaque' : '') + '"><div class="rot">' + t[k].r + '</div>'
+        + '<div class="num"' + (t[k].cor ? ' style="color:' + t[k].cor + '"' : '') + '>' + t[k].n + '</div>'
+        + '<div class="sub">' + t[k].s + '</div></div>';
+    }
+    return h;
+  }
+
+  // ============================ CAIXA ============================
+  function vendasPorDinheiro(recebido) {
+    var r = [];
+    for (var i = 0; i < DADOS.itens.length; i++) {
+      var it = DADOS.itens[i];
+      if (!it.dVenda) continue;
+      if (recebido ? !!it.dRecebido : !it.dRecebido) r.push(it);
+    }
+    return r;
+  }
+
+  function desenharCaixa() {
+    var esperando = vendasPorDinheiro(false), caiu = vendasPorDinheiro(true);
+    var aReceber = 0, noCaixa = 0, saiu = 0, i, c;
+    for (i = 0; i < esperando.length; i++) aReceber += contaDoItem(esperando[i]).liquido;
+    for (i = 0; i < caiu.length; i++) noCaixa += contaDoItem(caiu[i]).liquido;
+    for (i = 0; i < DADOS.itens.length; i++) saiu += num(DADOS.itens[i].custo);
+
+    var pares = [];
+    for (i = 0; i < caiu.length; i++) pares.push([caiu[i].dVenda, caiu[i].dRecebido]);
+    var mr = mediaDias(pares);
+
+    $('#tiles-caixa').innerHTML = htmlTiles([
+      { r: 'Tem para entrar', n: brl(aReceber), s: plural(esperando.length, 'venda esperando', 'vendas esperando'),
+        d: true, cor: aReceber > 0 ? 'var(--warn)' : '' },
+      { r: 'Já caiu na conta', n: brl(noCaixa), s: plural(caiu.length, 'venda recebida', 'vendas recebidas'),
+        cor: 'var(--pos)' },
+      { r: 'Saiu em compras', n: brl(saiu), s: 'custo de tudo que entrou' },
+      { r: 'Demora até cair', n: mr == null ? '—' : mr + (mr === 1 ? ' dia' : ' dias'),
+        s: pares.length ? 'média das que já caíram' : 'nenhuma caiu ainda' }
+    ]);
+
+    $('#conta-receber').textContent = esperando.length ? brl(aReceber) : '';
+    $('#conta-recebido').textContent = caiu.length ? brl(noCaixa) : '';
+    $('#lista-receber').innerHTML = htmlDinheiro(esperando, false);
+    $('#lista-recebido').innerHTML = htmlDinheiro(caiu, true);
+  }
+
+  function htmlDinheiro(lista, jaCaiu) {
+    if (!lista.length) {
+      return '<div class="vazio" style="padding:26px 12px"><strong>'
+        + (jaCaiu ? 'Nada recebido ainda' : 'Nada esperando')
+        + '</strong><p>' + (jaCaiu
+          ? 'Quando você der baixa numa venda, ela aparece aqui.'
+          : 'Toda venda registrada entra aqui até você confirmar que o dinheiro caiu.') + '</p></div>';
+    }
+    lista.sort(function (a, b) {
+      return jaCaiu ? (b.dRecebido || '').localeCompare(a.dRecebido || '')
+                    : (a.dVenda || '').localeCompare(b.dVenda || '');
+    });
+    var h = '', hoje_ = hoje();
+    for (var i = 0; i < lista.length; i++) {
+      var it = lista[i], cn = canalDe(it.canal), c = contaDoItem(it);
+      var meta = [];
+      if (cn) meta.push(esc(cn.curto));
+      meta.push('vendido ' + dataBR(it.dVenda));
+      if (jaCaiu) {
+        meta.push('<span class="selo-caiu">caiu ' + dataBR(it.dRecebido) + '</span>');
+      } else {
+        var esperandoHa = dias(it.dVenda, hoje_);
+        meta.push('<span class="selo-espera">esperando ' + (esperandoHa == null ? '?' : plural(esperandoHa, 'dia', 'dias')) + '</span>');
+      }
+      h += '<div class="dinheiro-linha">'
+        + '<div><div class="dinheiro-nome">' + esc(it.produto) + '</div>'
+        + '<div class="dinheiro-meta">' + meta.join(' · ') + '</div></div>'
+        + '<div class="dinheiro-val" style="color:' + (jaCaiu ? 'var(--pos)' : 'var(--ink)') + '">' + brl(c.liquido) + '</div>'
+        + '<div class="item-acoes">'
+        + (podeEditar()
+            ? (jaCaiu
+                ? '<button class="icone" type="button" data-desbaixa="' + esc(it.id) + '" aria-label="Desfazer baixa de ' + esc(it.produto) + '" title="Ainda não caiu (desfazer)">↺</button>'
+                : '<button class="btn btn-mini btn-forte" type="button" data-baixa="' + esc(it.id) + '">Caiu</button>')
+            : '')
+        + '</div>'
+        + (jaCaiu ? '' :
+          '<div class="item-form" id="form-baixa-' + esc(it.id) + '" hidden>'
+          + '<label for="data-baixa-' + esc(it.id) + '">Caiu em</label>'
+          + '<input type="date" id="data-baixa-' + esc(it.id) + '" value="' + hoje_ + '">'
+          + '<button class="btn btn-mini btn-forte" type="button" data-confirma-baixa="' + esc(it.id) + '">Confirmar</button>'
+          + '<button class="btn btn-mini btn-fantasma" type="button" data-cancela-baixa="' + esc(it.id) + '">Cancelar</button>'
+          + '</div>')
+        + '</div>';
+    }
+    return h;
+  }
+
+  function abrirBaixa(id) {
+    var f = document.getElementById('form-baixa-' + id);
+    if (f) { f.hidden = false; f.querySelector('input').focus(); }
+  }
+  function confirmarBaixa(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var campo = document.getElementById('data-baixa-' + id);
+    var d = (campo && campo.value) || hoje();
+    if (it.dVenda && d < it.dVenda) {
+      erro('<b>O dinheiro não pode ter caído antes da venda.</b> A venda foi em ' + dataBR(it.dVenda) + '.');
+      return;
+    }
+    $('#aviso-erro').hidden = true;
+    it.dRecebido = d;
+    desenharTudo();
+    persistir(null, '', function () { it.dRecebido = ''; desenharTudo(); });
+  }
+  function desfazerBaixa(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var antes = it.dRecebido;
+    it.dRecebido = '';
+    desenharTudo();
+    persistir(null, '', function () { it.dRecebido = antes; desenharTudo(); });
+  }
+
+  // ============================ GRAFICO ============================
+  // barras de faturamento por dia. Uma serie so, entao uma cor so e sem legenda:
+  // o titulo do cartao ja diz o que e.
+  function desenharGraficoDiario() {
+    var vend = porFase('vendido');
+    var alvo = $('#graf-diario');
+    if (!vend.length) {
+      alvo.innerHTML = '<div class="graf-vazio">Ainda não há vendas registradas.<br>O gráfico aparece assim que a primeira saída for lançada.</div>';
+      $('#graf-periodo').textContent = '';
+      return;
+    }
+    var porDia = {}, i;
+    for (i = 0; i < vend.length; i++) {
+      var d = vend[i].dVenda;
+      if (!d) continue;
+      porDia[d] = (porDia[d] || 0) + num(vend[i].preco);
+    }
+    var datas = Object.keys(porDia).sort();
+    // mostra os ultimos 21 dias corridos a partir da primeira venda do periodo visivel
+    var fim = datas[datas.length - 1], ini = datas[0];
+    var lista = [], cursor = new Date(ini + 'T12:00'), limite = new Date(fim + 'T12:00');
+    var passos = 0;
+    while (cursor <= limite && passos < 400) {
+      var iso = cursor.getFullYear() + '-' + String(cursor.getMonth() + 1).padStart(2, '0') + '-' + String(cursor.getDate()).padStart(2, '0');
+      lista.push({ dia: iso, valor: porDia[iso] || 0 });
+      cursor.setDate(cursor.getDate() + 1);
+      passos++;
+    }
+    if (lista.length > 21) lista = lista.slice(lista.length - 21);
+
+    var maior = 0;
+    for (i = 0; i < lista.length; i++) maior = Math.max(maior, lista[i].valor);
+    if (maior <= 0) maior = 1;
+
+    var L = 52, R = 8, T = 16, B = 30;
+    var larg = 640, alt = 230;
+    var areaL = larg - L - R, areaA = alt - T - B;
+    var passo = areaL / lista.length;
+    var largBarra = Math.max(6, Math.min(34, passo * 0.62));
+
+    var s = '<svg viewBox="0 0 ' + larg + ' ' + alt + '" role="img" aria-label="Faturamento por dia">';
+    // grade e eixo de valores
+    for (i = 0; i <= 3; i++) {
+      var y = T + areaA - (areaA * i / 3);
+      var v = maior * i / 3;
+      s += '<line class="grade-linha" x1="' + L + '" y1="' + y.toFixed(1) + '" x2="' + (larg - R) + '" y2="' + y.toFixed(1) + '"/>';
+      s += '<text class="rotulo" x="' + (L - 8) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">'
+        + (v >= 1000 ? (v / 1000).toFixed(1).replace('.', ',') + 'k' : Math.round(v)) + '</text>';
+    }
+    // barras
+    for (i = 0; i < lista.length; i++) {
+      var d2 = lista[i];
+      var hb = d2.valor > 0 ? Math.max(3, (d2.valor / maior) * areaA) : 0;
+      var x = L + passo * i + (passo - largBarra) / 2;
+      var y2 = T + areaA - hb;
+      if (hb > 0) {
+        s += '<rect class="barra-dia" x="' + x.toFixed(1) + '" y="' + y2.toFixed(1) + '" width="' + largBarra.toFixed(1)
+          + '" height="' + hb.toFixed(1) + '" rx="4" ry="4">'
+          + '<title>' + dataBR(d2.dia) + ' — ' + brl(d2.valor) + '</title></rect>';
+      }
+      // rotula so o maior dia, para nao poluir
+      if (d2.valor === maior) {
+        s += '<text class="valor-topo" x="' + (x + largBarra / 2).toFixed(1) + '" y="' + (y2 - 5).toFixed(1)
+          + '" text-anchor="middle">' + brl(d2.valor).replace('R$ ', '') + '</text>';
+      }
+      // datas: primeira, ultima e a cada 5
+      if (i === 0 || i === lista.length - 1 || i % 5 === 0) {
+        s += '<text class="rotulo" x="' + (x + largBarra / 2).toFixed(1) + '" y="' + (alt - 10) + '" text-anchor="middle">'
+          + d2.dia.slice(8) + '/' + d2.dia.slice(5, 7) + '</text>';
+      }
+    }
+    s += '<line class="eixo" x1="' + L + '" y1="' + (T + areaA) + '" x2="' + (larg - R) + '" y2="' + (T + areaA) + '"/>';
+    s += '</svg>';
+    s += '<div class="graf-legenda"><span><i></i>Valor bruto da venda, antes das taxas</span>'
+      + '<span>Passe o mouse numa barra para ver o dia</span></div>';
+    alvo.innerHTML = s;
+    $('#graf-periodo').textContent = dataBR(lista[0].dia) + ' a ' + dataBR(lista[lista.length - 1].dia);
+  }
+
   function desenharTudo() {
     desenharAbas();
     aplicarPermissoes();
-    desenharTiles(); desenharCaminho(); desenharEstoque(); desenharProjecao(); desenharVendidos(); desenharPorCanal();
+    desenharTiles(); desenharTempos(); desenharCaixa();
+    desenharCaminho(); desenharEstoque(); desenharProjecao();
+    desenharVendidos(); desenharPorCanal(); desenharGraficoDiario();
+    atualizarBadges();
     ligarBotoesDeItem();
   }
 
@@ -1666,19 +2092,18 @@ tfoot td:first-child{text-align:left}
   // ---------- 3 · saida ----------
   function fecharPaineis() {
     vendendo = null; editando = null;
-    $('#painel-venda').hidden = true;
+    $('#venda-form').hidden = true;
+    $('#venda-vazio').hidden = false;
     $('#painel-editar').hidden = true;
-    $('#painel-entrada').hidden = false;
     $('#cupom').innerHTML = '';
-  }
-  function irPara(painel) {
-    var suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    painel.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'start' });
   }
   function abrirVenda(id) {
     var it = itemDe(id); if (!it) return;
     editando = null; $('#painel-editar').hidden = true;
     vendendo = id;
+    irPara('vendas');
+    $('#venda-vazio').hidden = true;
+    $('#venda-form').hidden = false;
     $('#v-nome').textContent = it.produto;
     var meta = [];
     var g = grupoDe(it);
@@ -1694,10 +2119,7 @@ tfoot td:first-child{text-align:left}
     $('#v-frete').value = '';
     $('#v-dvenda').value = hoje();
     var m = document.querySelector('#v-canais input:checked'); if (m) m.checked = false;
-    $('#painel-entrada').hidden = true;
-    $('#painel-venda').hidden = false;
     desenharCupom();
-    irPara($('#painel-venda'));
     $('#v-preco').focus();
   }
   function confirmarVenda() {
@@ -1769,9 +2191,9 @@ tfoot td:first-child{text-align:left}
       var rad = document.querySelector('#ed-canais input[value="' + it.canal + '"]');
       if (rad) rad.checked = true;
     }
-    $('#painel-entrada').hidden = true;
     $('#painel-editar').hidden = false;
-    irPara($('#painel-editar'));
+    var suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('#painel-editar').scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'center' });
     $('#ed-produto').focus();
   }
 
@@ -1941,6 +2363,10 @@ tfoot td:first-child{text-align:left}
     liga('data-confirma-dup', confirmarDuplicar);
     liga('data-cancela-dup', function (id) { var f = document.getElementById('form-dup-' + id); if (f) f.hidden = true; });
     liga('data-apagar', function (id, b) { doisToques(b, 'Apagar?', function () { apagarItem(id); }); });
+    liga('data-baixa', abrirBaixa);
+    liga('data-confirma-baixa', confirmarBaixa);
+    liga('data-cancela-baixa', function (id) { var f = document.getElementById('form-baixa-' + id); if (f) f.hidden = true; });
+    liga('data-desbaixa', function (id, b) { doisToques(b, 'Desfazer?', function () { desfazerBaixa(id); }); });
   }
 
   // ---------- ligar tudo ----------
@@ -1949,6 +2375,11 @@ tfoot td:first-child{text-align:left}
     DADOS.pessoas = [{ id: 'vazio', nome: '—', dono: null, canais: [], itens: [] }];
   }
   ativar(DADOS.pessoas[0].id);
+  try { MODULO = localStorage.getItem(CHAVE_MODULO) || 'painel'; } catch (e) {}
+  var existe = false;
+  for (var mm = 0; mm < MODULOS.length; mm++) if (MODULOS[mm].id === MODULO) existe = true;
+  if (!existe) MODULO = 'painel';
+  irPara(MODULO);
   desenharCanais();
   desenharAjustes();
   desenharTudo();
@@ -2010,3 +2441,5 @@ tfoot td:first-child{text-align:left}
 
 })();
 </script>
+</body>
+</html>
