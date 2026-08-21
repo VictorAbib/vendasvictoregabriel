@@ -1,11 +1,3 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>html{-webkit-text-size-adjust:100%}body{margin:0}</style>
-</head>
-<body>
 <title>Quanto Sobrou</title>
 
 <style id="css">
@@ -76,6 +68,62 @@ body{
 .btn-fantasma{background:none;border-color:transparent;color:var(--ink-3)}
 .btn-fantasma:hover{background:var(--surface-2);border-color:var(--line-2);color:var(--ink)}
 :where(a,button,input,label,summary):focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* ---------- entrada ---------- */
+.login-tela{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:var(--bg);
+}
+.login-caixa{
+  width:100%;max-width:340px;background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;box-shadow:var(--shadow);padding:26px 24px;
+}
+.login-caixa h2{font-size:20px;font-weight:720;letter-spacing:-.02em;margin-bottom:4px}
+.login-caixa p{font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:18px}
+.login-quem{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.login-quem button{
+  padding:13px 10px;border:1.5px solid var(--line-2);background:var(--surface);border-radius:10px;
+  font-size:15px;font-weight:640;cursor:pointer;color:var(--ink);min-height:48px;
+  transition:background .13s,border-color .13s,color .13s;
+}
+.login-quem button:hover{border-color:var(--ink-3)}
+.login-quem button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.login-erro{font-size:12.5px;color:var(--neg);font-weight:600;margin-top:10px;line-height:1.45;min-height:1px}
+.sessao{
+  display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);
+  background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:4px 6px 4px 12px;
+}
+.sessao b{color:var(--ink);font-weight:640}
+.sessao button{
+  border:none;background:none;cursor:pointer;color:var(--ink-3);font-size:12px;font-weight:600;
+  padding:4px 9px;border-radius:14px;
+}
+.sessao button:hover{background:var(--surface);color:var(--ink)}
+.aviso-alheio{
+  display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:10px;font-size:13px;
+  line-height:1.45;margin-bottom:16px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2);
+}
+.aviso-alheio b{color:var(--ink);font-weight:640}
+
+/* ---------- abas ---------- */
+.abas{
+  display:flex;gap:6px;margin-bottom:18px;padding:5px;border-radius:12px;
+  background:var(--surface-2);border:1px solid var(--line);width:fit-content;max-width:100%;flex-wrap:wrap;
+}
+.aba{
+  display:inline-flex;align-items:center;gap:8px;border:none;background:none;cursor:pointer;
+  padding:9px 16px;border-radius:9px;font-size:14px;font-weight:620;color:var(--ink-2);
+  transition:background .13s,color .13s;min-height:40px;
+}
+.aba:hover{background:var(--surface);color:var(--ink)}
+.aba[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.aba[aria-selected="true"]:hover{background:var(--accent);color:var(--accent-ink);filter:brightness(1.06)}
+.aba-n{
+  font-family:var(--mono);font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;
+  background:var(--surface);color:var(--ink-2);border:1px solid var(--line);
+}
+.aba[aria-selected="true"] .aba-n{background:rgba(0,0,0,.18);color:var(--accent-ink);border-color:transparent}
+@media (pointer:coarse),(max-width:719px){ .aba{min-height:44px;padding:10px 18px} }
 
 /* ---------- avisos ---------- */
 .aviso{
@@ -402,7 +450,7 @@ tfoot td:first-child{text-align:left}
 
 <div id="root"></div>
 
-<script id="dados" type="application/json">{"v":3,"canais":[{"id":"mlc","nome":"Mercado Livre Clássico","curto":"ML Clássico","cor":"#FFE600","fg":"#111917","pct":0.13,"fixa":6.25,"limite":79,"frete":23.65,"freteMin":79},{"id":"mlp","nome":"Mercado Livre Premium","curto":"ML Premium","cor":"#FFD100","fg":"#111917","pct":0.18,"fixa":6.25,"limite":79,"frete":23.65,"freteMin":79},{"id":"shopee","nome":"Shopee","curto":"Shopee","cor":"#EE4D2D","fg":"#FFFFFF","pct":0.2,"fixa":4,"limite":999999,"frete":0,"freteMin":0},{"id":"olx","nome":"OLX","curto":"OLX","cor":"#6E0AD6","fg":"#FFFFFF","pct":0,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"face","nome":"Facebook Marketplace","curto":"Facebook","cor":"#1877F2","fg":"#FFFFFF","pct":0,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"amazon","nome":"Amazon","curto":"Amazon","cor":"#FF9900","fg":"#111917","pct":0.15,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"zap","nome":"WhatsApp / Instagram","curto":"WhatsApp","cor":"#25D366","fg":"#111917","pct":0,"fixa":0,"limite":0,"frete":0,"freteMin":0},{"id":"magalu","nome":"Magalu","curto":"Magalu","cor":"#0086FF","fg":"#FFFFFF","pct":0.16,"fixa":0,"limite":0,"frete":0,"freteMin":0}],"itens":[]}</script>
+<script id="dados" type="application/json">{"v":4,"pessoas":[]}</script>
 
 <script id="app">
 (function () {
@@ -415,12 +463,146 @@ tfoot td:first-child{text-align:left}
     for (var m = 0; m < DADOS.vendas.length; m++) DADOS.itens.push(DADOS.vendas[m]);
     delete DADOS.vendas;
   }
-  DADOS.v = 3;
+  // migra da versao 3 (uma pessoa so) para a 4 (abas). O Gabriel nasce com uma COPIA
+  // das taxas, nao com a mesma referencia: comissao varia por reputacao e categoria,
+  // entao um mexer na taxa nao pode mudar o lucro do outro sem ninguem perceber.
+  if (!DADOS.pessoas) {
+    DADOS.pessoas = [
+      { id: 'victor', nome: 'Victor', canais: DADOS.canais || [], itens: DADOS.itens || [] },
+      { id: 'gabriel', nome: 'Gabriel', canais: JSON.parse(JSON.stringify(DADOS.canais || [])), itens: [] }
+    ];
+  }
+  delete DADOS.canais; delete DADOS.itens;
+  DADOS.v = 4;
 
-  var NS = null;           // namespace do artifact
-  var MODO_LOCAL = false;  // true quando a pagina roda fora do Claude
-  var CHAVE_LOCAL = 'quanto-sobrou-dados';
-  var soLeitura = false;
+  // =====================================================================
+  //  LIGAÇÃO COM O BANCO
+  //  Estes dois valores são públicos por natureza: todo app Supabase os
+  //  carrega no navegador. Quem protege os dados são as regras de acesso
+  //  criadas no SQL, que rodam no servidor. A chave service_role NUNCA
+  //  entra aqui.
+  // =====================================================================
+  var SUPA = {
+    url: 'https://nriqozvycjnbqncqdtei.supabase.co',
+    chave: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yaXFvenZ5Y2puYnFuY3FkdGVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMzEwNDEsImV4cCI6MjEwMjkwNzA0MX0.a7gSItW6ceJEMlJn1JyjOyibIWli4IfCW5yKaoYG4dg'
+  };
+
+  var SESSAO = null;             // { access_token, refresh_token, expira_em, usuario }
+  var CHAVE_SESSAO = 'quanto-sobrou-sessao';
+
+  function configurado() {
+    return SUPA.url.indexOf('http') === 0 && SUPA.chave.length > 20;
+  }
+  function guardarSessao(s) {
+    SESSAO = s;
+    try {
+      if (s) localStorage.setItem(CHAVE_SESSAO, JSON.stringify(s));
+      else localStorage.removeItem(CHAVE_SESSAO);
+    } catch (e) {}
+  }
+  function api(caminho, opcoes) {
+    opcoes = opcoes || {};
+    var cab = { apikey: SUPA.chave, 'Content-Type': 'application/json' };
+    if (SESSAO && SESSAO.access_token) cab.Authorization = 'Bearer ' + SESSAO.access_token;
+    if (opcoes.extras) for (var k in opcoes.extras) if (Object.prototype.hasOwnProperty.call(opcoes.extras, k)) cab[k] = opcoes.extras[k];
+    return fetch(SUPA.url + caminho, {
+      method: opcoes.metodo || 'GET',
+      headers: cab,
+      body: opcoes.corpo ? JSON.stringify(opcoes.corpo) : undefined
+    });
+  }
+  function autenticar(corpo, tipo) {
+    return fetch(SUPA.url + '/auth/v1/token?grant_type=' + tipo, {
+      method: 'POST',
+      headers: { apikey: SUPA.chave, 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo)
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok) throw { status: r.status, msg: (j && (j.error_description || j.msg || j.message)) || '' };
+        return j;
+      });
+    }).then(function (j) {
+      guardarSessao({
+        access_token: j.access_token,
+        refresh_token: j.refresh_token,
+        expira_em: Date.now() + ((j.expires_in || 3600) * 1000),
+        usuario: j.user ? { id: j.user.id, email: j.user.email } : (SESSAO ? SESSAO.usuario : null)
+      });
+      return SESSAO;
+    });
+  }
+  // renova o acesso antes de vencer, para o app nao cair no meio do uso
+  function comSessao() {
+    if (!SESSAO) return Promise.reject({ tipo: 'sem-sessao' });
+    if (SESSAO.expira_em - Date.now() > 60000) return Promise.resolve(SESSAO);
+    return autenticar({ refresh_token: SESSAO.refresh_token }, 'refresh_token')
+      .catch(function () { throw { tipo: 'sem-sessao' }; });
+  }
+  function carregarDoBanco() {
+    return comSessao().then(function () {
+      return api('/rest/v1/pessoas?select=id,nome,dono,canais,itens,atualizado_em&order=id.asc');
+    }).then(function (r) {
+      if (r.status === 401) throw { tipo: 'sem-sessao' };
+      if (!r.ok) throw { tipo: 'rede', status: r.status };
+      return r.json();
+    }).then(function (linhas) {
+      if (!linhas || !linhas.length) throw { tipo: 'vazio' };
+      DADOS = { v: 4, pessoas: linhas.map(function (l) {
+        return {
+          id: l.id, nome: l.nome, dono: l.dono,
+          canais: Array.isArray(l.canais) ? l.canais : [],
+          itens: Array.isArray(l.itens) ? l.itens : []
+        };
+      }) };
+      return DADOS;
+    });
+  }
+  function gravarPessoa() {
+    return comSessao().then(function () {
+      return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(PESSOA.id), {
+        metodo: 'PATCH',
+        corpo: { canais: PESSOA.canais, itens: PESSOA.itens },
+        extras: { Prefer: 'return=minimal' }
+      });
+    }).then(function (r) {
+      if (r.status === 401) throw { tipo: 'sem-sessao' };
+      // o banco recusa escrita na aba alheia; a resposta vem 200 sem alterar nada
+      if (r.status === 403) throw { tipo: 'permissao' };
+      if (!r.ok) throw { tipo: 'rede', status: r.status };
+      return true;
+    });
+  }
+
+  var USUARIO = '';              // quem entrou (id da pessoa)
+  var CHAVE_USUARIO = 'quanto-sobrou-usuario';
+
+
+  function podeEditar() {
+    return !!(SESSAO && SESSAO.usuario && PESSOA && PESSOA.dono && SESSAO.usuario.id === PESSOA.dono);
+  }
+
+  var PESSOA = null;             // pessoa cuja aba esta aberta
+  var ABA_LEMBRADA = '';         // lida no arranque, antes da aba provisoria sobrescrever
+  try { ABA_LEMBRADA = localStorage.getItem('quanto-sobrou-aba') || ''; } catch (e) {}
+  var CHAVE_ABA = 'quanto-sobrou-aba';
+
+  // aponta DADOS.itens/DADOS.canais para os arrays da pessoa ativa, para o resto
+  // do app continuar lendo e escrevendo do mesmo jeito de sempre
+  function ativar(id) {
+    var achou = null;
+    for (var i = 0; i < DADOS.pessoas.length; i++) if (DADOS.pessoas[i].id === id) achou = DADOS.pessoas[i];
+    PESSOA = achou || DADOS.pessoas[0];
+    DADOS.itens = PESSOA.itens;
+    DADOS.canais = PESSOA.canais;
+    try { sessionStorage.setItem(CHAVE_ABA, PESSOA.id); } catch (e) {}
+    try { localStorage.setItem(CHAVE_ABA, PESSOA.id); } catch (e) {}
+  }
+  // o que vai para o disco: so as pessoas, sem os apelidos itens/canais da pessoa ativa
+  function dadosParaSalvar() {
+    return { v: DADOS.v, pessoas: DADOS.pessoas };
+  }
+
+
   var salvando = false;
   var vendendo = null;     // id do item sendo vendido
   var editando = null;     // id do item sendo alterado
@@ -545,14 +727,29 @@ tfoot td:first-child{text-align:left}
 
   // ---------- a casca da pagina ----------
   var SHELL = ''
-    + '<div class="wrap">'
+    + '<div class="login-tela" id="login">'
+    + '  <div class="login-caixa">'
+    + '    <h2>Quanto Sobrou</h2>'
+    + '    <p>Os dois veem tudo. Cada um só altera a própria aba.</p>'
+    + '    <label for="login-email" style="display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px">E-mail</label>'
+    + '    <input class="entrada" id="login-email" type="email" autocomplete="username" placeholder="voce@exemplo.com" style="margin-bottom:12px">'
+    + '    <label for="login-senha" style="display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px">Senha</label>'
+    + '    <input class="entrada" id="login-senha" type="password" autocomplete="current-password" placeholder="••••••••">'
+    + '    <button class="btn btn-forte btn-larg" id="btn-entrar" type="button" style="margin-top:14px">Entrar</button>'
+    + '    <div class="login-erro" id="login-erro"></div>'
+    + '  </div>'
+    + '</div>'
+    + '<div class="wrap" id="app" hidden>'
     + '  <header class="topo">'
     + '    <div class="marca"><h1>Quanto Sobrou</h1>'
     + '      <p>Dá entrada quando compra, avisa quando chega, registra quando vende. A taxa do canal e o frete entram sozinhos na hora da saída.</p></div>'
-    + '    <div class="topo-acoes"><button class="btn" id="btn-csv" type="button">Baixar planilha</button></div>'
+    + '    <div class="topo-acoes">'
+    + '      <span class="sessao" id="sessao"></span>'
+    + '      <button class="btn" id="btn-csv" type="button">Baixar planilha</button></div>'
     + '  </header>'
+    + '  <div class="abas" id="abas" role="tablist" aria-label="De quem é o controle"></div>'
+    + '  <div class="aviso-alheio" id="aviso-alheio" hidden><span>🔒</span><div id="aviso-alheio-txt"></div></div>'
     + '  <div class="aviso aviso-alerta" id="aviso-leitura" hidden><span>👀</span><div><b>Modo somente leitura.</b> Você pode mexer à vontade, mas nada que registrar aqui vai ser guardado — só o dono desta página consegue salvar.</div></div>'
-    + '  <div class="aviso aviso-info" id="aviso-local" hidden><span>💾</span><div><b>Versão local.</b> Você está rodando o app fora do Claude, então os dados ficam guardados <b>só neste navegador, neste aparelho</b>. Abrir em outro celular ou computador começa do zero. Use o backup abaixo para transportar.</div></div>'
     + '  <div class="aviso aviso-erro" id="aviso-erro" hidden><span>⚠️</span><div id="aviso-erro-txt"></div></div>'
     + '  <div class="aviso aviso-info" id="aviso-pendente" hidden><span>↩️</span><div><b>Isso não chegou a ser salvo.</b> Devolvi os dados ao formulário — confira e registre de novo.</div></div>'
     + '  <div class="grade">'
@@ -676,7 +873,7 @@ tfoot td:first-child{text-align:left}
     + '        <p class="proj-nota">Seus lançamentos existem só dentro desta página. Baixe um backup de vez em quando — é um arquivo de texto com tudo, e serve tanto para restaurar quanto para levar os dados para outro lugar.</p>'
     + '        <div class="backup-caixa"><button class="btn" id="btn-backup" type="button">Baixar backup</button></div>'
     + '        <details class="mais"><summary>Restaurar a partir de um backup</summary><div>'
-    + '          <p style="font-size:12px;color:var(--ink-3);line-height:1.5;margin-bottom:9px">Abra o arquivo de backup num editor de texto, copie tudo e cole aqui. <b>Isto substitui todos os dados atuais.</b></p>'
+    + '          <p style="font-size:12px;color:var(--ink-3);line-height:1.5;margin-bottom:9px">Abra o arquivo de backup num editor de texto, copie tudo e cole aqui. <b>Isto substitui os dados das duas abas</b>, não só os da sua — inclusive o que a outra pessoa registrou depois desse backup.</p>'
     + '          <textarea class="backup-cola" id="backup-cola" placeholder="cole aqui o conteúdo do arquivo de backup" spellcheck="false" aria-label="conteúdo do backup"></textarea>'
     + '          <button class="btn" id="btn-restaurar" type="button" style="margin-top:9px">Restaurar</button>'
     + '        </div></details>'
@@ -808,6 +1005,7 @@ tfoot td:first-child{text-align:left}
 
   // botoes presentes em toda linha de produto
   function acoesComuns(it) {
+    if (!podeEditar()) return '';
     return '<button class="icone" type="button" data-editar="' + esc(it.id) + '" aria-label="Alterar ' + esc(it.produto) + '" title="Alterar">✎</button>'
       + '<button class="icone" type="button" data-duplicar="' + esc(it.id) + '" aria-label="Duplicar ' + esc(it.produto) + '" title="Duplicar">⧉</button>'
       + '<button class="icone icone-perigo" type="button" data-apagar="' + esc(it.id) + '" aria-label="Apagar ' + esc(it.produto) + '" title="Apagar">×</button>';
@@ -837,7 +1035,7 @@ tfoot td:first-child{text-align:left}
       h += '<div class="item"><div><div class="item-nome">' + esc(it.produto) + '</div>'
         + '<div class="item-meta">' + selo(it) + '<span>' + meta.join(' · ') + '</span></div></div>'
         + '<div class="item-valor">' + brl(num(it.custo)) + '</div>'
-        + '<div class="item-acoes"><button class="btn btn-mini" type="button" data-chegou="' + esc(it.id) + '">Chegou</button>'
+        + '<div class="item-acoes">' + (podeEditar() ? '<button class="btn btn-mini" type="button" data-chegou="' + esc(it.id) + '">Chegou</button>' : '')
         + acoesComuns(it) + '</div>'
         + '<div class="item-form" id="form-chegada-' + esc(it.id) + '" hidden>'
         + '<label for="data-chegada-' + esc(it.id) + '">Chegou em</label>'
@@ -870,8 +1068,8 @@ tfoot td:first-child{text-align:left}
       h += '<div class="item"><div><div class="item-nome">' + esc(it.produto) + '</div>'
         + '<div class="item-meta">' + selo(it) + '<span>' + meta.join(' · ') + '</span></div></div>'
         + '<div class="item-valor">' + brl(num(it.custo)) + '</div>'
-        + '<div class="item-acoes"><button class="btn btn-mini btn-forte" type="button" data-vender="' + esc(it.id) + '">Vender</button>'
-        + '<button class="icone" type="button" data-voltar="' + esc(it.id) + '" aria-label="Desfazer chegada de ' + esc(it.produto) + '" title="Não chegou ainda (desfazer)">↺</button>'
+        + '<div class="item-acoes">' + (podeEditar() ? '<button class="btn btn-mini btn-forte" type="button" data-vender="' + esc(it.id) + '">Vender</button>'
+        + '<button class="icone" type="button" data-voltar="' + esc(it.id) + '" aria-label="Desfazer chegada de ' + esc(it.produto) + '" title="Não chegou ainda (desfazer)">↺</button>' : '')
         + acoesComuns(it) + '</div>' + formDuplicar(it) + '</div>';
     }
     $('#lista-estoque').innerHTML = h;
@@ -906,7 +1104,7 @@ tfoot td:first-child{text-align:left}
         + '<td data-l="Sobrou" class="num-cel lucro-cel" style="color:' + (c.lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(c.lucro) + '</td>'
         + '<td data-l="Margem" class="num-cel">' + pc(c.margem) + '</td>'
         + '<td data-l=""><span class="acoes-cel">'
-        + '<button class="icone" type="button" data-devolver="' + esc(it.id) + '" aria-label="Desfazer venda de ' + esc(it.produto) + '" title="Devolvido: volta pro estoque">↺</button>'
+        + (podeEditar() ? '<button class="icone" type="button" data-devolver="' + esc(it.id) + '" aria-label="Desfazer venda de ' + esc(it.produto) + '" title="Devolvido: volta pro estoque">↺</button>' : '')
         + acoesComuns(it) + '</span></td></tr>';
     }
     h += '</tbody><tfoot><tr><td>' + plural(itens.length, 'venda', 'vendas') + '</td>'
@@ -1137,39 +1335,142 @@ tfoot td:first-child{text-align:left}
     });
   }
 
+  // deixa a aba do outro so para leitura: some com tudo que altera
+  function aplicarPermissoes() {
+    var meu = podeEditar();
+    var dono = PESSOA ? PESSOA.nome : '';
+    $('#aviso-alheio').hidden = meu;
+    if (!meu) {
+      $('#aviso-alheio-txt').innerHTML = 'Você está vendo a aba de <b>' + esc(dono) + '</b>. Dá para acompanhar tudo, '
+        + 'mas só ' + esc(dono) + ' pode registrar, alterar ou apagar aqui.';
+      fecharPaineis();
+    }
+    $('#painel-entrada').hidden = !meu;
+    $('#btn-taxas').hidden = !meu;
+    $('#btn-proj-salvar').hidden = !meu;
+    $('#btn-proj-sugerir').hidden = !meu;
+    var trancar = $('#ajustes').querySelectorAll('input');
+    for (var i = 0; i < trancar.length; i++) trancar[i].disabled = !meu;
+    var proj = document.querySelectorAll('.proj-preco, .proj-canal');
+    for (var j = 0; j < proj.length; j++) proj[j].disabled = !meu;
+    // restaurar troca as duas abas de uma vez, entao so aparece na aba de quem esta usando
+    var restaurar = $('#btn-restaurar');
+    if (restaurar) {
+      var det = restaurar.closest('details');
+      det.hidden = !meu;
+      if (!meu) det.open = false;
+    }
+  }
+
+  function desenharAbas() {
+    var h = '';
+    for (var i = 0; i < DADOS.pessoas.length; i++) {
+      var pe = DADOS.pessoas[i], ativa = PESSOA && pe.id === PESSOA.id;
+      h += '<button class="aba" type="button" role="tab" data-pessoa="' + esc(pe.id) + '"'
+        + ' aria-selected="' + (ativa ? 'true' : 'false') + '">' + esc(pe.nome)
+        + '<span class="aba-n">' + pe.itens.length + '</span></button>';
+    }
+    $('#abas').innerHTML = h;
+    var bs = $('#abas').querySelectorAll('.aba');
+    for (var j = 0; j < bs.length; j++) {
+      (function (b) {
+        b.addEventListener('click', function () { trocarAba(b.getAttribute('data-pessoa')); });
+      })(bs[j]);
+    }
+  }
+
+  function trocarAba(id) {
+    if (PESSOA && PESSOA.id === id) return;
+    ativar(id);
+    fecharPaineis();
+    $('#aviso-erro').hidden = true;
+    limparEntrada();
+    desenharCanais(); desenharAjustes(); desenharTudo();
+    // busca o que a outra pessoa registrou desde que a pagina abriu
+    carregarDoBanco().then(function () {
+      ativar(id);
+      desenharCanais(); desenharAjustes(); desenharTudo();
+    }).catch(function () {});
+  }
+
+  function desenharLoginQuem() { /* o login agora e por e-mail; nada a desenhar */ }
+
+  function tentarEntrar() {
+    if (!configurado()) {
+      $('#login-erro').textContent = 'O app ainda não foi ligado ao banco.';
+      return;
+    }
+    var email = $('#login-email').value.trim();
+    var senha = $('#login-senha').value;
+    if (!email || !senha) { $('#login-erro').textContent = 'Preencha e-mail e senha.'; return; }
+    var btn = $('#btn-entrar');
+    btn.disabled = true; btn.innerHTML = '<span class="salvando"></span> Entrando…';
+    $('#login-erro').textContent = '';
+    autenticar({ email: email, password: senha }, 'password')
+      .then(function () { return carregarDoBanco(); })
+      .then(function () {
+        btn.disabled = false; btn.textContent = 'Entrar';
+        $('#login-senha').value = '';
+        abrirApp();
+      })
+      .catch(function (e) {
+        btn.disabled = false; btn.textContent = 'Entrar';
+        $('#login-senha').value = '';
+        guardarSessao(null);
+        if (e && e.status === 400) $('#login-erro').textContent = 'E-mail ou senha errados.';
+        else if (e && e.tipo === 'vazio') $('#login-erro').textContent = 'Entrou, mas o banco está sem as abas. Rode o 01-estrutura.sql.';
+        else $('#login-erro').textContent = 'Não consegui falar com o banco. Verifique a conexão.';
+      });
+  }
+
+  function abrirApp() {
+    var minha = '';
+    for (var i = 0; i < DADOS.pessoas.length; i++) {
+      if (SESSAO && SESSAO.usuario && DADOS.pessoas[i].dono === SESSAO.usuario.id) minha = DADOS.pessoas[i].id;
+    }
+    USUARIO = minha;
+    $('#login').hidden = true;
+    $('#app').hidden = false;
+    var nome = '';
+    for (var j = 0; j < DADOS.pessoas.length; j++) if (DADOS.pessoas[j].id === minha) nome = DADOS.pessoas[j].nome;
+    $('#sessao').innerHTML = '<b>' + esc(nome || (SESSAO && SESSAO.usuario ? SESSAO.usuario.email : '?')) + '</b>'
+      + '<button type="button" id="btn-sair">sair</button>';
+    $('#btn-sair').addEventListener('click', sair);
+    var valida = '';
+    for (var k = 0; k < DADOS.pessoas.length; k++) if (DADOS.pessoas[k].id === ABA_LEMBRADA) valida = ABA_LEMBRADA;
+    ativar(valida || minha || DADOS.pessoas[0].id);
+    desenharLoginQuem();
+    desenharCanais(); desenharAjustes(); desenharTudo();
+    if (!minha) {
+      erro('<b>Seu login não está ligado a nenhuma aba.</b> Rode o 02-ligar-usuarios.sql com o e-mail certo.');
+    }
+  }
+
+  function sair() {
+    guardarSessao(null);
+    USUARIO = '';
+    fecharPaineis();
+    $('#app').hidden = true;
+    $('#login').hidden = false;
+    $('#login-senha').value = '';
+    $('#login-erro').textContent = '';
+  }
+
   function desenharTudo() {
+    desenharAbas();
+    aplicarPermissoes();
     desenharTiles(); desenharCaminho(); desenharEstoque(); desenharProjecao(); desenharVendidos(); desenharPorCanal();
     ligarBotoesDeItem();
   }
 
   // ---------- persistencia: a pagina republica a si mesma ----------
-  function paginaHTML() {
-    var css = document.getElementById('css').textContent;
-    var app = document.getElementById('app').textContent;
-    var json = JSON.stringify(DADOS).replace(/</g, '\\u003c');
-    return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">'
-      + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-      + '<title>Quanto Sobrou</title><style id="css">' + css + '</style></head><body>'
-      + '<div id="root"></div>'
-      + '<script id="dados" type="application/json">' + json + '<\/script>'
-      + '<script id="app">' + app + '<\/script></body></html>';
-  }
 
   function erro(msg) { $('#aviso-erro-txt').innerHTML = msg; $('#aviso-erro').hidden = false; }
 
-  function salvarLocal() {
-    try { localStorage.setItem(CHAVE_LOCAL, JSON.stringify(DADOS)); return true; } catch (e) { return false; }
-  }
 
   // no artifact o download tem que passar pela capability (o sandbox bloqueia <a download>);
   // fora dele, o jeito normal do navegador funciona
   function baixarArquivo(nome, texto, tipo) {
-    if (typeof window.claude !== 'undefined' && window.claude.use) {
-      return window.claude.use('downloads').then(function (d) {
-        if (!d) throw new Error('sem downloads');
-        return d.save({ filename: nome, data: texto });
-      });
-    }
     return new Promise(function (resolve, reject) {
       try {
         var b = new Blob([texto], { type: tipo || 'text/plain;charset=utf-8' });
@@ -1186,7 +1487,7 @@ tfoot td:first-child{text-align:left}
   function aoBackup() {
     var btn = $('#btn-backup');
     btn.disabled = true;
-    baixarArquivo('quanto-sobrou-backup.json', JSON.stringify(DADOS, null, 1), 'application/json')
+    baixarArquivo('quanto-sobrou-backup.json', JSON.stringify(dadosParaSalvar(), null, 1), 'application/json')
       .then(function () { btn.disabled = false; })
       .catch(function () { btn.disabled = false; erro('<b>O backup não foi baixado.</b> Ou você cancelou, ou esta visualização não permite baixar arquivos.'); });
   }
@@ -1201,18 +1502,33 @@ tfoot td:first-child{text-align:left}
       erro('<b>Esse texto não é um backup válido.</b> Copie o arquivo inteiro, do primeiro ao último caractere.');
       return;
     }
-    if (!novo || !Array.isArray(novo.itens) || !Array.isArray(novo.canais)) {
-      erro('<b>Esse arquivo não parece um backup do Quanto Sobrou.</b> Faltam os produtos ou os canais.');
+    // aceita backup novo (com abas) e backup antigo (uma pessoa so)
+    if (novo && Array.isArray(novo.itens) && Array.isArray(novo.canais) && !novo.pessoas) {
+      novo = { v: 4, pessoas: [
+        { id: 'victor', nome: 'Victor', canais: novo.canais, itens: novo.itens },
+        { id: 'gabriel', nome: 'Gabriel', canais: JSON.parse(JSON.stringify(novo.canais)), itens: [] }
+      ] };
+    }
+    if (!novo || !Array.isArray(novo.pessoas) || !novo.pessoas.length) {
+      erro('<b>Esse arquivo não parece um backup do Quanto Sobrou.</b> Não achei as abas nem os produtos.');
       return;
     }
-    var antes = DADOS;
+    for (var z = 0; z < novo.pessoas.length; z++) {
+      if (!Array.isArray(novo.pessoas[z].itens) || !Array.isArray(novo.pessoas[z].canais)) {
+        erro('<b>Backup incompleto.</b> A aba "' + esc(novo.pessoas[z].nome || '?') + '" está sem produtos ou sem canais.');
+        return;
+      }
+    }
+    var antes = { v: DADOS.v, pessoas: DADOS.pessoas };
+    var abaAntes = PESSOA ? PESSOA.id : '';
     DADOS = novo;
-    if (!DADOS.itens) DADOS.itens = [];
+    ativar(abaAntes);
     fecharPaineis();
     desenharCanais(); desenharAjustes(); desenharTudo();
     $('#backup-cola').value = '';
     persistir($('#btn-restaurar'), 'Restaurar', function () {
       DADOS = antes;
+      ativar(abaAntes);
       desenharCanais(); desenharAjustes(); desenharTudo();
     });
   }
@@ -1240,42 +1556,29 @@ tfoot td:first-child{text-align:left}
   }
 
   function persistir(botao, textoOriginal, aoFalhar, aoSucesso) {
-    if (MODO_LOCAL) {
-      if (salvarLocal()) { if (aoSucesso) aoSucesso(); }
-      else {
-        if (aoFalhar) aoFalhar();
-        erro('<b>Não deu pra salvar neste navegador.</b> O armazenamento local está cheio ou bloqueado.');
-      }
-      return;
-    }
-    if (soLeitura || !NS) {
+    if (!podeEditar()) {
       if (aoFalhar) aoFalhar();
-      erro('<b>Não deu pra salvar.</b> Esta página está em modo somente leitura nesta sessão.');
+      erro('<b>Essa aba não é sua.</b> Só ' + esc(PESSOA ? PESSOA.nome : 'o dono') + ' pode alterar os dados dela.');
       return;
     }
     salvando = true;
     if (botao) { botao.disabled = true; botao.innerHTML = '<span class="salvando"></span> Salvando…'; }
-    // a shell recarrega a view depois de um publish bem-sucedido, mas nao contamos com isso:
-    // sem destravar aqui, um reload lento ou que nao venha deixaria o app engasgado pra sempre
-    NS.publish(paginaHTML()).then(function () {
+    gravarPessoa().then(function () {
       salvando = false;
       if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
-      try { sessionStorage.removeItem('qs-pendente'); } catch (e) {}
       if (aoSucesso) aoSucesso();
     }).catch(function (e) {
       salvando = false;
       if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
-      var cod = (e && e.code) || 'upstream_error';
-      if (cod === 'conflict') return;  // a shell ja recarrega para a versao vencedora
       if (aoFalhar) aoFalhar();
-      if (cod === 'not_writer' || cod === 'not_granted' || cod === 'consent_required' || cod === 'not_declared') {
-        soLeitura = true; $('#aviso-leitura').hidden = false;
-      } else if (cod === 'rate_limited') {
-        erro('<b>Você salvou rápido demais.</b> Espere alguns segundos e tente de novo.');
-      } else if (cod === 'too_large') {
-        erro('<b>O histórico ficou grande demais pra salvar.</b> Baixe a planilha e apague os produtos mais antigos.');
+      var t = (e && e.tipo) || 'rede';
+      if (t === 'sem-sessao') {
+        erro('<b>Sua sessão expirou.</b> Entre de novo para continuar.');
+        setTimeout(sair, 1200);
+      } else if (t === 'permissao') {
+        erro('<b>O banco recusou a alteração.</b> Essa aba não é sua.');
       } else {
-        erro('<b>Não deu pra salvar agora.</b> Verifique a conexão e tente de novo.');
+        erro('<b>Não deu pra salvar.</b> Verifique a conexão e tente de novo — o que você digitou não foi perdido.');
       }
     });
   }
@@ -1577,7 +1880,8 @@ tfoot td:first-child{text-align:left}
     }
     desenharCanais(); desenharTudo(); desenharCupom();
     persistir($('#btn-taxas'), 'Salvar taxas', function () {
-      DADOS.canais = antes; desenharAjustes(); desenharCanais(); desenharTudo(); desenharCupom();
+      PESSOA.canais = antes; DADOS.canais = antes;
+      desenharAjustes(); desenharCanais(); desenharTudo(); desenharCupom();
     });
   }
 
@@ -1610,7 +1914,7 @@ tfoot td:first-child{text-align:left}
 
     var btn = $('#btn-csv');
     btn.disabled = true;
-    baixarArquivo('quanto-sobrou.csv', '\ufeff' + csv, 'text/csv;charset=utf-8')
+    baixarArquivo('quanto-sobrou-' + (PESSOA ? PESSOA.id : 'dados') + '.csv', '\ufeff' + csv, 'text/csv;charset=utf-8')
       .then(function () { btn.disabled = false; })
       .catch(function () {
         btn.disabled = false;
@@ -1641,6 +1945,10 @@ tfoot td:first-child{text-align:left}
 
   // ---------- ligar tudo ----------
   document.getElementById('root').innerHTML = SHELL;
+  if (!DADOS.pessoas || !DADOS.pessoas.length) {
+    DADOS.pessoas = [{ id: 'vazio', nome: '—', dono: null, canais: [], itens: [] }];
+  }
+  ativar(DADOS.pessoas[0].id);
   desenharCanais();
   desenharAjustes();
   desenharTudo();
@@ -1662,6 +1970,8 @@ tfoot td:first-child{text-align:left}
   $('#btn-proj-sugerir').addEventListener('click', sugerirPrecos);
   $('#btn-proj-salvar').addEventListener('click', salvarProjecao);
   $('#btn-csv').addEventListener('click', aoBaixar);
+  $('#btn-entrar').addEventListener('click', tentarEntrar);
+  $('#login-senha').addEventListener('keydown', function (e) { if (e.key === 'Enter') tentarEntrar(); });
   $('#btn-backup').addEventListener('click', aoBackup);
   $('#btn-restaurar').addEventListener('click', aoRestaurar);
   $('#e-produto').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#e-custo').focus(); });
@@ -1684,28 +1994,19 @@ tfoot td:first-child{text-align:left}
     }
   } catch (e) {}
 
-  if (typeof window.claude !== 'undefined' && window.claude.use) {
-    window.claude.use('artifact').then(function (ns) {
-      NS = ns;
-      if (!ns) { soLeitura = true; $('#aviso-leitura').hidden = false; }
-    }).catch(function () { soLeitura = true; $('#aviso-leitura').hidden = false; });
+  if (!configurado()) {
+    $('#login-erro').innerHTML = 'Este app ainda não foi ligado ao banco de dados.';
+    $('#btn-entrar').disabled = true;
   } else {
-    // fora do Claude: guarda tudo no proprio navegador
-    MODO_LOCAL = true;
-    $('#aviso-local').hidden = false;
     try {
-      var guardado = localStorage.getItem(CHAVE_LOCAL);
-      if (guardado) {
-        var d = JSON.parse(guardado);
-        if (d && Array.isArray(d.itens) && Array.isArray(d.canais)) {
-          DADOS = d;
-          desenharCanais(); desenharAjustes(); desenharTudo();
-        }
+      var guardada = localStorage.getItem(CHAVE_SESSAO);
+      if (guardada) {
+        SESSAO = JSON.parse(guardada);
+        carregarDoBanco().then(abrirApp).catch(function () { guardarSessao(null); });
       }
-    } catch (e) {}
+    } catch (e) { guardarSessao(null); }
   }
+
+
 })();
 </script>
-
-</body>
-</html>
