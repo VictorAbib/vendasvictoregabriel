@@ -52,12 +52,12 @@ body{
 .wrap{width:100%;padding-bottom:60px}
 
 /* ---------- barra do sistema ---------- */
-.barra{
+.topo-sistema{
   display:flex;align-items:center;gap:16px;flex-wrap:wrap;
   padding:11px 24px;background:var(--surface);border-bottom:1px solid var(--line);
 }
-.barra .marca-min{font-size:16.5px;font-weight:740;letter-spacing:-.022em;white-space:nowrap}
-.barra .espaco{flex:1}
+.topo-sistema .marca-min{font-size:16.5px;font-weight:740;letter-spacing:-.022em;white-space:nowrap}
+.topo-sistema .espaco{flex:1}
 
 /* ---------- abas dos modulos ---------- */
 .modulos{
@@ -78,6 +78,32 @@ body{
 .modulo-aba[aria-selected="true"] .badge{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
 
 .area{padding:20px 24px 0}
+
+/* ---------- navegacao de baixo (so no celular) ---------- */
+.nav-baixo{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:5px 4px calc(5px + env(safe-area-inset-bottom, 0px));
+  box-shadow:0 -2px 14px -8px rgba(0,0,0,.28);
+}
+.nav-item{
+  position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  border:none;background:none;cursor:pointer;padding:5px 2px;
+  color:var(--ink-3);font-size:10.5px;font-weight:640;font-family:var(--sans);
+  min-height:52px;-webkit-tap-highlight-color:transparent;
+}
+.nav-icone{
+  display:flex;align-items:center;justify-content:center;width:40px;height:25px;border-radius:13px;
+  transition:background .13s;
+}
+.nav-item svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav-item[aria-selected="true"]{color:var(--accent)}
+.nav-item[aria-selected="true"] .nav-icone{background:var(--accent-soft)}
+.nav-ponto{
+  position:absolute;top:3px;right:calc(50% - 20px);
+  min-width:16px;height:16px;border-radius:9px;background:var(--neg);color:#fff;
+  font-family:var(--mono);font-size:9.5px;font-weight:700;line-height:16px;text-align:center;padding:0 4px;
+}
 .modulo[hidden]{display:none}
 .tit{font-size:19px;font-weight:700;letter-spacing:-.022em;margin-bottom:3px}
 .tit-sub{font-size:13px;color:var(--ink-2);margin-bottom:18px;max-width:74ch}
@@ -89,9 +115,10 @@ body{
 .col-graf{grid-template-columns:2fr 1fr}
 @media (max-width:1100px){ .col-2,.col-form,.col-graf{grid-template-columns:1fr} }
 
+
 /* ---------- grafico ---------- */
 .graf-caixa{padding:4px 2px 0}
-.graf svg{display:block;width:100%;height:auto;overflow:visible}
+.graf svg{display:block;max-width:100%;height:auto;overflow:visible}
 .graf .eixo{stroke:var(--line-2);stroke-width:1}
 .graf .grade-linha{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
 .graf .rotulo{font-family:var(--sans);font-size:10.5px;fill:var(--ink-3)}
@@ -185,8 +212,9 @@ body{
 .aviso-alheio b{color:var(--ink);font-weight:640}
 
 /* ---------- abas ---------- */
+/* fica dentro do cabecalho do sistema, entao nao carrega margem propria */
 .abas{
-  display:flex;gap:6px;margin-bottom:18px;padding:5px;border-radius:12px;
+  display:flex;gap:6px;padding:5px;border-radius:12px;
   background:var(--surface-2);border:1px solid var(--line);width:fit-content;max-width:100%;flex-wrap:wrap;
 }
 .aba{
@@ -525,6 +553,36 @@ tfoot td:first-child{text-align:left}
 .salvando{display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:gira .65s linear infinite}
 @keyframes gira{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+
+/* ---------- adaptacao para celular ---------- */
+@media (max-width:719px){
+  /* o cabecalho cabia em 4 linhas e comia um quarto da tela */
+  .topo-sistema{
+    padding:7px 13px;gap:9px;flex-wrap:nowrap;
+    position:sticky;top:0;z-index:30;
+  }
+  .topo-sistema .marca-min{display:none}
+  .abas{padding:3px;gap:3px;border-radius:10px}
+  .aba{padding:8px 13px;font-size:13px;min-height:40px;gap:6px}
+  .aba-n{font-size:10px;padding:0 5px}
+  .sessao{font-size:12px;padding:3px 4px 3px 10px}
+  .sessao button{font-size:11.5px;padding:4px 7px}
+
+  /* as abas de cima davam scroll lateral e escondiam Caixa e Ajustes */
+  .modulos{display:none}
+  .nav-baixo{display:flex}
+  .wrap{padding-bottom:78px}
+
+  .area{padding:14px 13px 0}
+  .tit{font-size:17px}
+  .tit-sub{font-size:12.5px;margin-bottom:14px}
+  .tiles{gap:9px;margin-bottom:16px}
+  .tile{padding:11px 12px}
+  .tile .num{font-size:19px}
+  .cartao{margin-bottom:14px;border-radius:12px}
+  .cartao-corpo{padding:15px 14px}
+  .colunas{gap:14px}
+}
 </style>
 
 </head>
@@ -824,12 +882,11 @@ tfoot td:first-child{text-align:left}
 
     + '<div class="wrap" id="app" hidden>'
     /* ---------------- barra do sistema ---------------- */
-    + '  <div class="barra">'
+    + '  <div class="topo-sistema">'
     + '    <span class="marca-min">Quanto Sobrou</span>'
     + '    <div class="abas" id="abas" role="tablist" aria-label="De quem é o controle"></div>'
     + '    <span class="espaco"></span>'
     + '    <span class="sessao" id="sessao"></span>'
-    + '    <button class="btn" id="btn-csv" type="button">Baixar planilha</button>'
     + '  </div>'
     + '  <nav class="modulos" id="modulos" role="tablist" aria-label="Áreas do sistema"></nav>'
 
@@ -974,7 +1031,10 @@ tfoot td:first-child{text-align:left}
     + '        <section class="cartao"><div class="cartao-corpo">'
     + '          <div class="rotulo-secao"><span>Backup dos seus dados</span></div>'
     + '          <p class="proj-nota">Baixe de vez em quando. Serve para restaurar e para levar os dados para outro lugar.</p>'
-    + '          <div class="backup-caixa"><button class="btn" id="btn-backup" type="button">Baixar backup</button></div>'
+    + '          <div class="backup-caixa">'
+    + '            <button class="btn" id="btn-backup" type="button">Baixar backup</button>'
+    + '            <button class="btn" id="btn-csv" type="button">Baixar planilha</button>'
+    + '          </div>'
     + '          <details class="mais"><summary>Restaurar a partir de um backup</summary><div>'
     + '            <p style="font-size:12px;color:var(--ink-3);line-height:1.5;margin-bottom:9px">Cole aqui o conteúdo do arquivo. <b>Isto substitui os dados das duas abas</b>, não só os da sua.</p>'
     + '            <textarea class="backup-cola" id="backup-cola" placeholder="cole aqui o conteúdo do backup" spellcheck="false" aria-label="conteúdo do backup"></textarea>'
@@ -1016,6 +1076,7 @@ tfoot td:first-child{text-align:left}
     + '        <button class="btn btn-fantasma" id="btn-editar-cancelar" type="button">Cancelar</button></div>'
     + '    </div></section>'
     + '  </div>'
+    + '  <nav class="nav-baixo" id="nav-baixo" role="tablist" aria-label="Áreas do sistema"></nav>'
     + '</div>';
 
   // ---------- desenhar ----------
@@ -1604,16 +1665,33 @@ tfoot td:first-child{text-align:left}
     { id: 'ajustes',  nome: 'Ajustes' }
   ];
 
+  var ICONES = {
+    painel:  '<path d="M3 20h18"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16v-9"/>',
+    compras: '<path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
+    vendas:  '<path d="M3 12V5a2 2 0 012-2h7l9 9-9 9-9-9z"/><circle cx="7.6" cy="7.6" r="1.3"/>',
+    caixa:   '<path d="M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12h3"/>',
+    ajustes: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M5.6 5.6l1.4 1.4"/><path d="M17 17l1.4 1.4"/><path d="M18.4 5.6L17 7"/><path d="M7 17l-1.4 1.4"/>'
+  };
+  // no celular os rotulos precisam ser curtos para os cinco caberem lado a lado
+  var CURTOS = { painel: 'Painel', compras: 'Estoque', vendas: 'Vendas', caixa: 'Caixa', ajustes: 'Ajustes' };
+
   function desenharModulos() {
-    var h = '';
+    var cima = '', baixo = '';
     for (var i = 0; i < MODULOS.length; i++) {
       var m = MODULOS[i], ativo = m.id === MODULO;
-      h += '<button class="modulo-aba" type="button" role="tab" data-mod="' + m.id + '"'
+      cima += '<button class="modulo-aba" type="button" role="tab" data-mod="' + m.id + '"'
         + ' aria-selected="' + (ativo ? 'true' : 'false') + '">' + esc(m.nome)
         + (m.badge ? '<span class="badge">' + m.badge + '</span>' : '') + '</button>';
+      baixo += '<button class="nav-item" type="button" role="tab" data-mod="' + m.id + '"'
+        + ' aria-selected="' + (ativo ? 'true' : 'false') + '" aria-label="' + esc(m.nome) + '">'
+        + '<span class="nav-icone"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICONES[m.id] + '</svg></span>'
+        + '<span>' + esc(CURTOS[m.id]) + '</span>'
+        + (m.badge ? '<span class="nav-ponto">' + m.badge + '</span>' : '')
+        + '</button>';
     }
-    $('#modulos').innerHTML = h;
-    var bs = $('#modulos').querySelectorAll('.modulo-aba');
+    $('#modulos').innerHTML = cima;
+    $('#nav-baixo').innerHTML = baixo;
+    var bs = document.querySelectorAll('[data-mod]');
     for (var j = 0; j < bs.length; j++) {
       (function (b) { b.addEventListener('click', function () { irPara(b.getAttribute('data-mod')); }); })(bs[j]);
     }
@@ -1803,9 +1881,13 @@ tfoot td:first-child{text-align:left}
   // ============================ GRAFICO ============================
   // barras de faturamento por dia. Uma serie so, entao uma cor so e sem legenda:
   // o titulo do cartao ja diz o que e.
+  // barras de faturamento por dia. Uma serie so, entao uma cor so e sem legenda de
+  // cores: o titulo do cartao ja diz o que e. O viewBox acompanha a largura real do
+  // espaco, senao no celular o SVG encolhe junto com os rotulos e eles ficam ilegiveis.
   function desenharGraficoDiario() {
     var vend = porFase('vendido');
     var alvo = $('#graf-diario');
+    if (!alvo) return;
     if (!vend.length) {
       alvo.innerHTML = '<div class="graf-vazio">Ainda não há vendas registradas.<br>O gráfico aparece assim que a primeira saída for lançada.</div>';
       $('#graf-periodo').textContent = '';
@@ -1818,38 +1900,42 @@ tfoot td:first-child{text-align:left}
       porDia[d] = (porDia[d] || 0) + num(vend[i].preco);
     }
     var datas = Object.keys(porDia).sort();
-    // mostra os ultimos 21 dias corridos a partir da primeira venda do periodo visivel
+    if (!datas.length) { alvo.innerHTML = '<div class="graf-vazio">Sem datas de venda registradas.</div>'; return; }
+
+    var larg = Math.max(260, Math.round(alvo.clientWidth || 640));
+    var estreito = larg < 430;
+    var maxDias = estreito ? 10 : 21;
+
     var fim = datas[datas.length - 1], ini = datas[0];
-    var lista = [], cursor = new Date(ini + 'T12:00'), limite = new Date(fim + 'T12:00');
-    var passos = 0;
+    var lista = [], cursor = new Date(ini + 'T12:00'), limite = new Date(fim + 'T12:00'), passos = 0;
     while (cursor <= limite && passos < 400) {
       var iso = cursor.getFullYear() + '-' + String(cursor.getMonth() + 1).padStart(2, '0') + '-' + String(cursor.getDate()).padStart(2, '0');
       lista.push({ dia: iso, valor: porDia[iso] || 0 });
       cursor.setDate(cursor.getDate() + 1);
       passos++;
     }
-    if (lista.length > 21) lista = lista.slice(lista.length - 21);
+    if (lista.length > maxDias) lista = lista.slice(lista.length - maxDias);
 
     var maior = 0;
     for (i = 0; i < lista.length; i++) maior = Math.max(maior, lista[i].valor);
     if (maior <= 0) maior = 1;
 
-    var L = 52, R = 8, T = 16, B = 30;
-    var larg = 640, alt = 230;
+    var L = estreito ? 38 : 52, R = 8, T = estreito ? 20 : 16, B = 28;
+    var alt = estreito ? 190 : 230;
     var areaL = larg - L - R, areaA = alt - T - B;
     var passo = areaL / lista.length;
     var largBarra = Math.max(6, Math.min(34, passo * 0.62));
+    var fonte = estreito ? 10 : 10.5;
 
-    var s = '<svg viewBox="0 0 ' + larg + ' ' + alt + '" role="img" aria-label="Faturamento por dia">';
-    // grade e eixo de valores
+    var s = '<svg viewBox="0 0 ' + larg + ' ' + alt + '" width="' + larg + '" height="' + alt
+      + '" role="img" aria-label="Faturamento por dia">';
     for (i = 0; i <= 3; i++) {
       var y = T + areaA - (areaA * i / 3);
       var v = maior * i / 3;
       s += '<line class="grade-linha" x1="' + L + '" y1="' + y.toFixed(1) + '" x2="' + (larg - R) + '" y2="' + y.toFixed(1) + '"/>';
-      s += '<text class="rotulo" x="' + (L - 8) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">'
+      s += '<text class="rotulo" style="font-size:' + fonte + 'px" x="' + (L - 7) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">'
         + (v >= 1000 ? (v / 1000).toFixed(1).replace('.', ',') + 'k' : Math.round(v)) + '</text>';
     }
-    // barras
     for (i = 0; i < lista.length; i++) {
       var d2 = lista[i];
       var hb = d2.valor > 0 ? Math.max(3, (d2.valor / maior) * areaA) : 0;
@@ -1860,21 +1946,19 @@ tfoot td:first-child{text-align:left}
           + '" height="' + hb.toFixed(1) + '" rx="4" ry="4">'
           + '<title>' + dataBR(d2.dia) + ' — ' + brl(d2.valor) + '</title></rect>';
       }
-      // rotula so o maior dia, para nao poluir
       if (d2.valor === maior) {
-        s += '<text class="valor-topo" x="' + (x + largBarra / 2).toFixed(1) + '" y="' + (y2 - 5).toFixed(1)
-          + '" text-anchor="middle">' + brl(d2.valor).replace('R$ ', '') + '</text>';
+        s += '<text class="valor-topo" style="font-size:' + fonte + 'px" x="' + (x + largBarra / 2).toFixed(1)
+          + '" y="' + (y2 - 5).toFixed(1) + '" text-anchor="middle">' + brl(d2.valor).replace('R$ ', '') + '</text>';
       }
-      // datas: primeira, ultima e a cada 5
-      if (i === 0 || i === lista.length - 1 || i % 5 === 0) {
-        s += '<text class="rotulo" x="' + (x + largBarra / 2).toFixed(1) + '" y="' + (alt - 10) + '" text-anchor="middle">'
-          + d2.dia.slice(8) + '/' + d2.dia.slice(5, 7) + '</text>';
+      var passoRotulo = estreito ? 3 : 5;
+      if (i === 0 || i === lista.length - 1 || i % passoRotulo === 0) {
+        s += '<text class="rotulo" style="font-size:' + fonte + 'px" x="' + (x + largBarra / 2).toFixed(1)
+          + '" y="' + (alt - 9) + '" text-anchor="middle">' + d2.dia.slice(8) + '/' + d2.dia.slice(5, 7) + '</text>';
       }
     }
     s += '<line class="eixo" x1="' + L + '" y1="' + (T + areaA) + '" x2="' + (larg - R) + '" y2="' + (T + areaA) + '"/>';
     s += '</svg>';
-    s += '<div class="graf-legenda"><span><i></i>Valor bruto da venda, antes das taxas</span>'
-      + '<span>Passe o mouse numa barra para ver o dia</span></div>';
+    s += '<div class="graf-legenda"><span><i></i>Valor bruto da venda, antes das taxas</span></div>';
     alvo.innerHTML = s;
     $('#graf-periodo').textContent = dataBR(lista[0].dia) + ' a ' + dataBR(lista[lista.length - 1].dia);
   }
@@ -2401,6 +2485,11 @@ tfoot td:first-child{text-align:left}
   $('#btn-proj-sugerir').addEventListener('click', sugerirPrecos);
   $('#btn-proj-salvar').addEventListener('click', salvarProjecao);
   $('#btn-csv').addEventListener('click', aoBaixar);
+  var relogioGrafico = 0;
+  window.addEventListener('resize', function () {
+    clearTimeout(relogioGrafico);
+    relogioGrafico = setTimeout(function () { if (!$('#app').hidden) desenharGraficoDiario(); }, 180);
+  });
   $('#btn-entrar').addEventListener('click', tentarEntrar);
   $('#login-senha').addEventListener('keydown', function (e) { if (e.key === 'Enter') tentarEntrar(); });
   $('#btn-backup').addEventListener('click', aoBackup);
