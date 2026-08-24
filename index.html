@@ -677,39 +677,180 @@ tfoot td:first-child{text-align:left}
     return autenticar({ refresh_token: SESSAO.refresh_token }, 'refresh_token')
       .catch(function () { throw { tipo: 'sem-sessao' }; });
   }
+  // =====================================================================
+  //  CAMADA DE DADOS
+  //  Cada unidade e cada cadastro de produto e uma linha propria. Gravar
+  //  passou a mexer numa linha so, entao dois aparelhos abertos ao mesmo
+  //  tempo nao se sobrescrevem mais.
+  // =====================================================================
+
+  function daLinha(u, nomePorId) {
+    return {
+      id: u.id,
+      produtoId: u.produto_id,
+      produto: nomePorId[u.produto_id] || '(sem cadastro)',
+      custo: num(u.custo),
+      fornecedor: u.fornecedor || '',
+      dCompra: u.d_compra || '',
+      dChegada: u.d_chegada || '',
+      dVenda: u.d_venda || '',
+      dRecebido: u.d_recebido || '',
+      canal: u.canal || '',
+      preco: num(u.preco),
+      frete: u.frete === null || u.frete === undefined ? null : num(u.frete),
+      grupo: u.grupo || '',
+      alvo: num(u.alvo),
+      alvoCanal: u.alvo_canal || ''
+    };
+  }
+
+  function paraLinha(it, pessoaId) {
+    return {
+      pessoa: pessoaId,
+      produto_id: it.produtoId,
+      custo: num(it.custo),
+      fornecedor: it.fornecedor || '',
+      d_compra: it.dCompra || null,
+      d_chegada: it.dChegada || null,
+      d_venda: it.dVenda || null,
+      d_recebido: it.dRecebido || null,
+      canal: it.canal || '',
+      preco: num(it.preco),
+      frete: it.frete === null || it.frete === undefined ? null : num(it.frete),
+      grupo: it.grupo || '',
+      alvo: num(it.alvo),
+      alvo_canal: it.alvoCanal || ''
+    };
+  }
+
   function carregarDoBanco() {
+    var pessoas = null, produtos = null;
     return comSessao().then(function () {
-      return api('/rest/v1/pessoas?select=id,nome,dono,canais,itens,atualizado_em&order=id.asc');
-    }).then(function (r) {
-      if (r.status === 401) throw { tipo: 'sem-sessao' };
-      if (!r.ok) throw { tipo: 'rede', status: r.status };
-      return r.json();
-    }).then(function (linhas) {
-      if (!linhas || !linhas.length) throw { tipo: 'vazio' };
-      DADOS = { v: 4, pessoas: linhas.map(function (l) {
+      return Promise.all([
+        api('/rest/v1/pessoas?select=id,nome,dono,canais&order=id.asc'),
+        api('/rest/v1/produtos?select=id,pessoa,nome,fornecedor&order=nome.asc'),
+        api('/rest/v1/unidades?select=*&order=criado_em.asc')
+      ]);
+    }).then(function (rs) {
+      for (var k = 0; k < rs.length; k++) {
+        if (rs[k].status === 401) throw { tipo: 'sem-sessao' };
+        // 404 na tabela nova = o SQL da migracao ainda nao foi rodado
+        if (rs[k].status === 404) throw { tipo: 'sem-migracao' };
+        if (!rs[k].ok) throw { tipo: 'rede', status: rs[k].status };
+      }
+      return Promise.all([rs[0].json(), rs[1].json(), rs[2].json()]);
+    }).then(function (partes) {
+      pessoas = partes[0]; produtos = partes[1];
+      var unidades = partes[2];
+      if (!pessoas || !pessoas.length) throw { tipo: 'vazio' };
+
+      var nomePorId = {};
+      for (var i = 0; i < produtos.length; i++) nomePorId[produtos[i].id] = produtos[i].nome;
+
+      DADOS = { v: 5, pessoas: pessoas.map(function (p) {
         return {
-          id: l.id, nome: l.nome, dono: l.dono,
-          canais: Array.isArray(l.canais) ? l.canais : [],
-          itens: Array.isArray(l.itens) ? l.itens : []
+          id: p.id, nome: p.nome, dono: p.dono,
+          canais: Array.isArray(p.canais) ? p.canais : [],
+          produtos: produtos.filter(function (x) { return x.pessoa === p.id; }),
+          itens: unidades.filter(function (u) { return u.pessoa === p.id; })
+                         .map(function (u) { return daLinha(u, nomePorId); })
         };
       }) };
       return DADOS;
     });
   }
-  function gravarPessoa() {
-    return comSessao().then(function () {
-      return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(PESSOA.id), {
-        metodo: 'PATCH',
-        corpo: { canais: PESSOA.canais, itens: PESSOA.itens },
-        extras: { Prefer: 'return=minimal' }
-      });
-    }).then(function (r) {
-      if (r.status === 401) throw { tipo: 'sem-sessao' };
-      // o banco recusa escrita na aba alheia; a resposta vem 200 sem alterar nada
-      if (r.status === 403) throw { tipo: 'permissao' };
-      if (!r.ok) throw { tipo: 'rede', status: r.status };
-      return true;
+
+  // ---------- operacoes de linha ----------
+  function conferir(r) {
+    if (r.status === 401) throw { tipo: 'sem-sessao' };
+    if (r.status === 403) throw { tipo: 'permissao' };
+    if (r.status === 404) throw { tipo: 'sem-migracao' };
+    if (!r.ok) throw { tipo: 'rede', status: r.status };
+    return r;
+  }
+
+  // acha o cadastro pelo nome ou cria um novo; devolve o id
+  function garantirProduto(nome, fornecedor) {
+    var limpo = String(nome || '').trim();
+    var achado = null;
+    for (var i = 0; i < PESSOA.produtos.length; i++) {
+      if (PESSOA.produtos[i].nome.trim().toLowerCase() === limpo.toLowerCase()) achado = PESSOA.produtos[i];
+    }
+    if (achado) return Promise.resolve(achado.id);
+    return api('/rest/v1/produtos', {
+      metodo: 'POST',
+      corpo: { pessoa: PESSOA.id, nome: limpo, fornecedor: fornecedor || '' },
+      extras: { Prefer: 'return=representation' }
+    }).then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
+      var novo = linhas[0];
+      PESSOA.produtos.push(novo);
+      return novo.id;
     });
+  }
+
+  function criarUnidades(lista) {
+    return api('/rest/v1/unidades', {
+      metodo: 'POST',
+      corpo: lista.map(function (it) { return paraLinha(it, PESSOA.id); }),
+      extras: { Prefer: 'return=representation' }
+    }).then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
+      // devolve os ids que o banco gerou, para as acoes seguintes acertarem a linha
+      for (var i = 0; i < linhas.length && i < lista.length; i++) lista[i].id = linhas[i].id;
+      return lista;
+    });
+  }
+
+  function alterarUnidade(id, campos) {
+    return api('/rest/v1/unidades?id=eq.' + encodeURIComponent(id), {
+      metodo: 'PATCH', corpo: campos, extras: { Prefer: 'return=minimal' }
+    }).then(conferir);
+  }
+
+  function apagarUnidade(id) {
+    return api('/rest/v1/unidades?id=eq.' + encodeURIComponent(id), {
+      metodo: 'DELETE', extras: { Prefer: 'return=minimal' }
+    }).then(conferir);
+  }
+
+  function gravarCanais() {
+    return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(PESSOA.id), {
+      metodo: 'PATCH', corpo: { canais: PESSOA.canais }, extras: { Prefer: 'return=minimal' }
+    }).then(conferir);
+  }
+
+  // ---------- envelope de gravacao ----------
+  // roda a operacao, cuida do botao e desfaz na tela se o banco recusar
+  function salvar(operacao, botao, textoOriginal, aoFalhar, aoSucesso) {
+    if (!podeEditar()) {
+      if (aoFalhar) aoFalhar();
+      erro('<b>Essa aba não é sua.</b> Só ' + esc(PESSOA ? PESSOA.nome : 'o dono') + ' pode alterar os dados dela.');
+      return;
+    }
+    salvando = true;
+    if (botao) { botao.disabled = true; botao.innerHTML = '<span class="salvando"></span> Salvando…'; }
+    comSessao()
+      .then(operacao)
+      .then(function () {
+        salvando = false;
+        if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
+        if (aoSucesso) aoSucesso();
+      })
+      .catch(function (e) {
+        salvando = false;
+        if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
+        if (aoFalhar) aoFalhar();
+        var t = (e && e.tipo) || 'rede';
+        if (t === 'sem-sessao') {
+          erro('<b>Sua sessão expirou.</b> Entre de novo para continuar.');
+          setTimeout(sair, 1200);
+        } else if (t === 'permissao') {
+          erro('<b>O banco recusou a alteração.</b> Essa aba não é sua.');
+        } else if (t === 'sem-migracao') {
+          erro('<b>O banco ainda não tem as tabelas novas.</b> Rode o arquivo <code>04-produtos-e-unidades.sql</code> no Supabase.');
+        } else {
+          erro('<b>Não deu pra salvar.</b> Verifique a conexão e tente de novo — o que você digitou não foi perdido.');
+        }
+      });
   }
 
   var USUARIO = '';              // quem entrou (id da pessoa)
@@ -733,12 +874,15 @@ tfoot td:first-child{text-align:left}
     PESSOA = achou || DADOS.pessoas[0];
     DADOS.itens = PESSOA.itens;
     DADOS.canais = PESSOA.canais;
+    if (!PESSOA.produtos) PESSOA.produtos = [];
     try { sessionStorage.setItem(CHAVE_ABA, PESSOA.id); } catch (e) {}
     try { localStorage.setItem(CHAVE_ABA, PESSOA.id); } catch (e) {}
   }
   // o que vai para o disco: so as pessoas, sem os apelidos itens/canais da pessoa ativa
   function dadosParaSalvar() {
-    return { v: DADOS.v, pessoas: DADOS.pessoas };
+    return { v: 5, pessoas: DADOS.pessoas.map(function (p) {
+      return { id: p.id, nome: p.nome, canais: p.canais, produtos: p.produtos, itens: p.itens };
+    }) };
   }
 
 
@@ -921,7 +1065,9 @@ tfoot td:first-child{text-align:left}
     + '        <section class="cartao" id="painel-entrada"><div class="cartao-corpo">'
     + '          <div class="rotulo-secao"><span>Dar entrada num produto</span></div>'
     + '          <div class="campo"><label for="e-produto">O que você comprou</label>'
-    + '            <input class="entrada" id="e-produto" type="text" placeholder="Fone bluetooth, iPhone 11…" autocomplete="off"></div>'
+    + '            <input class="entrada" id="e-produto" type="text" list="lista-produtos" placeholder="Fone bluetooth, iPhone 11…" autocomplete="off">'
+    + '            <datalist id="lista-produtos"></datalist>'
+    + '            <div class="dica" id="e-dica-cadastro" hidden></div></div>'
     + '          <div class="campo"><div class="qtd-custo">'
     + '            <div><label for="e-qtd">Quantas</label>'
     + '              <input class="entrada entrada-dinheiro" id="e-qtd" type="number" min="1" max="200" step="1" value="1" style="text-align:center"></div>'
@@ -1002,6 +1148,15 @@ tfoot td:first-child{text-align:left}
     + '    </section>'
 
     /* ================= CAIXA ================= */
+    + '    <section class="modulo" id="mod-produtos" hidden>'
+    + '      <div class="tit">Produtos</div>'
+    + '      <div class="tit-sub">Cada produto que você lança vira um cadastro, e o histórico dele vai somando: quantos passaram por aqui, quantos venderam e quanto sobrou ao longo do tempo.</div>'
+    + '      <div class="tiles" id="tiles-catalogo"></div>'
+    + '      <section class="cartao"><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Histórico por produto</span><span class="conta" id="conta-catalogo"></span></div>'
+    + '        <div id="lista-catalogo"></div>'
+    + '      </div></section>'
+    + '    </section>'
     + '    <section class="modulo" id="mod-caixa" hidden>'
     + '      <div class="tit">Caixa</div>'
     + '      <div class="tit-sub">Vender não é receber. Toda venda entra aqui esperando, e você dá baixa quando o dinheiro cai na conta.</div>'
@@ -1510,29 +1665,6 @@ tfoot td:first-child{text-align:left}
     recalcProjecao();
   }
 
-  function salvarProjecao() {
-    if (salvando) return;
-    $('#aviso-erro').hidden = true;
-    var antes = [];
-    for (var a = 0; a < DADOS.itens.length; a++) antes.push({ alvo: DADOS.itens[a].alvo, alvoCanal: DADOS.itens[a].alvoCanal });
-    for (var i = 0; i < GRUPOS.length; i++) {
-      var inp = document.querySelector('.proj-preco[data-g="' + i + '"]');
-      var sel = document.querySelector('.proj-canal[data-g="' + i + '"]');
-      var preco = inp ? num(inp.value) : 0;
-      var canal = sel ? sel.value : '';
-      for (var j = 0; j < GRUPOS[i].itens.length; j++) {
-        GRUPOS[i].itens[j].alvo = preco > 0 ? preco : 0;
-        GRUPOS[i].itens[j].alvoCanal = canal;
-      }
-    }
-    persistir($('#btn-proj-salvar'), 'Salvar projeção', function () {
-      for (var b = 0; b < DADOS.itens.length && b < antes.length; b++) {
-        DADOS.itens[b].alvo = antes[b].alvo;
-        DADOS.itens[b].alvoCanal = antes[b].alvoCanal;
-      }
-      desenharProjecao();
-    });
-  }
 
   // deixa a aba do outro so para leitura: some com tudo que altera
   function aplicarPermissoes() {
@@ -1617,6 +1749,7 @@ tfoot td:first-child{text-align:left}
         guardarSessao(null);
         if (e && e.status === 400) $('#login-erro').textContent = 'E-mail ou senha errados.';
         else if (e && e.tipo === 'vazio') $('#login-erro').textContent = 'Entrou, mas o banco está sem as abas. Rode o 01-estrutura.sql.';
+        else if (e && e.tipo === 'sem-migracao') $('#login-erro').textContent = 'O banco ainda não tem as tabelas novas. Rode o 04-produtos-e-unidades.sql no Supabase.';
         else $('#login-erro').textContent = 'Não consegui falar com o banco. Verifique a conexão.';
       });
   }
@@ -1661,6 +1794,7 @@ tfoot td:first-child{text-align:left}
     { id: 'painel',   nome: 'Painel' },
     { id: 'compras',  nome: 'Compras e Estoque' },
     { id: 'vendas',   nome: 'Vendas' },
+    { id: 'produtos', nome: 'Produtos' },
     { id: 'caixa',    nome: 'Caixa' },
     { id: 'ajustes',  nome: 'Ajustes' }
   ];
@@ -1669,11 +1803,12 @@ tfoot td:first-child{text-align:left}
     painel:  '<path d="M3 20h18"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16v-9"/>',
     compras: '<path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
     vendas:  '<path d="M3 12V5a2 2 0 012-2h7l9 9-9 9-9-9z"/><circle cx="7.6" cy="7.6" r="1.3"/>',
+    produtos: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/><circle cx="8" cy="6" r="1.4"/><circle cx="14" cy="12" r="1.4"/><circle cx="10" cy="18" r="1.4"/>',
     caixa:   '<path d="M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M16 12h3"/>',
     ajustes: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M5.6 5.6l1.4 1.4"/><path d="M17 17l1.4 1.4"/><path d="M18.4 5.6L17 7"/><path d="M7 17l-1.4 1.4"/>'
   };
   // no celular os rotulos precisam ser curtos para os cinco caberem lado a lado
-  var CURTOS = { painel: 'Painel', compras: 'Estoque', vendas: 'Vendas', caixa: 'Caixa', ajustes: 'Ajustes' };
+  var CURTOS = { painel: 'Painel', compras: 'Estoque', vendas: 'Vendas', produtos: 'Produtos', caixa: 'Caixa', ajustes: 'Ajustes' };
 
   function desenharModulos() {
     var cima = '', baixo = '';
@@ -1851,32 +1986,6 @@ tfoot td:first-child{text-align:left}
     return h;
   }
 
-  function abrirBaixa(id) {
-    var f = document.getElementById('form-baixa-' + id);
-    if (f) { f.hidden = false; f.querySelector('input').focus(); }
-  }
-  function confirmarBaixa(id) {
-    if (salvando) return;
-    var it = itemDe(id); if (!it) return;
-    var campo = document.getElementById('data-baixa-' + id);
-    var d = (campo && campo.value) || hoje();
-    if (it.dVenda && d < it.dVenda) {
-      erro('<b>O dinheiro não pode ter caído antes da venda.</b> A venda foi em ' + dataBR(it.dVenda) + '.');
-      return;
-    }
-    $('#aviso-erro').hidden = true;
-    it.dRecebido = d;
-    desenharTudo();
-    persistir(null, '', function () { it.dRecebido = ''; desenharTudo(); });
-  }
-  function desfazerBaixa(id) {
-    if (salvando) return;
-    var it = itemDe(id); if (!it) return;
-    var antes = it.dRecebido;
-    it.dRecebido = '';
-    desenharTudo();
-    persistir(null, '', function () { it.dRecebido = antes; desenharTudo(); });
-  }
 
   // ============================ GRAFICO ============================
   // barras de faturamento por dia. Uma serie so, entao uma cor so e sem legenda:
@@ -1963,12 +2072,441 @@ tfoot td:first-child{text-align:left}
     $('#graf-periodo').textContent = dataBR(lista[0].dia) + ' a ' + dataBR(lista[lista.length - 1].dia);
   }
 
+  // ---------- 1 · dar entrada ----------
+  function aoDarEntrada() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true; $('#aviso-pendente').hidden = true;
+    var nome = $('#e-produto').value.trim();
+    if (!nome) { erro('<b>Falta o nome do produto.</b> Escreva o que você comprou.'); $('#e-produto').focus(); return; }
+    var total = num($('#e-custo').value);
+    if (total <= 0) { erro('<b>Falta o custo.</b> Digite quanto você pagou.'); $('#e-custo').focus(); return; }
+    var qtd = Math.round(num($('#e-qtd').value) || 1);
+    if (qtd < 1 || qtd > 200) { erro('<b>Quantidade inválida.</b> Use um número de 1 a 200.'); $('#e-qtd').focus(); return; }
+
+    var dCompra = $('#e-dcompra').value || hoje();
+    var chegou = $('#e-jachegou').checked ? dCompra : '';
+    var fornecedor = $('#e-fornecedor').value.trim();
+    var fatias = ratear(total, qtd);
+    var grupo = qtd > 1 ? novoId('g') : '';
+    var novos = [];
+
+    salvar(function () {
+      return garantirProduto(nome, fornecedor).then(function (produtoId) {
+        for (var i = 0; i < qtd; i++) {
+          novos.push({
+            id: null, produtoId: produtoId, produto: nome, custo: fatias[i], fornecedor: fornecedor,
+            dCompra: dCompra, dChegada: chegou, dVenda: '', dRecebido: '',
+            canal: '', preco: 0, frete: null, grupo: grupo, alvo: 0, alvoCanal: ''
+          });
+        }
+        return criarUnidades(novos);
+      }).then(function () {
+        for (var j = 0; j < novos.length; j++) PESSOA.itens.push(novos[j]);
+        desenharTudo();
+      });
+    }, $('#btn-entrada'), 'Dar entrada', null, limparEntrada);
+  }
+
+  function limparEntrada() {
+    $('#e-produto').value = '';
+    $('#e-custo').value = '';
+    $('#e-qtd').value = '1';
+    $('#e-fornecedor').value = '';
+    $('#e-jachegou').checked = false;
+    $('#e-dcompra').value = hoje();
+    $('#e-dica-cadastro').hidden = true;
+    desenharDicaEntrada();
+    $('#e-produto').focus();
+  }
+
+  // ---------- 2 · chegada ----------
+  function abrirChegada(id) {
+    var f = document.getElementById('form-chegada-' + id);
+    if (f) { f.hidden = false; f.querySelector('input').focus(); }
+  }
+  function confirmarChegada(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var campo = document.getElementById('data-chegada-' + id);
+    var d = (campo && campo.value) || hoje();
+    if (it.dCompra && d < it.dCompra) {
+      erro('<b>A data de chegada é anterior à da compra.</b> Confira: comprado em ' + dataBR(it.dCompra) + '.');
+      return;
+    }
+    $('#aviso-erro').hidden = true;
+    var antes = it.dChegada;
+    it.dChegada = d;
+    desenharTudo();
+    salvar(function () { return alterarUnidade(id, { d_chegada: d }); },
+      null, '', function () { it.dChegada = antes; desenharTudo(); });
+  }
+  function desfazerChegada(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var antes = it.dChegada;
+    it.dChegada = '';
+    desenharTudo();
+    salvar(function () { return alterarUnidade(id, { d_chegada: null }); },
+      null, '', function () { it.dChegada = antes; desenharTudo(); });
+  }
+
+  // ---------- 3 · saida ----------
+  function confirmarVenda() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var it = itemDe(vendendo); if (!it) return;
+    var canal = canalEscolhido();
+    if (!canal) { erro('<b>Falta escolher o canal.</b> Toque no app onde a venda aconteceu.'); return; }
+    var preco = num($('#v-preco').value);
+    if (preco <= 0) { erro('<b>Falta o valor da venda.</b> Digite por quanto o produto saiu.'); $('#v-preco').focus(); return; }
+    var dVenda = $('#v-dvenda').value || hoje();
+    if (it.dChegada && dVenda < it.dChegada) {
+      erro('<b>A data da saída é anterior à da chegada.</b> Confira: chegou em ' + dataBR(it.dChegada) + '.');
+      return;
+    }
+    var freteTxt = $('#v-frete').value.trim();
+    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda, custo: it.custo };
+    var idAlvo = it.id;
+    it.canal = canal.id;
+    it.preco = preco;
+    it.frete = freteTxt === '' ? null : num(freteTxt);
+    it.dVenda = dVenda;
+    it.custo = num($('#v-custo-edit').value);
+    fecharPaineis();
+    desenharTudo();
+    salvar(function () {
+      return alterarUnidade(idAlvo, {
+        canal: it.canal, preco: it.preco, frete: it.frete, d_venda: it.dVenda, custo: it.custo
+      });
+    }, $('#btn-entrada'), 'Dar entrada', function () {
+      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete;
+      it.dVenda = antes.dVenda; it.custo = antes.custo;
+      desenharTudo();
+    });
+  }
+  function desfazerVenda(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda, dRecebido: it.dRecebido };
+    it.canal = ''; it.preco = 0; it.frete = null; it.dVenda = ''; it.dRecebido = '';
+    desenharTudo();
+    salvar(function () {
+      return alterarUnidade(id, { canal: '', preco: 0, frete: null, d_venda: null, d_recebido: null });
+    }, null, '', function () {
+      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete;
+      it.dVenda = antes.dVenda; it.dRecebido = antes.dRecebido;
+      desenharTudo();
+    });
+  }
+
+  // ---------- alterar ----------
+  function salvarEdicao() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var it = itemDe(editando); if (!it) return;
+    var nome = $('#ed-produto').value.trim();
+    if (!nome) { erro('<b>Falta o nome do produto.</b>'); $('#ed-produto').focus(); return; }
+    var custo = num($('#ed-custo').value);
+    if (custo <= 0) { erro('<b>Falta o custo.</b> Digite quanto esta unidade custou.'); $('#ed-custo').focus(); return; }
+    var dCompra = $('#ed-dcompra').value || '';
+    var dChegada = $('#ed-dchegada').value || '';
+    if (dCompra && dChegada && dChegada < dCompra) {
+      erro('<b>A chegada não pode ser antes da compra.</b> Comprado em ' + dataBR(dCompra) + '.');
+      return;
+    }
+    var vendido = fase(it) === 'vendido';
+    var canal = it.canal, preco = it.preco, frete = it.frete, dVenda = it.dVenda;
+    if (vendido) {
+      var r = document.querySelector('#ed-canais input:checked');
+      if (!r) { erro('<b>Falta o canal da venda.</b>'); return; }
+      canal = r.value;
+      preco = num($('#ed-preco').value);
+      if (preco <= 0) { erro('<b>Falta o valor da venda.</b>'); $('#ed-preco').focus(); return; }
+      dVenda = $('#ed-dvenda').value || '';
+      if (!dVenda) { erro('<b>Falta a data da saída.</b>'); $('#ed-dvenda').focus(); return; }
+      if (dChegada && dVenda < dChegada) {
+        erro('<b>A saída não pode ser antes da chegada.</b> Chegou em ' + dataBR(dChegada) + '.');
+        return;
+      }
+      var ft = $('#ed-frete').value.trim();
+      frete = ft === '' ? null : num(ft);
+    }
+
+    var antes = {
+      produto: it.produto, produtoId: it.produtoId, custo: it.custo, fornecedor: it.fornecedor,
+      dCompra: it.dCompra, dChegada: it.dChegada, canal: it.canal, preco: it.preco,
+      frete: it.frete, dVenda: it.dVenda
+    };
+    var idAlvo = it.id;
+    var fornecedor = $('#ed-fornecedor').value.trim();
+    var trocouNome = nome.toLowerCase() !== String(it.produto).trim().toLowerCase();
+
+    it.custo = custo; it.fornecedor = fornecedor;
+    it.dCompra = dCompra; it.dChegada = dChegada;
+    it.canal = canal; it.preco = preco; it.frete = frete; it.dVenda = dVenda;
+    it.produto = nome;
+    fecharPaineis();
+    desenharTudo();
+
+    salvar(function () {
+      // trocar o nome aponta a unidade para outro cadastro, criando se preciso
+      var passo = trocouNome ? garantirProduto(nome, fornecedor) : Promise.resolve(it.produtoId);
+      return passo.then(function (produtoId) {
+        it.produtoId = produtoId;
+        return alterarUnidade(idAlvo, {
+          produto_id: produtoId, custo: custo, fornecedor: fornecedor,
+          d_compra: dCompra || null, d_chegada: dChegada || null,
+          canal: canal, preco: preco, frete: frete, d_venda: dVenda || null
+        });
+      }).then(function () { desenharTudo(); });
+    }, $('#btn-entrada'), 'Dar entrada', function () {
+      for (var k in antes) if (Object.prototype.hasOwnProperty.call(antes, k)) it[k] = antes[k];
+      desenharTudo();
+    });
+  }
+
+  // ---------- duplicar ----------
+  function abrirDuplicar(id) {
+    var f = document.getElementById('form-dup-' + id);
+    if (f) { f.hidden = false; var i = f.querySelector('input'); i.focus(); i.select(); }
+  }
+  function confirmarDuplicar(id) {
+    if (salvando) return;
+    var src = itemDe(id); if (!src) return;
+    var campo = document.getElementById('qtd-dup-' + id);
+    var qtd = Math.round(num(campo && campo.value) || 1);
+    if (qtd < 1 || qtd > 200) { erro('<b>Quantidade inválida.</b> Use um número de 1 a 200.'); return; }
+    $('#aviso-erro').hidden = true;
+
+    var grupoAntes = src.grupo;
+    if (!src.grupo) src.grupo = novoId('g');
+    var novos = [];
+    for (var i = 0; i < qtd; i++) {
+      novos.push({
+        id: null, produtoId: src.produtoId, produto: src.produto, custo: num(src.custo),
+        fornecedor: src.fornecedor, dCompra: src.dCompra, dChegada: src.dChegada,
+        dVenda: '', dRecebido: '', canal: '', preco: 0, frete: null,
+        grupo: src.grupo, alvo: 0, alvoCanal: ''
+      });
+    }
+
+    salvar(function () {
+      var passo = grupoAntes !== src.grupo
+        ? alterarUnidade(src.id, { grupo: src.grupo })
+        : Promise.resolve();
+      return passo.then(function () { return criarUnidades(novos); }).then(function () {
+        for (var j = 0; j < novos.length; j++) PESSOA.itens.push(novos[j]);
+        desenharTudo();
+      });
+    }, null, '', function () { src.grupo = grupoAntes; desenharTudo(); });
+  }
+
+  function apagarItem(id) {
+    if (salvando) return;
+    var idx = -1;
+    for (var i = 0; i < PESSOA.itens.length; i++) if (PESSOA.itens[i].id === id) { idx = i; break; }
+    if (idx < 0) return;
+    var it = PESSOA.itens[idx];
+    if (vendendo === id || editando === id) fecharPaineis();
+    var guardado = PESSOA.itens.splice(idx, 1)[0];
+    desenharTudo();
+    salvar(function () { return apagarUnidade(id); },
+      null, '', function () { PESSOA.itens.splice(idx, 0, guardado); desenharTudo(); });
+  }
+
+  // ---------- caixa ----------
+  function abrirBaixa(id) {
+    var f = document.getElementById('form-baixa-' + id);
+    if (f) { f.hidden = false; f.querySelector('input').focus(); }
+  }
+  function confirmarBaixa(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var campo = document.getElementById('data-baixa-' + id);
+    var d = (campo && campo.value) || hoje();
+    if (it.dVenda && d < it.dVenda) {
+      erro('<b>O dinheiro não pode ter caído antes da venda.</b> A venda foi em ' + dataBR(it.dVenda) + '.');
+      return;
+    }
+    $('#aviso-erro').hidden = true;
+    var antes = it.dRecebido;
+    it.dRecebido = d;
+    desenharTudo();
+    salvar(function () { return alterarUnidade(id, { d_recebido: d }); },
+      null, '', function () { it.dRecebido = antes; desenharTudo(); });
+  }
+  function desfazerBaixa(id) {
+    if (salvando) return;
+    var it = itemDe(id); if (!it) return;
+    var antes = it.dRecebido;
+    it.dRecebido = '';
+    desenharTudo();
+    salvar(function () { return alterarUnidade(id, { d_recebido: null }); },
+      null, '', function () { it.dRecebido = antes; desenharTudo(); });
+  }
+
+  // ---------- taxas ----------
+  function aoSalvarTaxas() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var antes = JSON.parse(JSON.stringify(PESSOA.canais));
+    var ins = $('#ajustes').querySelectorAll('input[data-tx]');
+    for (var i = 0; i < ins.length; i++) {
+      var c = canalDe(ins[i].getAttribute('data-id'));
+      if (!c) continue;
+      var campo = ins[i].getAttribute('data-tx'), v = num(ins[i].value);
+      c[campo] = campo === 'pct' ? v / 100 : v;
+    }
+    desenharCanais(); desenharTudo(); desenharCupom();
+    salvar(gravarCanais, $('#btn-taxas'), 'Salvar taxas', function () {
+      PESSOA.canais = antes; DADOS.canais = antes;
+      desenharAjustes(); desenharCanais(); desenharTudo(); desenharCupom();
+    });
+  }
+
+  // ---------- projecao ----------
+  function salvarProjecao() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var mudancas = [];
+    for (var i = 0; i < GRUPOS.length; i++) {
+      var g = GRUPOS[i];
+      var inp = $('#proj-lista .proj-preco[data-g="' + i + '"]');
+      var sel = $('#proj-lista .proj-canal[data-g="' + i + '"]');
+      if (!inp || !sel) continue;
+      var preco = num(inp.value), canal = sel.value;
+      for (var j = 0; j < g.itens.length; j++) {
+        var it = g.itens[j];
+        if (num(it.alvo) === preco && it.alvoCanal === canal) continue;
+        it.alvo = preco; it.alvoCanal = canal;
+        mudancas.push({ id: it.id, alvo: preco, alvo_canal: canal });
+      }
+    }
+    if (!mudancas.length) return;
+    salvar(function () {
+      return Promise.all(mudancas.map(function (m) {
+        return alterarUnidade(m.id, { alvo: m.alvo, alvo_canal: m.alvo_canal });
+      }));
+    }, $('#btn-proj-salvar'), 'Salvar projeção', function () { desenharTudo(); });
+  }
+
+  // ============================ CADASTRO DE PRODUTOS ============================
+  // A lista de nomes ja cadastrados alimenta o autocompletar do formulario de
+  // entrada, para nao redigitar o nome a cada nova compra do mesmo produto.
+  function desenharListaProdutos() {
+    var lista = (PESSOA && PESSOA.produtos) ? PESSOA.produtos.slice() : [];
+    lista.sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
+    var h = '';
+    for (var i = 0; i < lista.length; i++) h += '<option value="' + esc(lista[i].nome) + '"></option>';
+    var dl = $('#lista-produtos');
+    if (dl) dl.innerHTML = h;
+  }
+
+  // historico de cada produto, somando tudo que ja passou por ele
+  function resumoPorProduto() {
+    var mapa = {};
+    var cat = (PESSOA && PESSOA.produtos) ? PESSOA.produtos : [];
+    for (var i = 0; i < cat.length; i++) {
+      mapa[cat[i].id] = {
+        id: cat[i].id, nome: cat[i].nome, fornecedor: cat[i].fornecedor || '',
+        comprados: 0, caminho: 0, estoque: 0, vendidos: 0,
+        custoTotal: 0, faturamento: 0, lucro: 0, taxas: 0, giros: []
+      };
+    }
+    var itens = (PESSOA && PESSOA.itens) ? PESSOA.itens : [];
+    for (var j = 0; j < itens.length; j++) {
+      var it = itens[j], r = mapa[it.produtoId];
+      if (!r) continue;
+      r.comprados++;
+      r.custoTotal += num(it.custo);
+      var f = fase(it);
+      if (f === 'caminho') r.caminho++;
+      else if (f === 'estoque') r.estoque++;
+      else {
+        r.vendidos++;
+        var c = contaDoItem(it);
+        r.faturamento += c.preco; r.lucro += c.lucro; r.taxas += c.taxa + c.frete;
+        var g = dias(it.dChegada || it.dCompra, it.dVenda);
+        if (g != null && g >= 0) r.giros.push(g);
+      }
+    }
+    var lista = [];
+    for (var k in mapa) if (Object.prototype.hasOwnProperty.call(mapa, k)) lista.push(mapa[k]);
+    lista.sort(function (a, b) {
+      if (b.vendidos !== a.vendidos) return b.vendidos - a.vendidos;
+      return b.comprados - a.comprados;
+    });
+    return lista;
+  }
+
+  function desenharProdutos() {
+    var lista = resumoPorProduto();
+    var alvo = $('#lista-catalogo');
+    if (!alvo) return;
+    $('#conta-catalogo').textContent = lista.length ? plural(lista.length, 'produto', 'produtos') : '';
+
+    if (!lista.length) {
+      alvo.innerHTML = '<div class="vazio"><strong>Nenhum produto cadastrado</strong>'
+        + '<p>Cada produto que você lançar em <b>Compras e Estoque</b> vira um cadastro aqui, '
+        + 'e o histórico dele vai somando ao longo do tempo.</p></div>';
+      $('#tiles-catalogo').innerHTML = '';
+      return;
+    }
+
+    var tComprados = 0, tVendidos = 0, tLucro = 0, tFat = 0;
+    for (var i = 0; i < lista.length; i++) {
+      tComprados += lista[i].comprados; tVendidos += lista[i].vendidos;
+      tLucro += lista[i].lucro; tFat += lista[i].faturamento;
+    }
+    $('#tiles-catalogo').innerHTML = htmlTiles([
+      { r: 'Produtos diferentes', n: String(lista.length), s: 'no seu cadastro' },
+      { r: 'Unidades compradas', n: String(tComprados), s: 'desde o começo' },
+      { r: 'Unidades vendidas', n: String(tVendidos), s: tComprados ? pc(tVendidos / tComprados) + ' do que comprou' : '' },
+      { r: 'Lucro acumulado', n: brl(tLucro), s: tFat > 0 ? 'margem de ' + pc(tLucro / tFat) : 'nenhuma venda ainda',
+        d: true, cor: tLucro < 0 ? 'var(--neg)' : 'var(--pos)' }
+    ]);
+
+    var h = '<div class="tabela-caixa"><table><thead><tr>'
+      + '<th>Produto</th><th>Comprou</th><th>Parado</th><th>Vendeu</th>'
+      + '<th>Faturou</th><th>Sobrou</th><th>Margem</th><th>Giro</th>'
+      + '</tr></thead><tbody>';
+    for (var j = 0; j < lista.length; j++) {
+      var r = lista[j];
+      var parado = r.caminho + r.estoque;
+      var giro = r.giros.length ? Math.round(r.giros.reduce(function (s, x) { return s + x; }, 0) / r.giros.length) : null;
+      var meta = [];
+      if (r.fornecedor) meta.push(esc(r.fornecedor));
+      if (r.comprados) meta.push('custo médio ' + brl(r.custoTotal / r.comprados));
+      h += '<tr>'
+        + '<td data-l="Produto"><span class="prod">' + esc(r.nome) + '<small>' + meta.join(' · ') + '</small></span></td>'
+        + '<td data-l="Comprou" class="num-cel">' + r.comprados + '</td>'
+        + '<td data-l="Parado" class="num-cel"' + (parado ? ' style="color:var(--warn)"' : '') + '>' + parado + '</td>'
+        + '<td data-l="Vendeu" class="num-cel">' + r.vendidos + '</td>'
+        + '<td data-l="Faturou" class="num-cel">' + (r.vendidos ? brl(r.faturamento) : '—') + '</td>'
+        + '<td data-l="Sobrou" class="num-cel lucro-cel" style="color:' + (r.lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">'
+        + (r.vendidos ? brl(r.lucro) : '—') + '</td>'
+        + '<td data-l="Margem" class="num-cel">' + (r.vendidos && r.faturamento > 0 ? pc(r.lucro / r.faturamento) : '—') + '</td>'
+        + '<td data-l="Giro" class="num-cel">' + (giro == null ? '—' : giro + 'd') + '</td>'
+        + '</tr>';
+    }
+    h += '</tbody><tfoot><tr><td>' + plural(lista.length, 'produto', 'produtos') + '</td>'
+      + '<td data-l="Comprou" class="num-cel">' + tComprados + '</td>'
+      + '<td data-l="Parado" class="num-cel">' + (tComprados - tVendidos) + '</td>'
+      + '<td data-l="Vendeu" class="num-cel">' + tVendidos + '</td>'
+      + '<td data-l="Faturou" class="num-cel">' + brl(tFat) + '</td>'
+      + '<td data-l="Sobrou" class="num-cel" style="color:' + (tLucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(tLucro) + '</td>'
+      + '<td data-l="Margem" class="num-cel">' + (tFat > 0 ? pc(tLucro / tFat) : '—') + '</td>'
+      + '<td></td></tr></tfoot></table></div>';
+    alvo.innerHTML = h;
+  }
+
   function desenharTudo() {
     desenharAbas();
     aplicarPermissoes();
     desenharTiles(); desenharTempos(); desenharCaixa();
     desenharCaminho(); desenharEstoque(); desenharProjecao();
     desenharVendidos(); desenharPorCanal(); desenharGraficoDiario();
+    desenharListaProdutos(); desenharProdutos();
     atualizarBadges();
     ligarBotoesDeItem();
   }
@@ -2012,34 +2550,52 @@ tfoot td:first-child{text-align:left}
       erro('<b>Esse texto não é um backup válido.</b> Copie o arquivo inteiro, do primeiro ao último caractere.');
       return;
     }
-    // aceita backup novo (com abas) e backup antigo (uma pessoa so)
-    if (novo && Array.isArray(novo.itens) && Array.isArray(novo.canais) && !novo.pessoas) {
-      novo = { v: 4, pessoas: [
-        { id: 'victor', nome: 'Victor', canais: novo.canais, itens: novo.itens },
-        { id: 'gabriel', nome: 'Gabriel', canais: JSON.parse(JSON.stringify(novo.canais)), itens: [] }
-      ] };
-    }
-    if (!novo || !Array.isArray(novo.pessoas) || !novo.pessoas.length) {
-      erro('<b>Esse arquivo não parece um backup do Quanto Sobrou.</b> Não achei as abas nem os produtos.');
+    if (!novo || !Array.isArray(novo.pessoas)) {
+      erro('<b>Esse arquivo não parece um backup do Quanto Sobrou.</b>');
       return;
     }
-    for (var z = 0; z < novo.pessoas.length; z++) {
-      if (!Array.isArray(novo.pessoas[z].itens) || !Array.isArray(novo.pessoas[z].canais)) {
-        erro('<b>Backup incompleto.</b> A aba "' + esc(novo.pessoas[z].nome || '?') + '" está sem produtos ou sem canais.');
-        return;
-      }
+    var minha = null;
+    for (var i = 0; i < novo.pessoas.length; i++) if (novo.pessoas[i].id === PESSOA.id) minha = novo.pessoas[i];
+    if (!minha || !Array.isArray(minha.itens)) {
+      erro('<b>O backup não tem a aba <b>' + esc(PESSOA.nome) + '</b>.</b> Só dá para restaurar a sua própria aba.');
+      return;
     }
-    var antes = { v: DADOS.v, pessoas: DADOS.pessoas };
-    var abaAntes = PESSOA ? PESSOA.id : '';
-    DADOS = novo;
-    ativar(abaAntes);
-    fecharPaineis();
-    desenharCanais(); desenharAjustes(); desenharTudo();
+    if (!window.confirm) { /* sem dialogo nativo; seguimos */ }
+
     $('#backup-cola').value = '';
-    persistir($('#btn-restaurar'), 'Restaurar', function () {
-      DADOS = antes;
-      ativar(abaAntes);
-      desenharCanais(); desenharAjustes(); desenharTudo();
+    salvar(function () {
+      // limpa o que existe hoje na minha aba e recria a partir do backup
+      return api('/rest/v1/unidades?pessoa=eq.' + encodeURIComponent(PESSOA.id), {
+        metodo: 'DELETE', extras: { Prefer: 'return=minimal' }
+      }).then(conferir).then(function () {
+        var nomes = {};
+        for (var k = 0; k < minha.itens.length; k++) nomes[String(minha.itens[k].produto || '').trim()] = 1;
+        var lista = Object.keys(nomes).filter(function (x) { return x; });
+        return lista.reduce(function (fila, nome) {
+          return fila.then(function () { return garantirProduto(nome, ''); });
+        }, Promise.resolve());
+      }).then(function () {
+        var porNome = {};
+        for (var a = 0; a < PESSOA.produtos.length; a++) porNome[PESSOA.produtos[a].nome.trim().toLowerCase()] = PESSOA.produtos[a].id;
+        var linhas = minha.itens.map(function (it) {
+          var copia = JSON.parse(JSON.stringify(it));
+          copia.produtoId = porNome[String(it.produto || '').trim().toLowerCase()];
+          return copia;
+        }).filter(function (x) { return x.produtoId; });
+        PESSOA.itens = linhas;
+        if (Array.isArray(minha.canais) && minha.canais.length) {
+          PESSOA.canais = minha.canais;
+          DADOS.canais = minha.canais;
+        }
+        return linhas.length ? criarUnidades(linhas) : Promise.resolve();
+      }).then(function () {
+        return Array.isArray(minha.canais) && minha.canais.length ? gravarCanais() : Promise.resolve();
+      }).then(function () {
+        ativar(PESSOA.id);
+        desenharCanais(); desenharAjustes(); desenharTudo();
+      });
+    }, $('#btn-restaurar'), 'Restaurar', function () {
+      carregarDoBanco().then(function () { ativar(PESSOA.id); desenharCanais(); desenharAjustes(); desenharTudo(); });
     });
   }
 
@@ -2065,113 +2621,15 @@ tfoot td:first-child{text-align:left}
     botao.setAttribute("data-timer", setTimeout(function () { desarmar(botao); }, 5000));
   }
 
-  function persistir(botao, textoOriginal, aoFalhar, aoSucesso) {
-    if (!podeEditar()) {
-      if (aoFalhar) aoFalhar();
-      erro('<b>Essa aba não é sua.</b> Só ' + esc(PESSOA ? PESSOA.nome : 'o dono') + ' pode alterar os dados dela.');
-      return;
-    }
-    salvando = true;
-    if (botao) { botao.disabled = true; botao.innerHTML = '<span class="salvando"></span> Salvando…'; }
-    gravarPessoa().then(function () {
-      salvando = false;
-      if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
-      if (aoSucesso) aoSucesso();
-    }).catch(function (e) {
-      salvando = false;
-      if (botao) { botao.disabled = false; botao.innerHTML = textoOriginal; }
-      if (aoFalhar) aoFalhar();
-      var t = (e && e.tipo) || 'rede';
-      if (t === 'sem-sessao') {
-        erro('<b>Sua sessão expirou.</b> Entre de novo para continuar.');
-        setTimeout(sair, 1200);
-      } else if (t === 'permissao') {
-        erro('<b>O banco recusou a alteração.</b> Essa aba não é sua.');
-      } else {
-        erro('<b>Não deu pra salvar.</b> Verifique a conexão e tente de novo — o que você digitou não foi perdido.');
-      }
-    });
-  }
 
   function tirarPorId(id) {
     for (var i = DADOS.itens.length - 1; i >= 0; i--) if (DADOS.itens[i].id === id) { DADOS.itens.splice(i, 1); return; }
   }
 
   // ---------- 1 · dar entrada ----------
-  function aoDarEntrada() {
-    if (salvando) return;
-    $('#aviso-erro').hidden = true; $('#aviso-pendente').hidden = true;
-    var nome = $('#e-produto').value.trim();
-    if (!nome) { erro('<b>Falta o nome do produto.</b> Escreva o que você comprou.'); $('#e-produto').focus(); return; }
-    var total = num($('#e-custo').value);
-    if (total <= 0) { erro('<b>Falta o custo.</b> Digite quanto você pagou.'); $('#e-custo').focus(); return; }
-    var qtd = Math.round(num($('#e-qtd').value) || 1);
-    if (qtd < 1 || qtd > 200) { erro('<b>Quantidade inválida.</b> Use um número de 1 a 200.'); $('#e-qtd').focus(); return; }
 
-    var dCompra = $('#e-dcompra').value || hoje();
-    var chegou = $('#e-jachegou').checked ? dCompra : '';
-    var fornecedor = $('#e-fornecedor').value.trim();
-    var fatias = ratear(total, qtd);
-    var grupo = qtd > 1 ? novoId('g') : '';
-    var novos = [];
-    for (var i = 0; i < qtd; i++) {
-      novos.push({
-        id: novoId('i'), produto: nome, custo: fatias[i], fornecedor: fornecedor,
-        dCompra: dCompra, dChegada: chegou, grupo: grupo,
-        canal: '', preco: 0, frete: null, dVenda: ''
-      });
-    }
-    try {
-      sessionStorage.setItem('qs-pendente', JSON.stringify({
-        produto: nome, custo: total, qtd: qtd, fornecedor: fornecedor, dCompra: dCompra, dChegada: chegou
-      }));
-    } catch (e) {}
-    for (var j = 0; j < novos.length; j++) DADOS.itens.push(novos[j]);
-    desenharTudo();
-    persistir($('#btn-entrada'), 'Dar entrada', function () {
-      for (var k = 0; k < novos.length; k++) tirarPorId(novos[k].id);
-      desenharTudo();
-    }, limparEntrada);
-  }
-
-  function limparEntrada() {
-    $('#e-produto').value = '';
-    $('#e-custo').value = '';
-    $('#e-qtd').value = '1';
-    $('#e-fornecedor').value = '';
-    $('#e-jachegou').checked = false;
-    $('#e-dcompra').value = hoje();
-    desenharDicaEntrada();
-    $('#e-produto').focus();
-  }
 
   // ---------- 2 · chegada ----------
-  function abrirChegada(id) {
-    var f = document.getElementById('form-chegada-' + id);
-    if (f) { f.hidden = false; f.querySelector('input').focus(); }
-  }
-  function confirmarChegada(id) {
-    if (salvando) return;
-    var it = itemDe(id); if (!it) return;
-    var campo = document.getElementById('data-chegada-' + id);
-    var d = (campo && campo.value) || hoje();
-    if (it.dCompra && d < it.dCompra) {
-      erro('<b>A data de chegada é anterior à da compra.</b> Confira: comprado em ' + dataBR(it.dCompra) + '.');
-      return;
-    }
-    $('#aviso-erro').hidden = true;
-    it.dChegada = d;
-    desenharTudo();
-    persistir(null, '', function () { it.dChegada = ''; desenharTudo(); });
-  }
-  function desfazerChegada(id) {
-    if (salvando) return;
-    var it = itemDe(id); if (!it) return;
-    var antes = it.dChegada;
-    it.dChegada = '';
-    desenharTudo();
-    persistir(null, '', function () { it.dChegada = antes; desenharTudo(); });
-  }
 
   // ---------- 3 · saida ----------
   function fecharPaineis() {
@@ -2205,45 +2663,6 @@ tfoot td:first-child{text-align:left}
     var m = document.querySelector('#v-canais input:checked'); if (m) m.checked = false;
     desenharCupom();
     $('#v-preco').focus();
-  }
-  function confirmarVenda() {
-    if (salvando) return;
-    $('#aviso-erro').hidden = true;
-    var it = itemDe(vendendo); if (!it) return;
-    var canal = canalEscolhido();
-    if (!canal) { erro('<b>Falta escolher o canal.</b> Toque no app onde a venda aconteceu.'); return; }
-    var preco = num($('#v-preco').value);
-    if (preco <= 0) { erro('<b>Falta o valor da venda.</b> Digite por quanto o produto saiu.'); $('#v-preco').focus(); return; }
-    var dVenda = $('#v-dvenda').value || hoje();
-    if (it.dChegada && dVenda < it.dChegada) {
-      erro('<b>A data da saída é anterior à da chegada.</b> Confira: chegou em ' + dataBR(it.dChegada) + '.');
-      return;
-    }
-    var freteTxt = $('#v-frete').value.trim();
-    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda, custo: it.custo };
-    it.canal = canal.id;
-    it.preco = preco;
-    it.frete = freteTxt === '' ? null : num(freteTxt);
-    it.dVenda = dVenda;
-    it.custo = num($('#v-custo-edit').value);
-    fecharPaineis();
-    desenharTudo();
-    persistir($('#btn-entrada'), 'Dar entrada', function () {
-      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete;
-      it.dVenda = antes.dVenda; it.custo = antes.custo;
-      desenharTudo();
-    });
-  }
-  function desfazerVenda(id) {
-    if (salvando) return;
-    var it = itemDe(id); if (!it) return;
-    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda };
-    it.canal = ''; it.preco = 0; it.frete = null; it.dVenda = '';
-    desenharTudo();
-    persistir(null, '', function () {
-      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete; it.dVenda = antes.dVenda;
-      desenharTudo();
-    });
   }
 
   // ---------- alterar ----------
@@ -2281,115 +2700,11 @@ tfoot td:first-child{text-align:left}
     $('#ed-produto').focus();
   }
 
-  function salvarEdicao() {
-    if (salvando) return;
-    $('#aviso-erro').hidden = true;
-    var it = itemDe(editando); if (!it) return;
-    var nome = $('#ed-produto').value.trim();
-    if (!nome) { erro('<b>Falta o nome do produto.</b>'); $('#ed-produto').focus(); return; }
-    var custo = num($('#ed-custo').value);
-    if (custo <= 0) { erro('<b>Falta o custo.</b> Digite quanto esta unidade custou.'); $('#ed-custo').focus(); return; }
-    var dCompra = $('#ed-dcompra').value || '';
-    var dChegada = $('#ed-dchegada').value || '';
-    if (dCompra && dChegada && dChegada < dCompra) {
-      erro('<b>A chegada não pode ser antes da compra.</b> Comprado em ' + dataBR(dCompra) + '.');
-      return;
-    }
-    var vendido = fase(it) === 'vendido';
-    var canal = it.canal, preco = it.preco, frete = it.frete, dVenda = it.dVenda;
-    if (vendido) {
-      var r = document.querySelector('#ed-canais input:checked');
-      if (!r) { erro('<b>Falta o canal da venda.</b>'); return; }
-      canal = r.value;
-      preco = num($('#ed-preco').value);
-      if (preco <= 0) { erro('<b>Falta o valor da venda.</b>'); $('#ed-preco').focus(); return; }
-      dVenda = $('#ed-dvenda').value || '';
-      if (!dVenda) { erro('<b>Falta a data da saída.</b>'); $('#ed-dvenda').focus(); return; }
-      if (dChegada && dVenda < dChegada) {
-        erro('<b>A saída não pode ser antes da chegada.</b> Chegou em ' + dataBR(dChegada) + '.');
-        return;
-      }
-      var ft = $('#ed-frete').value.trim();
-      frete = ft === '' ? null : num(ft);
-    }
-
-    var antes = {
-      produto: it.produto, custo: it.custo, fornecedor: it.fornecedor, dCompra: it.dCompra,
-      dChegada: it.dChegada, canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda
-    };
-    it.produto = nome; it.custo = custo; it.fornecedor = $('#ed-fornecedor').value.trim();
-    it.dCompra = dCompra; it.dChegada = dChegada;
-    it.canal = canal; it.preco = preco; it.frete = frete; it.dVenda = dVenda;
-    fecharPaineis();
-    desenharTudo();
-    persistir($('#btn-entrada'), 'Dar entrada', function () {
-      for (var k in antes) if (Object.prototype.hasOwnProperty.call(antes, k)) it[k] = antes[k];
-      desenharTudo();
-    });
-  }
 
   // ---------- duplicar ----------
-  function abrirDuplicar(id) {
-    var f = document.getElementById('form-dup-' + id);
-    if (f) { f.hidden = false; var i = f.querySelector('input'); i.focus(); i.select(); }
-  }
-  function confirmarDuplicar(id) {
-    if (salvando) return;
-    var src = itemDe(id); if (!src) return;
-    var campo = document.getElementById('qtd-dup-' + id);
-    var qtd = Math.round(num(campo && campo.value) || 1);
-    if (qtd < 1 || qtd > 200) { erro('<b>Quantidade inválida.</b> Use um número de 1 a 200.'); return; }
-    $('#aviso-erro').hidden = true;
 
-    // a copia herda a compra, nunca a venda: e outra unidade, que ainda esta pra sair
-    var grupoAntes = src.grupo;
-    if (!src.grupo) src.grupo = novoId('g');
-    var novos = [];
-    for (var i = 0; i < qtd; i++) {
-      novos.push({
-        id: novoId('i'), produto: src.produto, custo: num(src.custo), fornecedor: src.fornecedor,
-        dCompra: src.dCompra, dChegada: src.dChegada, grupo: src.grupo,
-        canal: '', preco: 0, frete: null, dVenda: ''
-      });
-    }
-    for (var j = 0; j < novos.length; j++) DADOS.itens.push(novos[j]);
-    desenharTudo();
-    persistir(null, '', function () {
-      for (var k = 0; k < novos.length; k++) tirarPorId(novos[k].id);
-      src.grupo = grupoAntes;
-      desenharTudo();
-    });
-  }
-
-  function apagarItem(id) {
-    if (salvando) return;
-    var idx = -1;
-    for (var i = 0; i < DADOS.itens.length; i++) if (DADOS.itens[i].id === id) { idx = i; break; }
-    if (idx < 0) return;
-    if (vendendo === id || editando === id) fecharPaineis();
-    var guardado = DADOS.itens.splice(idx, 1)[0];
-    desenharTudo();
-    persistir(null, '', function () { DADOS.itens.splice(idx, 0, guardado); desenharTudo(); });
-  }
 
   // ---------- taxas ----------
-  function aoSalvarTaxas() {
-    if (salvando) return;
-    $('#aviso-erro').hidden = true;
-    var antes = JSON.parse(JSON.stringify(DADOS.canais));
-    var ins = $('#ajustes').querySelectorAll('input[data-tx]');
-    for (var i = 0; i < ins.length; i++) {
-      var c = canalDe(ins[i].getAttribute('data-id'));
-      if (!c) continue;
-      var campo = ins[i].getAttribute('data-tx'), v = num(ins[i].value);
-      c[campo] = campo === 'pct' ? v / 100 : v;
-    }
-    desenharCanais(); desenharTudo(); desenharCupom();
-    persistir($('#btn-taxas'), 'Salvar taxas', function () {
-      PESSOA.canais = antes; DADOS.canais = antes;
-      desenharAjustes(); desenharCanais(); desenharTudo(); desenharCupom();
-    });
-  }
 
   // ---------- exportar ----------
   function aoBaixar() {
@@ -2456,7 +2771,7 @@ tfoot td:first-child{text-align:left}
   // ---------- ligar tudo ----------
   document.getElementById('root').innerHTML = SHELL;
   if (!DADOS.pessoas || !DADOS.pessoas.length) {
-    DADOS.pessoas = [{ id: 'vazio', nome: '—', dono: null, canais: [], itens: [] }];
+    DADOS.pessoas = [{ id: 'vazio', nome: '—', dono: null, canais: [], produtos: [], itens: [] }];
   }
   ativar(DADOS.pessoas[0].id);
   try { MODULO = localStorage.getItem(CHAVE_MODULO) || 'painel'; } catch (e) {}
@@ -2475,6 +2790,22 @@ tfoot td:first-child{text-align:left}
   });
   ['e-qtd', 'e-custo'].forEach(function (id) {
     document.getElementById(id).addEventListener('input', desenharDicaEntrada);
+  });
+  $('#e-produto').addEventListener('input', function () {
+    var nome = $('#e-produto').value.trim(), d = $('#e-dica-cadastro');
+    if (!nome) { d.hidden = true; return; }
+    var achado = null;
+    for (var i = 0; i < PESSOA.produtos.length; i++) {
+      if (PESSOA.produtos[i].nome.trim().toLowerCase() === nome.toLowerCase()) achado = PESSOA.produtos[i];
+    }
+    if (achado) {
+      var quantos = 0;
+      for (var j = 0; j < PESSOA.itens.length; j++) if (PESSOA.itens[j].produtoId === achado.id) quantos++;
+      d.innerHTML = '<span>↳</span><span>Já cadastrado — esta será a <b>' + (quantos + 1) + 'ª</b> unidade dele.</span>';
+    } else {
+      d.innerHTML = '<span>↳</span><span>Produto novo. Vai virar um cadastro, e da próxima vez aparece na lista.</span>';
+    }
+    d.hidden = false;
   });
   $('#btn-entrada').addEventListener('click', aoDarEntrada);
   $('#btn-venda').addEventListener('click', confirmarVenda);
