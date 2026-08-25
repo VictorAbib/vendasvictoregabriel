@@ -1746,12 +1746,22 @@ tfoot td:first-child{text-align:left}
       .catch(function (e) {
         btn.disabled = false; btn.textContent = 'Entrar';
         $('#login-senha').value = '';
-        guardarSessao(null);
-        if (e && e.status === 400) $('#login-erro').textContent = 'E-mail ou senha errados.';
-        else if (e && e.tipo === 'vazio') $('#login-erro').textContent = 'Entrou, mas o banco está sem as abas. Rode o 01-estrutura.sql.';
-        else if (e && e.tipo === 'sem-migracao') $('#login-erro').textContent = 'O banco ainda não tem as tabelas novas. Rode o 04-produtos-e-unidades.sql no Supabase.';
-        else $('#login-erro').textContent = 'Não consegui falar com o banco. Verifique a conexão.';
+        // senha errada apaga a sessao; falha de rede depois de entrar, nao —
+        // senao o usuario redigita a senha por causa de um tropeco do banco.
+        if (!e || e.tipo !== 'rede') guardarSessao(null);
+        $('#login-erro').textContent = recadoDeFalha(e);
       });
+  }
+
+  // Uma mensagem so, usada tanto no login manual quanto no arranque automatico.
+  function recadoDeFalha(e) {
+    var t = e && e.tipo;
+    if (e && e.status === 400) return 'E-mail ou senha errados.';
+    if (t === 'vazio') return 'Entrou, mas o banco está sem as abas. Rode o 01-estrutura.sql.';
+    if (t === 'sem-migracao') return 'O banco ainda não tem as tabelas novas. Rode o 04-produtos-e-unidades.sql no Supabase.';
+    if (t === 'sem-sessao') return 'Sua sessão expirou. Entre de novo.';
+    if (t === 'rede') return 'O banco respondeu com erro ' + e.status + '. Seu login continua salvo — tente de novo em instantes.';
+    return 'Não consegui falar com o banco. Verifique a conexão e tente de novo — seu login continua salvo.';
   }
 
   function abrirApp() {
@@ -2853,7 +2863,13 @@ tfoot td:first-child{text-align:left}
       var guardada = localStorage.getItem(CHAVE_SESSAO);
       if (guardada) {
         SESSAO = JSON.parse(guardada);
-        carregarDoBanco().then(abrirApp).catch(function () { guardarSessao(null); });
+        carregarDoBanco().then(abrirApp).catch(function (e) {
+          // So derruba o login quando a sessao morreu de verdade. Rede fora do ar,
+          // banco de joelhos ou tabela faltando nao sao motivo para deslogar: o
+          // refresh_token continua valendo e a proxima tentativa aproveita.
+          if (e && e.tipo === 'sem-sessao') guardarSessao(null);
+          $('#login-erro').textContent = recadoDeFalha(e);
+        });
       }
     } catch (e) { guardarSessao(null); }
   }
