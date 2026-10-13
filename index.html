@@ -756,7 +756,7 @@ tfoot td:first-child{text-align:left}
                          .map(function (u) { return daLinha(u, nomePorId); })
         };
       }) };
-      return DADOS;
+      return corrigirLegoPorsche().then(function () { return DADOS; });
     });
   }
 
@@ -816,6 +816,100 @@ tfoot td:first-child{text-align:left}
     return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(PESSOA.id), {
       metodo: 'PATCH', corpo: { canais: PESSOA.canais }, extras: { Prefer: 'return=minimal' }
     }).then(conferir);
+  }
+
+  // Custos por produto/canal e retratos das vendas usam o JSON de canais
+  // ja persistido no banco. Nao dependem do navegador nem de novas tabelas.
+  function custosDoProduto(produtoId, canal) {
+    return canal && canal.produtos && canal.produtos[produtoId] || null;
+  }
+  function custosDaVenda(it) {
+    var canal = canalDe(it.canal);
+    return canal && canal.vendas && canal.vendas[it.id] || null;
+  }
+  function comCustos(canal, custos) {
+    return custos ? Object.assign({}, canal, custos) : canal;
+  }
+  function retratoCustos(canal, frete) {
+    return { pct: num(canal.pct), fixa: num(canal.fixa), limite: num(canal.limite),
+      frete: num(frete), freteMin: 0 };
+  }
+
+  // Mescla a mudanca com a versao mais recente; a pessoa ativa pode mudar
+  // enquanto a rede responde, por isso o contexto e capturado antes.
+  function gravarCustos(pessoa, canalId, produtoId, custos, unidadeId, lembrar) {
+    return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(pessoa.id) + '&select=canais')
+      .then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
+        if (!linhas.length) throw { tipo: 'permissao' };
+        var canais = linhas[0].canais;
+        var canal = canais.filter(function (c) { return c.id === canalId; })[0];
+        if (!canal) throw { tipo: 'rede' };
+        if (lembrar) {
+          canal.produtos = canal.produtos || {};
+          canal.produtos[produtoId] = Object.assign({}, custos);
+        }
+        if (unidadeId) {
+          canal.vendas = canal.vendas || {};
+          canal.vendas[unidadeId] = Object.assign({}, custos);
+        }
+        return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(pessoa.id), {
+          metodo: 'PATCH', corpo: { canais: canais }, extras: { Prefer: 'return=representation' }
+        }).then(conferir).then(function (r) { return r.json(); }).then(function (salvas) {
+          if (!salvas.length) throw { tipo: 'permissao' };
+          pessoa.canais = salvas[0].canais;
+          if (PESSOA === pessoa) DADOS.canais = pessoa.canais;
+        });
+      });
+  }
+
+  // Correcao solicitada pelo dono: aplica uma vez, na proxima sessao
+  // autenticada dele. A flag so e gravada depois de corrigir as unidades.
+  function corrigirLegoPorsche() {
+    if (!SESSAO || !SESSAO.usuario) return Promise.resolve();
+    var minhas = DADOS.pessoas.filter(function (p) { return p.dono === SESSAO.usuario.id; });
+    return minhas.reduce(function (fila, pessoa) {
+      return fila.then(function () {
+        var canais = JSON.parse(JSON.stringify(pessoa.canais)), tarefas = [], mudou = false;
+        var produtos = pessoa.produtos.filter(function (p) {
+          return /\blego\b/i.test(p.nome) && /\bporsche\b/i.test(p.nome);
+        });
+        canais.forEach(function (canal) {
+          if (!/mercado\s*livre|\bml(?:[-_\s]|$)/i.test([canal.id, canal.nome, canal.curto].join(' '))) return;
+          produtos.forEach(function (produto) {
+            var feitas = canal.correcaoPorsche20261013 || {};
+            if (feitas[produto.id]) return;
+            var custos = { pct: 0.115, fixa: 0, limite: 1e100, frete: 27.05, freteMin: 0 };
+            canal.produtos = canal.produtos || {}; canal.produtos[produto.id] = custos;
+            canal.vendas = canal.vendas || {};
+            pessoa.itens.forEach(function (it) {
+              if (it.produtoId !== produto.id || it.canal !== canal.id || !it.dVenda) return;
+              canal.vendas[it.id] = Object.assign({}, custos);
+              tarefas.push({ item: it, antes: it.frete });
+            });
+            feitas[produto.id] = true; canal.correcaoPorsche20261013 = feitas; mudou = true;
+          });
+        });
+        if (!mudou) return;
+        var alteradas = [];
+        return tarefas.reduce(function (passo, tarefa) {
+          return passo.then(function () {
+            return alterarUnidade(tarefa.item.id, { frete: 27.05 }).then(function () { alteradas.push(tarefa); });
+          });
+        }, Promise.resolve()).then(function () {
+          return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(pessoa.id), {
+            metodo: 'PATCH', corpo: { canais: canais }, extras: { Prefer: 'return=representation' }
+          }).then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
+            if (!linhas.length) throw { tipo: 'permissao' };
+            pessoa.canais = linhas[0].canais;
+            tarefas.forEach(function (t) { t.item.frete = 27.05; });
+            if (PESSOA === pessoa) DADOS.canais = pessoa.canais;
+          });
+        }).catch(function (e) {
+          return Promise.all(alteradas.map(function (t) { return alterarUnidade(t.item.id, { frete: t.antes }); }))
+            .then(function () { throw e; });
+        });
+      });
+    }, Promise.resolve());
   }
 
   // ---------- envelope de gravacao ----------
@@ -994,7 +1088,9 @@ tfoot td:first-child{text-align:left}
       roi: custo > 0 ? lucro / custo : NaN
     };
   }
-  function contaDoItem(it) { return conta(num(it.custo), num(it.preco), canalDe(it.canal), it.frete); }
+  function contaDoItem(it) {
+    return conta(num(it.custo), num(it.preco), comCustos(canalDe(it.canal), custosDaVenda(it)), it.frete);
+  }
   function precoAlvo(custo, canal, margem) {
     if (!canal || custo <= 0 || margem >= 1) return NaN;
     var p = custo / (1 - num(canal.pct) - margem);
@@ -1006,6 +1102,17 @@ tfoot td:first-child{text-align:left}
       p = novo;
     }
     return isFinite(p) && p > 0 ? Math.ceil(p * 100) / 100 : NaN;
+  }
+
+  function htmlCustos(prefixo) {
+    return '<div class="campo dupla">'
+      + '<div><label for="' + prefixo + '-pct">Comissão (%)</label><input class="entrada" id="' + prefixo + '-pct" type="text" inputmode="decimal" placeholder="Ex.: 14" autocomplete="off"></div>'
+      + '<div><label for="' + prefixo + '-fixa">Tarifa fixa (R$)</label><input class="entrada" id="' + prefixo + '-fixa" type="text" inputmode="decimal" placeholder="Ex.: 6,00" autocomplete="off"></div></div>'
+      + '<div class="campo dupla">'
+      + '<div><label for="' + prefixo + '-regra">Quando cobrar a tarifa fixa</label><select class="entrada" id="' + prefixo + '-regra"><option value="sempre">Em toda venda</option><option value="abaixo">Abaixo de um valor</option></select></div>'
+      + '<div id="' + prefixo + '-limite-campo" hidden><label for="' + prefixo + '-limite">Cobrar se a venda for menor que (R$)</label><input class="entrada" id="' + prefixo + '-limite" type="text" inputmode="decimal" autocomplete="off"></div></div>'
+      + '<div class="campo"><label for="' + prefixo + '-frete">' + (prefixo === 'ed' ? 'Frete desta venda (R$)' : 'Frete padrão do seu bolso (R$)') + '</label><input class="entrada entrada-dinheiro" id="' + prefixo + '-frete" type="text" inputmode="decimal" placeholder="Ex.: 25,00" autocomplete="off"></div>'
+      + '<p class="proj-nota">Informe 0 quando não houver cobrança. O frete é por unidade vendida.</p>';
   }
 
   // ---------- a casca da pagina ----------
@@ -1119,6 +1226,9 @@ tfoot td:first-child{text-align:left}
     + '            <div class="venda-alvo"><div><div class="nome" id="v-nome"></div><div class="meta" id="v-meta"></div></div>'
     + '              <div class="custo" id="v-custo"></div></div>'
     + '            <div class="campo"><span class="rot">Onde você vendeu</span><div class="canais" id="v-canais" role="radiogroup" aria-label="Canal de venda"></div></div>'
+    + '            <div id="v-custos" hidden><p class="proj-nota" id="v-custos-nota" role="status"></p>'
+    +                htmlCustos('v')
+    + '              <div class="campo"><label class="marcar"><input type="checkbox" id="v-lembrar" checked><span>Usar estes custos nas próximas vendas deste produto neste canal</span></label></div></div>'
     + '            <div class="campo dupla">'
     + '              <div><label for="v-preco">Por quanto saiu</label>'
     + '                <div class="com-prefixo"><span class="prefixo">R$</span>'
@@ -1126,11 +1236,8 @@ tfoot td:first-child{text-align:left}
     + '              <div><label for="v-dvenda">Data da saída</label><input class="entrada" id="v-dvenda" type="date"></div>'
     + '            </div>'
     + '            <div class="cupom-area"><div class="cupom" id="cupom"></div></div>'
-    + '            <details class="mais"><summary>Ajustar frete ou o custo</summary><div>'
-    + '              <div class="campo dupla">'
-    + '                <div><label for="v-frete">Frete do seu bolso</label>'
-    + '                  <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '                  <input class="entrada entrada-dinheiro" id="v-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
+    + '            <details class="mais"><summary>Ajustar o custo do produto</summary><div>'
+    + '              <div class="campo">'
     + '                <div><label for="v-custo-edit">Custo total</label>'
     + '                  <div class="com-prefixo"><span class="prefixo">R$</span>'
     + '                  <input class="entrada entrada-dinheiro" id="v-custo-edit" type="text" inputmode="decimal" autocomplete="off"></div></div>'
@@ -1152,6 +1259,16 @@ tfoot td:first-child{text-align:left}
     + '      <div class="tit">Produtos</div>'
     + '      <div class="tit-sub">Cada produto que você lança vira um cadastro, e o histórico dele vai somando: quantos passaram por aqui, quantos venderam e quanto sobrou ao longo do tempo.</div>'
     + '      <div class="tiles" id="tiles-catalogo"></div>'
+    + '      <section class="cartao" id="painel-custos-produto" style="max-width:720px;margin-bottom:18px"><div class="cartao-corpo">'
+    + '        <div class="rotulo-secao"><span>Taxas e frete por produto</span></div>'
+    + '        <p class="proj-nota">Cadastre uma vez para cada canal. As próximas vendas deste produto usam esses valores automaticamente.</p>'
+    + '        <div class="campo dupla"><div><label for="pc-produto">Produto cadastrado</label><select class="entrada" id="pc-produto"></select></div>'
+    + '          <div><label for="pc-canal">Marketplace / canal</label><select class="entrada" id="pc-canal"></select></div></div>'
+    + '        <p class="proj-nota" id="pc-custos-nota" role="status"></p>'
+    +          htmlCustos('pc')
+    + '        <button class="btn btn-forte" id="btn-custos-produto" type="button">Salvar taxas e frete</button>'
+    + '        <p class="proj-nota" id="pc-sucesso" role="status" hidden style="margin-top:12px"></p>'
+    + '      </div></section>'
     + '      <section class="cartao"><div class="cartao-corpo">'
     + '        <div class="rotulo-secao"><span>Histórico por produto</span><span class="conta" id="conta-catalogo"></span></div>'
     + '        <div id="lista-catalogo"></div>'
@@ -1223,9 +1340,9 @@ tfoot td:first-child{text-align:left}
     + '            <input class="entrada entrada-dinheiro" id="ed-preco" type="text" inputmode="decimal" autocomplete="off"></div></div>'
     + '          <div><label for="ed-dvenda">Data da saída</label><input class="entrada" id="ed-dvenda" type="date"></div>'
     + '        </div>'
-    + '        <div class="campo"><label for="ed-frete">Frete do seu bolso</label>'
-    + '          <div class="com-prefixo"><span class="prefixo">R$</span>'
-    + '          <input class="entrada entrada-dinheiro" id="ed-frete" type="text" inputmode="decimal" placeholder="automático" autocomplete="off"></div></div>'
+    + '        <p class="proj-nota" id="ed-custos-nota" role="status"></p>'
+    +          htmlCustos('ed')
+    + '        <div class="campo"><label class="marcar"><input type="checkbox" id="ed-lembrar"><span>Atualizar os custos padrão deste produto neste canal</span></label></div>'
     + '      </div>'
     + '      <div class="botoes-par"><button class="btn btn-forte" id="btn-editar-salvar" type="button">Salvar alterações</button>'
     + '        <button class="btn btn-fantasma" id="btn-editar-cancelar" type="button">Cancelar</button></div>'
@@ -1249,11 +1366,83 @@ tfoot td:first-child{text-align:left}
     $('#v-canais').innerHTML = htmlCanais('canal-venda');
     $('#ed-canais').innerHTML = htmlCanais('canal-edit');
     var rs = $('#v-canais').querySelectorAll('input');
-    for (var j = 0; j < rs.length; j++) rs[j].addEventListener('change', desenharCupom);
+    for (var j = 0; j < rs.length; j++) rs[j].addEventListener('change', function () { escolherCustosVenda(); desenharCupom(); });
+    var ed = $('#ed-canais').querySelectorAll('input');
+    for (var k = 0; k < ed.length; k++) ed[k].addEventListener('change', escolherCustosEdicao);
   }
   function canalEscolhido() {
     var r = document.querySelector('#v-canais input:checked');
     return r ? canalDe(r.value) : null;
+  }
+
+  function preencherCustos(prefixo, custos) {
+    ['pct', 'fixa', 'frete', 'limite'].forEach(function (campo) {
+      $('#' + prefixo + '-' + campo).value = custos ? paraCampo(campo === 'pct' ? num(custos.pct) * 100 : custos[campo]) : '';
+    });
+    $('#' + prefixo + '-regra').value = custos && num(custos.limite) < 100000 ? 'abaixo' : 'sempre';
+    atualizarRegraCustos(prefixo);
+  }
+  function atualizarRegraCustos(prefixo) {
+    $('#' + prefixo + '-limite-campo').hidden = $('#' + prefixo + '-regra').value !== 'abaixo';
+  }
+  function lerCustos(prefixo, mostrarErro) {
+    var valores = {}, campos = ['pct', 'fixa', 'frete'];
+    if ($('#' + prefixo + '-regra').value === 'abaixo') campos.push('limite');
+    for (var i = 0; i < campos.length; i++) {
+      var campo = campos[i], el = $('#' + prefixo + '-' + campo), txt = el.value.trim();
+      // Nao aceita um campo vazio como zero nem parseFloat parcial ("12abc").
+      var valido = /^(?:\d+(?:\.\d+)?|\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:,\d+)?)$/.test(txt);
+      var valor = num(txt);
+      if (!valido || !isFinite(valor) || valor < 0 || (campo === 'pct' && valor >= 100) || (campo === 'limite' && valor <= 0)) {
+        if (mostrarErro) {
+          erro('<b>Confira as taxas e o frete deste produto neste canal.</b> Preencha todos os valores; use 0 quando não houver cobrança. A comissão deve ser menor que 100% e o limite deve ser positivo.');
+          el.focus();
+        }
+        return null;
+      }
+      valores[campo] = valor;
+    }
+    return { pct: valores.pct / 100, fixa: valores.fixa,
+      limite: valores.limite === undefined ? 1e100 : valores.limite,
+      frete: valores.frete, freteMin: 0 };
+  }
+  var RASCUNHOS_CUSTOS = { v: {}, ed: {} }, CANAL_CUSTOS = { v: '', ed: '' };
+  function trocarCustos(prefixo, produtoId, canal, custosVenda) {
+    var anterior = CANAL_CUSTOS[prefixo];
+    if (anterior) {
+      var rascunho = {};
+      ['pct', 'fixa', 'frete', 'regra', 'limite', 'lembrar'].forEach(function (c) {
+        var el = $('#' + prefixo + '-' + c);
+        rascunho[c] = c === 'lembrar' ? el.checked : el.value;
+      });
+      RASCUNHOS_CUSTOS[prefixo][anterior] = rascunho;
+    }
+    CANAL_CUSTOS[prefixo] = canal ? canal.id : '';
+    var custos = custosVenda || custosDoProduto(produtoId, canal);
+    preencherCustos(prefixo, custos);
+    $('#' + prefixo + '-lembrar').checked = prefixo === 'v';
+    var salvo = canal && RASCUNHOS_CUSTOS[prefixo][canal.id];
+    if (salvo) Object.keys(salvo).forEach(function (c) {
+      var el = $('#' + prefixo + '-' + c);
+      if (c === 'lembrar') el.checked = salvo[c]; else el.value = salvo[c];
+    });
+    atualizarRegraCustos(prefixo);
+    $('#' + prefixo + '-custos-nota').textContent = custosVenda
+      ? 'Custos registrados nesta venda. Alterar aqui muda somente esta venda, salvo se marcar a opção de atualizar o padrão.'
+      : (custos ? 'Custos salvos para este produto em ' + canal.nome + '. Você pode ajustá-los antes de confirmar.'
+        : 'Primeira configuração deste produto em ' + (canal ? canal.nome : 'este canal') + '. Cadastre as taxas e o frete para continuar.');
+  }
+  function escolherCustosVenda() {
+    var it = itemDe(vendendo), canal = canalEscolhido();
+    $('#v-custos').hidden = !it || !canal;
+    if (it) trocarCustos('v', it.produtoId, canal, null);
+  }
+  function escolherCustosEdicao() {
+    var it = itemDe(editando), radio = document.querySelector('#ed-canais input:checked');
+    if (!it || !radio) return;
+    var canal = canalDe(radio.value);
+    var custos = it.canal === radio.value ? custosDaVenda(it) || retratoCustos(canal, contaDoItem(it).frete) : null;
+    trocarCustos('ed', it.produtoId, canal, custos);
   }
 
   function desenharCupom() {
@@ -1264,11 +1453,17 @@ tfoot td:first-child{text-align:left}
     var custo = num($('#v-custo-edit').value);
     var preco = num($('#v-preco').value);
     var freteTxt = $('#v-frete').value.trim();
+    var custos = canal ? lerCustos('v', false) : null;
+    if (canal && !custos) {
+      el.innerHTML = '<div class="cupom-vazio">Preencha as taxas e o frete deste produto neste canal para calcular o lucro.</div>';
+      return;
+    }
+    canal = comCustos(canal, custos);
 
     if (!canal || preco <= 0) {
       el.innerHTML = '<div class="cupom-vazio">' + (canal
         ? 'Digite por quanto o produto saiu e a conta aparece aqui.'
-        : 'Escolha onde vendeu e digite o valor.<br>A taxa e o frete entram sozinhos.') + '</div>';
+        : 'Escolha onde vendeu. Os custos salvos deste produto serão preenchidos para esse canal.') + '</div>';
       return;
     }
     var c = conta(custo, preco, canal, freteTxt === '' ? null : num(freteTxt));
@@ -1605,7 +1800,7 @@ tfoot td:first-child{text-align:left}
       }
       var gFat = 0, gTaxa = 0, gLucro = 0;
       for (var j = 0; j < g.itens.length; j++) {
-        var c = conta(num(g.itens[j].custo), preco, canal, null);
+        var c = conta(num(g.itens[j].custo), preco, comCustos(canal, custosDoProduto(g.itens[j].produtoId, canal)), null);
         gFat += c.preco; gTaxa += c.taxa + c.frete; gLucro += c.lucro;
       }
       fat += gFat; taxas += gTaxa; custo += g.custo; lucro += gLucro;
@@ -1659,7 +1854,7 @@ tfoot td:first-child{text-align:left}
       var canal = sel ? canalDe(sel.value) : null;
       // usa o custo medio do grupo como base do preco sugerido
       var medio = GRUPOS[i].custo / GRUPOS[i].itens.length;
-      var sugerido = precoAlvo(medio, canal, alvoM / 100);
+      var sugerido = precoAlvo(medio, comCustos(canal, custosDoProduto(GRUPOS[i].itens[0].produtoId, canal)), alvoM / 100);
       if (isFinite(sugerido)) inp.value = paraCampo(sugerido);
     }
     recalcProjecao();
@@ -1680,6 +1875,9 @@ tfoot td:first-child{text-align:left}
     $('#btn-taxas').hidden = !meu;
     $('#btn-proj-salvar').hidden = !meu;
     $('#btn-proj-sugerir').hidden = !meu;
+    $('#btn-custos-produto').hidden = !meu;
+    var custos = $('#painel-custos-produto').querySelectorAll('input, select');
+    for (var c = 0; c < custos.length; c++) custos[c].disabled = !meu;
     var trancar = $('#ajustes').querySelectorAll('input');
     for (var i = 0; i < trancar.length; i++) trancar[i].disabled = !meu;
     var proj = document.querySelectorAll('.proj-preco, .proj-canal');
@@ -1710,6 +1908,7 @@ tfoot td:first-child{text-align:left}
   }
 
   function trocarAba(id) {
+    if (salvando) return;
     if (PESSOA && PESSOA.id === id) return;
     ativar(id);
     fecharPaineis();
@@ -2167,6 +2366,7 @@ tfoot td:first-child{text-align:left}
     var it = itemDe(vendendo); if (!it) return;
     var canal = canalEscolhido();
     if (!canal) { erro('<b>Falta escolher o canal.</b> Toque no app onde a venda aconteceu.'); return; }
+    var custos = lerCustos('v', true); if (!custos) return;
     var preco = num($('#v-preco').value);
     if (preco <= 0) { erro('<b>Falta o valor da venda.</b> Digite por quanto o produto saiu.'); $('#v-preco').focus(); return; }
     var dVenda = $('#v-dvenda').value || hoje();
@@ -2174,24 +2374,18 @@ tfoot td:first-child{text-align:left}
       erro('<b>A data da saída é anterior à da chegada.</b> Confira: chegou em ' + dataBR(it.dChegada) + '.');
       return;
     }
-    var freteTxt = $('#v-frete').value.trim();
-    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda, custo: it.custo };
-    var idAlvo = it.id;
-    it.canal = canal.id;
-    it.preco = preco;
-    it.frete = freteTxt === '' ? null : num(freteTxt);
-    it.dVenda = dVenda;
-    it.custo = num($('#v-custo-edit').value);
-    fecharPaineis();
-    desenharTudo();
+    var custo = num($('#v-custo-edit').value);
+    if (custo <= 0) { erro('<b>Confira o custo do produto.</b> Ele deve ser maior que zero.'); return; }
+    var pessoa = PESSOA, lembrar = $('#v-lembrar').checked;
+    var campos = { canal: canal.id, preco: preco, frete: custos.frete, d_venda: dVenda, custo: custo };
     salvar(function () {
-      return alterarUnidade(idAlvo, {
-        canal: it.canal, preco: it.preco, frete: it.frete, d_venda: it.dVenda, custo: it.custo
+      return gravarCustos(pessoa, canal.id, it.produtoId, custos, it.id, lembrar).then(function () {
+        return alterarUnidade(it.id, campos);
+      }).then(function () {
+        it.canal = canal.id; it.preco = preco; it.frete = custos.frete; it.dVenda = dVenda; it.custo = custo;
       });
-    }, $('#btn-entrada'), 'Dar entrada', function () {
-      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete;
-      it.dVenda = antes.dVenda; it.custo = antes.custo;
-      desenharTudo();
+    }, $('#btn-venda'), 'Confirmar saída', null, function () {
+      fecharPaineis(); desenharTudo();
     });
   }
   function desfazerVenda(id) {
@@ -2225,6 +2419,10 @@ tfoot td:first-child{text-align:left}
       return;
     }
     var vendido = fase(it) === 'vendido';
+    var custosVenda = vendido ? lerCustos('ed', true) : null;
+    if (vendido && !custosVenda) return;
+    var pessoa = PESSOA, lembrarCustos = vendido && $('#ed-lembrar').checked;
+    var custosAntes = vendido ? custosDaVenda(it) || retratoCustos(canalDe(it.canal), contaDoItem(it).frete) : null;
     var canal = it.canal, preco = it.preco, frete = it.frete, dVenda = it.dVenda;
     if (vendido) {
       var r = document.querySelector('#ed-canais input:checked');
@@ -2238,8 +2436,7 @@ tfoot td:first-child{text-align:left}
         erro('<b>A saída não pode ser antes da chegada.</b> Chegou em ' + dataBR(dChegada) + '.');
         return;
       }
-      var ft = $('#ed-frete').value.trim();
-      frete = ft === '' ? null : num(ft);
+      frete = custosVenda.frete;
     }
 
     var antes = {
@@ -2251,27 +2448,29 @@ tfoot td:first-child{text-align:left}
     var fornecedor = $('#ed-fornecedor').value.trim();
     var trocouNome = nome.toLowerCase() !== String(it.produto).trim().toLowerCase();
 
-    it.custo = custo; it.fornecedor = fornecedor;
-    it.dCompra = dCompra; it.dChegada = dChegada;
-    it.canal = canal; it.preco = preco; it.frete = frete; it.dVenda = dVenda;
-    it.produto = nome;
-    fecharPaineis();
-    desenharTudo();
-
     salvar(function () {
       // trocar o nome aponta a unidade para outro cadastro, criando se preciso
       var passo = trocouNome ? garantirProduto(nome, fornecedor) : Promise.resolve(it.produtoId);
       return passo.then(function (produtoId) {
-        it.produtoId = produtoId;
-        return alterarUnidade(idAlvo, {
+        var custosGravados = false;
+        var gravar = vendido ? gravarCustos(pessoa, canal, produtoId, custosVenda, idAlvo, lembrarCustos) : Promise.resolve();
+        return gravar.then(function () { custosGravados = vendido; return alterarUnidade(idAlvo, {
           produto_id: produtoId, custo: custo, fornecedor: fornecedor,
           d_compra: dCompra || null, d_chegada: dChegada || null,
           canal: canal, preco: preco, frete: frete, d_venda: dVenda || null
+        }); }).catch(function (e) {
+          if (!custosGravados || canal !== antes.canal) throw e;
+          return gravarCustos(pessoa, antes.canal, antes.produtoId, custosAntes, idAlvo, false)
+            .then(function () { throw e; });
+        }).then(function () {
+          it.produtoId = produtoId; it.produto = nome;
+          it.custo = custo; it.fornecedor = fornecedor;
+          it.dCompra = dCompra; it.dChegada = dChegada;
+          it.canal = canal; it.preco = preco; it.frete = frete; it.dVenda = dVenda;
         });
-      }).then(function () { desenharTudo(); });
-    }, $('#btn-entrada'), 'Dar entrada', function () {
-      for (var k in antes) if (Object.prototype.hasOwnProperty.call(antes, k)) it[k] = antes[k];
-      desenharTudo();
+      });
+    }, $('#btn-editar-salvar'), 'Salvar alterações', null, function () {
+      fecharPaineis(); desenharTudo();
     });
   }
 
@@ -2360,6 +2559,13 @@ tfoot td:first-child{text-align:left}
     if (salvando) return;
     $('#aviso-erro').hidden = true;
     var antes = JSON.parse(JSON.stringify(PESSOA.canais));
+    // As vendas antigas ainda sem retrato preservam os valores atuais.
+    PESSOA.itens.forEach(function (it) {
+      if (!it.dVenda || custosDaVenda(it)) return;
+      var canal = canalDe(it.canal); if (!canal) return;
+      canal.vendas = canal.vendas || {};
+      canal.vendas[it.id] = retratoCustos(canal, contaDoItem(it).frete);
+    });
     var ins = $('#ajustes').querySelectorAll('input[data-tx]');
     for (var i = 0; i < ins.length; i++) {
       var c = canalDe(ins[i].getAttribute('data-id'));
@@ -2401,6 +2607,50 @@ tfoot td:first-child{text-align:left}
   }
 
   // ============================ CADASTRO DE PRODUTOS ============================
+  function desenharCadastroCustos() {
+    var produtos = PESSOA ? PESSOA.produtos : [], produto = $('#pc-produto').value, canal = $('#pc-canal').value;
+    $('#pc-produto').innerHTML = produtos.length ? produtos.map(function (p) {
+      return '<option value="' + esc(p.id) + '">' + esc(p.nome) + '</option>';
+    }).join('') : '<option value="">Cadastre um produto em Compras e Estoque</option>';
+    $('#pc-canal').innerHTML = DADOS.canais.map(function (c) {
+      return '<option value="' + esc(c.id) + '">' + esc(c.nome) + '</option>';
+    }).join('');
+    if (produtos.some(function (p) { return p.id === produto; })) $('#pc-produto').value = produto;
+    if (canalDe(canal)) $('#pc-canal').value = canal;
+    $('#btn-custos-produto').disabled = !produtos.length || !DADOS.canais.length;
+    carregarCadastroCustos();
+  }
+  function carregarCadastroCustos() {
+    var produtoId = $('#pc-produto').value, canal = canalDe($('#pc-canal').value);
+    var custos = custosDoProduto(produtoId, canal);
+    preencherCustos('pc', custos);
+    $('#pc-sucesso').hidden = true;
+    $('#pc-custos-nota').textContent = !produtoId || !canal ? 'Escolha um produto e um canal para configurar os custos.'
+      : (custos ? 'Configuração salva para este produto em ' + canal.nome + '.'
+        : 'Este produto ainda não tem custos cadastrados em ' + canal.nome + '. Preencha abaixo.');
+  }
+  function aoSalvarCustosProduto() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var produtoId = $('#pc-produto').value, canal = canalDe($('#pc-canal').value);
+    if (!produtoId || !canal) { erro('<b>Escolha um produto cadastrado e um canal.</b>'); return; }
+    var custos = lerCustos('pc', true); if (!custos) return;
+    var pessoa = PESSOA;
+    salvar(function () { return gravarCustos(pessoa, canal.id, produtoId, custos, null, true); },
+      $('#btn-custos-produto'), 'Salvar taxas e frete', null, function () {
+        desenharTudo();
+        $('#pc-sucesso').textContent = 'Taxas e frete salvos. As próximas vendas deste produto em ' + canal.nome + ' usarão esses custos.';
+        $('#pc-sucesso').hidden = false;
+      });
+  }
+  function abrirCadastroCustos(produtoId) {
+    if (salvando) return;
+    irPara('produtos');
+    $('#pc-produto').value = produtoId;
+    carregarCadastroCustos();
+    $('#painel-custos-produto').scrollIntoView({ behavior: 'auto', block: 'start' });
+    $('#pc-canal').focus();
+  }
   // A lista de nomes ja cadastrados alimenta o autocompletar do formulario de
   // entrada, para nao redigitar o nome a cada nova compra do mesmo produto.
   function desenharListaProdutos() {
@@ -2450,6 +2700,7 @@ tfoot td:first-child{text-align:left}
   }
 
   function desenharProdutos() {
+    desenharCadastroCustos();
     var lista = resumoPorProduto();
     var alvo = $('#lista-catalogo');
     if (!alvo) return;
@@ -2478,7 +2729,7 @@ tfoot td:first-child{text-align:left}
 
     var h = '<div class="tabela-caixa"><table><thead><tr>'
       + '<th>Produto</th><th>Comprou</th><th>Parado</th><th>Vendeu</th>'
-      + '<th>Faturou</th><th>Sobrou</th><th>Margem</th><th>Giro</th>'
+      + '<th>Faturou</th><th>Sobrou</th><th>Margem</th><th>Giro</th><th>Custos por canal</th>'
       + '</tr></thead><tbody>';
     for (var j = 0; j < lista.length; j++) {
       var r = lista[j];
@@ -2487,6 +2738,7 @@ tfoot td:first-child{text-align:left}
       var meta = [];
       if (r.fornecedor) meta.push(esc(r.fornecedor));
       if (r.comprados) meta.push('custo médio ' + brl(r.custoTotal / r.comprados));
+      var configurados = DADOS.canais.filter(function (c) { return !!custosDoProduto(r.id, c); });
       h += '<tr>'
         + '<td data-l="Produto"><span class="prod">' + esc(r.nome) + '<small>' + meta.join(' · ') + '</small></span></td>'
         + '<td data-l="Comprou" class="num-cel">' + r.comprados + '</td>'
@@ -2497,6 +2749,8 @@ tfoot td:first-child{text-align:left}
         + (r.vendidos ? brl(r.lucro) : '—') + '</td>'
         + '<td data-l="Margem" class="num-cel">' + (r.vendidos && r.faturamento > 0 ? pc(r.lucro / r.faturamento) : '—') + '</td>'
         + '<td data-l="Giro" class="num-cel">' + (giro == null ? '—' : giro + 'd') + '</td>'
+        + '<td data-l="Custos por canal"><span class="meta">' + (configurados.length ? configurados.map(function (c) { return esc(c.curto); }).join(' · ') : 'Ainda não cadastrado') + '</span>'
+        + (podeEditar() ? '<br><button class="btn btn-mini" type="button" data-custos-produto="' + esc(r.id) + '">Taxas e frete</button>' : '') + '</td>'
         + '</tr>';
     }
     h += '</tbody><tfoot><tr><td>' + plural(lista.length, 'produto', 'produtos') + '</td>'
@@ -2506,8 +2760,12 @@ tfoot td:first-child{text-align:left}
       + '<td data-l="Faturou" class="num-cel">' + brl(tFat) + '</td>'
       + '<td data-l="Sobrou" class="num-cel" style="color:' + (tLucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(tLucro) + '</td>'
       + '<td data-l="Margem" class="num-cel">' + (tFat > 0 ? pc(tLucro / tFat) : '—') + '</td>'
-      + '<td></td></tr></tfoot></table></div>';
+      + '<td></td><td></td></tr></tfoot></table></div>';
     alvo.innerHTML = h;
+    var botoesCustos = alvo.querySelectorAll('[data-custos-produto]');
+    for (var bc = 0; bc < botoesCustos.length; bc++) botoesCustos[bc].addEventListener('click', function () {
+      abrirCadastroCustos(this.getAttribute('data-custos-produto'));
+    });
   }
 
   function desenharTudo() {
@@ -2580,6 +2838,7 @@ tfoot td:first-child{text-align:left}
       }).then(conferir).then(function () {
         var nomes = {};
         for (var k = 0; k < minha.itens.length; k++) nomes[String(minha.itens[k].produto || '').trim()] = 1;
+        (minha.produtos || []).forEach(function (p) { nomes[String(p.nome || '').trim()] = 1; });
         var lista = Object.keys(nomes).filter(function (x) { return x; });
         return lista.reduce(function (fila, nome) {
           return fila.then(function () { return garantirProduto(nome, ''); });
@@ -2597,7 +2856,27 @@ tfoot td:first-child{text-align:left}
           PESSOA.canais = minha.canais;
           DADOS.canais = minha.canais;
         }
-        return linhas.length ? criarUnidades(linhas) : Promise.resolve();
+        var produtosAntigos = {}, unidadesAntigas = linhas.map(function (it) { return it.id; });
+        (minha.produtos || []).forEach(function (p) { produtosAntigos[p.id] = porNome[String(p.nome || '').trim().toLowerCase()]; });
+        minha.itens.forEach(function (it) { produtosAntigos[it.produtoId] = porNome[String(it.produto || '').trim().toLowerCase()]; });
+        return (linhas.length ? criarUnidades(linhas) : Promise.resolve()).then(function () {
+          var unidadesNovas = {};
+          linhas.forEach(function (it, i) { unidadesNovas[unidadesAntigas[i]] = it.id; });
+          PESSOA.canais.forEach(function (c) {
+            var produtos = {}, vendas = {}, correcoes = {};
+            Object.keys(c.produtos || {}).forEach(function (id) {
+              if (produtosAntigos[id]) produtos[produtosAntigos[id]] = c.produtos[id];
+            });
+            Object.keys(c.vendas || {}).forEach(function (id) {
+              if (unidadesNovas[id]) vendas[unidadesNovas[id]] = c.vendas[id];
+            });
+            Object.keys(c.correcaoPorsche20261013 || {}).forEach(function (id) {
+              if (produtosAntigos[id]) correcoes[produtosAntigos[id]] = c.correcaoPorsche20261013[id];
+            });
+            c.produtos = produtos; c.vendas = vendas;
+            c.correcaoPorsche20261013 = correcoes;
+          });
+        });
       }).then(function () {
         return Array.isArray(minha.canais) && minha.canais.length ? gravarCanais() : Promise.resolve();
       }).then(function () {
@@ -2644,12 +2923,14 @@ tfoot td:first-child{text-align:left}
   // ---------- 3 · saida ----------
   function fecharPaineis() {
     vendendo = null; editando = null;
+    $('#painel-venda').hidden = false;
     $('#venda-form').hidden = true;
     $('#venda-vazio').hidden = false;
     $('#painel-editar').hidden = true;
     $('#cupom').innerHTML = '';
   }
   function abrirVenda(id) {
+    if (salvando) return;
     var it = itemDe(id); if (!it) return;
     editando = null; $('#painel-editar').hidden = true;
     vendendo = id;
@@ -2669,14 +2950,18 @@ tfoot td:first-child{text-align:left}
     $('#v-custo-edit').value = paraCampo(it.custo);
     $('#v-preco').value = '';
     $('#v-frete').value = '';
+    RASCUNHOS_CUSTOS.v = {}; CANAL_CUSTOS.v = '';
+    $('#v-lembrar').checked = true;
     $('#v-dvenda').value = hoje();
     var m = document.querySelector('#v-canais input:checked'); if (m) m.checked = false;
+    escolherCustosVenda();
     desenharCupom();
     $('#v-preco').focus();
   }
 
   // ---------- alterar ----------
   function abrirEdicao(id) {
+    if (salvando) return;
     var it = itemDe(id); if (!it) return;
     vendendo = null; $('#painel-venda').hidden = true; $('#cupom').innerHTML = '';
     editando = id;
@@ -2694,6 +2979,8 @@ tfoot td:first-child{text-align:left}
     } else { dg.hidden = true; }
 
     var vendido = fase(it) === 'vendido';
+    RASCUNHOS_CUSTOS.ed = {}; CANAL_CUSTOS.ed = '';
+    $('#ed-lembrar').checked = false;
     $('#ed-bloco-venda').hidden = !vendido;
     var atual = document.querySelector('#ed-canais input:checked');
     if (atual) atual.checked = false;
@@ -2703,6 +2990,7 @@ tfoot td:first-child{text-align:left}
       $('#ed-frete').value = it.frete == null ? '' : paraCampo(it.frete);
       var rad = document.querySelector('#ed-canais input[value="' + it.canal + '"]');
       if (rad) rad.checked = true;
+      escolherCustosEdicao();
     }
     $('#painel-editar').hidden = false;
     var suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2798,6 +3086,22 @@ tfoot td:first-child{text-align:left}
   ['v-preco', 'v-frete', 'v-custo-edit'].forEach(function (id) {
     document.getElementById(id).addEventListener('input', desenharCupom);
   });
+  ['v', 'ed', 'pc'].forEach(function (prefixo) {
+    ['pct', 'fixa', 'limite', 'frete'].forEach(function (campo) {
+      $('#' + prefixo + '-' + campo).addEventListener('input', function () {
+        if (prefixo === 'v') desenharCupom();
+        if (prefixo === 'pc') $('#pc-sucesso').hidden = true;
+      });
+    });
+    $('#' + prefixo + '-regra').addEventListener('change', function () {
+      atualizarRegraCustos(prefixo);
+      if (prefixo === 'v') desenharCupom();
+      if (prefixo === 'pc') $('#pc-sucesso').hidden = true;
+    });
+  });
+  $('#pc-produto').addEventListener('change', carregarCadastroCustos);
+  $('#pc-canal').addEventListener('change', carregarCadastroCustos);
+  $('#btn-custos-produto').addEventListener('click', aoSalvarCustosProduto);
   ['e-qtd', 'e-custo'].forEach(function (id) {
     document.getElementById(id).addEventListener('input', desenharDicaEntrada);
   });
