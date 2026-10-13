@@ -635,6 +635,11 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
 @media(max-width:719px){.wrap,.wrap[data-compact="true"]{padding-left:0;padding-bottom:90px}.sidebar{display:none}.topo-sistema{padding:10px 14px;gap:8px;min-height:62px}.area{padding:24px 15px}.header-actions .btn{display:none!important}.header-actions .theme-button{display:inline-flex!important}.header-actions{margin-left:auto}.sessao{display:none}.tit{font-size:25px}.tit-sub{font-size:12px}.cartao-corpo{padding:18px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile{padding:15px}.tile .num{font-size:24px}.tile .sub{font-size:10px}.action-grid{grid-template-columns:1fr;gap:8px}.action-card{padding:12px 15px}.action-card .action-icon{display:grid;width:32px;height:32px;font-size:16px}.action-card strong{font-size:12px}.action-card small{font-size:10px}.filtros{padding:12px;gap:10px}.filtros .filtro-control{flex:1;min-width:135px}.filtros .nota-filtro{width:100%;margin:0}.datas-custom{width:100%}.datas-custom>div{flex:1;min-width:0}.col-form .col-2,.col-catalogo .catalog-settings{grid-template-columns:1fr}.nav-baixo{display:flex}.nav-item{font-size:10px;min-height:55px}.nav-icone{height:28px}.nav-item svg{width:20px;height:20px}.btn-mini{min-height:38px}.item{grid-template-columns:1fr auto}.item-acoes{grid-column:1/-1}.list-toolbar select{flex:1;max-width:none;width:auto}.list-toolbar input{flex-basis:100%}.toast{bottom:90px;right:16px}.proj-item{grid-template-columns:1fr 1fr}.proj-res{grid-column:1/-1}.settings-row{align-items:flex-start;flex-wrap:wrap}.settings-row select{max-width:none}.tabela-caixa{overflow:visible}tbody td{padding:5px 0}.chart-tooltip{font-size:10px}}
 </style>
 
+<style id="ciclos">
+.estoque-grupo{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;background:var(--surface)}.estoque-grupo>summary{display:flex;align-items:center;gap:14px;cursor:pointer;list-style:none;padding:16px}.estoque-grupo>summary::-webkit-details-marker{display:none}.estoque-grupo .grupo-nome{font-size:14px;font-weight:650}.grupo-info{font-size:11px;color:var(--ink-3);line-height:1.7;margin-top:4px}.grupo-quantidade{font-weight:750;font-size:22px;color:var(--accent);margin-left:auto;text-align:right;white-space:nowrap}.grupo-quantidade small{display:block;font-weight:500;font-size:10px;color:var(--ink-3)}.grupo-expandir{font-size:12px;color:var(--ink-3);transition:transform .2s}.estoque-grupo[open] .grupo-expandir{transform:rotate(180deg)}.grupo-unidades{padding:0 16px 12px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--surface-2) 35%,var(--surface))}.grupo-unidades .item:last-child{border:0}.ciclo-pill{display:inline-flex;gap:5px;align-items:center;font-size:10px;border-radius:20px;padding:3px 8px;background:var(--accent-soft);color:var(--accent);font-weight:650}.ciclo-pill.pendente{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,var(--surface))}.ciclo-pill.encerrada{color:var(--ink-3);background:var(--surface-2)}.ocorrencia{padding:19px 0;border-bottom:1px solid var(--line)}.ocorrencia:last-child{border:0}.ocorrencia-topo{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.ocorrencia-topo h3{font-size:13px;font-weight:650}.ocorrencia-meta{font-size:11px;color:var(--ink-3);line-height:1.7;margin-top:7px}.ciclo-datas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}.ciclo-datas>div{border-radius:9px;padding:10px;background:var(--surface-2);font-size:11px}.ciclo-datas small{display:block;font-size:9px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}.ciclo-editar{margin-top:14px;background:var(--surface-2);padding:15px;border-radius:11px}.ocorrencia .item-acoes{margin-top:12px;justify-content:flex-start}.ciclo-numeros{display:flex;gap:15px;flex-wrap:wrap;font-size:11px;margin:10px 0;color:var(--ink-2)}.campo textarea{min-height:75px;resize:vertical}.expense-note{font-size:11px;color:var(--ink-3);line-height:1.6}.sidebar .modulos{overflow-y:auto;min-height:0}.sidebar-bottom{padding-top:16px}.sidebar-brand{margin-bottom:24px}#tiles{grid-template-columns:repeat(4,minmax(0,1fr))}.tiles-operacao{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:1250px){#tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.ciclo-datas{grid-template-columns:1fr 1fr}}
+@media(max-width:719px){#tiles{grid-template-columns:1fr 1fr}.wrap,.wrap[data-compact="true"]{padding-bottom:145px}.nav-baixo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding-top:5px}.nav-item{min-height:47px;padding:3px 1px;gap:1px}.nav-icone{height:23px}.nav-item svg{width:18px;height:18px}.toast{bottom:135px}.ciclo-datas{grid-template-columns:1fr 1fr}.estoque-grupo>summary{padding:13px;gap:9px}.grupo-nome{font-size:13px}.grupo-quantidade{font-size:20px}.grupo-unidades{padding-left:12px;padding-right:12px}.tiles-operacao{grid-template-columns:1fr 1fr}.ocorrencia-topo{flex-wrap:wrap}}
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -806,6 +811,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
                          .map(function (u) { return daLinha(u, nomePorId); })
         };
       }) };
+      DADOS.pessoas.forEach(aplicarGestao);
       return corrigirLegoPorsche().then(function () { return DADOS; });
     });
   }
@@ -862,10 +868,38 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     }).then(conferir);
   }
 
-  function gravarCanais() {
-    return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(PESSOA.id), {
-      metodo: 'PATCH', corpo: { canais: PESSOA.canais }, extras: { Prefer: 'return=minimal' }
-    }).then(conferir);
+  function lerCanaisAtuais(pessoa) {
+    return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(pessoa.id) + '&select=canais')
+      .then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
+        if (!linhas.length || !Array.isArray(linhas[0].canais)) throw { tipo: 'permissao' };
+        return linhas[0].canais;
+      });
+  }
+  function atualizarCanais(pessoa, canais, base) {
+    // Comparacao no servidor: nao sobrescreve mudancas feitas em outro aparelho.
+    if (!canais.length) return Promise.reject({ tipo: 'rede' });
+    var revisao = base[0] && base[0].gestao && base[0].gestao.revisao;
+    canais[0].gestao = Object.assign({ devolucoes: [], despesas: [] }, canais[0].gestao || {}, { revisao: num(revisao) + 1 });
+    var filtro = encodeURIComponent('canais->0->gestao->>revisao') + '=' + (revisao == null ? 'is.null' : 'eq.' + Number(revisao));
+    return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(pessoa.id) + '&' + filtro, {
+      metodo: 'PATCH', corpo: { canais: canais }, extras: { Prefer: 'return=representation' }
+    }).then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
+      if (!linhas.length) throw { tipo: 'conflito' };
+      pessoa.canais = linhas[0].canais;
+      if (PESSOA === pessoa) DADOS.canais = pessoa.canais;
+    });
+  }
+  function gravarCanais(restaurar) {
+    var pessoa = PESSOA, locais = JSON.parse(JSON.stringify(pessoa.canais));
+    return lerCanaisAtuais(pessoa).then(function (base) {
+      var canais = restaurar === true ? locais : JSON.parse(JSON.stringify(base));
+      if (restaurar !== true) canais.forEach(function (c) {
+        var local = locais.filter(function (x) { return x.id === c.id; })[0]; if (!local) return;
+        ['pct', 'fixa', 'limite', 'frete', 'freteMin'].forEach(function (k) { c[k] = local[k]; });
+        c.vendas = Object.assign({}, local.vendas || {}, c.vendas || {});
+      });
+      return atualizarCanais(pessoa, canais, base);
+    });
   }
 
   // Custos por produto/canal e retratos das vendas usam o JSON de canais
@@ -880,6 +914,118 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   function comCustos(canal, custos) {
     return custos ? Object.assign({}, canal, custos) : canal;
   }
+
+  function gestaoDaPessoa(pessoa) {
+    var canais = pessoa && pessoa.canais || [], g = canais[0] && canais[0].gestao || {};
+    return { devolucoes: Array.isArray(g.devolucoes) ? g.devolucoes : [], despesas: Array.isArray(g.despesas) ? g.despesas : [] };
+  }
+  function historicoUnidade(id, pessoa) {
+    return gestaoDaPessoa(pessoa || PESSOA).devolucoes.filter(function (d) { return d.unidadeId === id; });
+  }
+  function ultimaDevolucao(id, pessoa) {
+    var lista = historicoUnidade(id, pessoa); return lista.length ? lista[lista.length - 1] : null;
+  }
+  function aplicarGestao(pessoa) {
+    // O registro original da venda anulada fica no historico. A visao de
+    // trabalho usa somente a venda efetiva mais recente, sem duplicar unidades.
+    pessoa.itens.forEach(function (it) {
+      var d = ultimaDevolucao(it.id, pessoa);
+      if (d && !d.revenda) { it.dVenda = ''; it.dRecebido = ''; it.canal = ''; it.preco = 0; it.frete = null; }
+    });
+  }
+  function gravarGestao(pessoa, alterar) {
+    return lerCanaisAtuais(pessoa).then(function (base) {
+      var canais = JSON.parse(JSON.stringify(base));
+      if (!canais.length) throw { tipo: 'rede' };
+      var g = canais[0].gestao || (canais[0].gestao = {});
+      if (!Array.isArray(g.devolucoes)) g.devolucoes = [];
+      if (!Array.isArray(g.despesas)) g.despesas = [];
+      alterar(g);
+      return atualizarCanais(pessoa, canais, base).then(function () { aplicarGestao(pessoa); });
+    });
+  }
+  function despesasDaPessoa(pessoa) {
+    var g = gestaoDaPessoa(pessoa || PESSOA);
+    var manuais = g.despesas.filter(function (d) { return !d.excluidaEm; }).map(function (d) { return Object.assign({ origem: 'manual' }, d); });
+    return manuais.concat(g.devolucoes.filter(function (d) { return num(d.custo) > 0; }).map(function (d) {
+      return { id: 'ret-' + d.id, origem: 'devolucao', descricao: (d.tipo === 'cancelamento' ? 'Cancelamento: ' : 'Devolução: ') + d.produto,
+        categoria: 'devolucoes', valor: num(d.custo), data: d.custoEm || d.solicitadaEm, produtoId: d.produtoId, unidadeId: d.unidadeId, ocorrenciaId: d.id };
+    }));
+  }
+  function despesasAnalisadas() {
+    var limites = limitesAnalise();
+    return despesasDaPessoa().filter(function (d) { return (!limites.inicio || d.data >= limites.inicio) && (!limites.fim || d.data <= limites.fim); });
+  }
+  function totalDespesas(lista) { return lista.reduce(function (s, d) { return s + num(d.valor); }, 0); }
+  function diasCiclo(it, ate) { return dias(it.dCompra || it.dChegada, ate || it.dVenda || hoje()); }
+  function lerValor(id, aceitaZero) {
+    var el = $('#' + id), txt = el.value.trim();
+    if (!/^(?:\d+(?:[.,]\d{1,2})?|\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?)$/.test(txt)) {
+      erro('<b>Confira o valor informado.</b> Use um valor em reais com até duas casas decimais.'); el.focus(); return null;
+    }
+    var valor = /^\d{1,3}(?:\.\d{3})+$/.test(txt) ? Number(txt.replace(/\./g, '')) : num(txt);
+    if (!isFinite(valor) || valor < 0 || (!aceitaZero && valor <= 0)) { erro('<b>Informe um valor válido.</b>'); el.focus(); return null; }
+    return Math.round(valor * 100) / 100;
+  }
+  function lerDataCampo(id, nome, opcional, futuro) {
+    var valor = $('#' + id).value;
+    if (!valor && opcional) return '';
+    var d = new Date(valor + 'T12:00:00Z');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(valor) || !isFinite(d.getTime()) || d.toISOString().slice(0, 10) !== valor || (!futuro && valor > hoje())) {
+      erro('<b>Confira ' + esc(nome) + '.</b> Informe uma data válida' + (futuro ? '.' : ', até hoje.') ); $('#' + id).focus(); return null;
+    }
+    return valor;
+  }
+  function registrarOcorrencia(pessoa, it, dados) {
+    if (!it.dVenda || fase(it) !== 'vendido') return Promise.reject({ tipo: 'conflito' });
+    var c = contaDoItem(it), canal = canalDe(it.canal);
+    var evento = Object.assign({}, dados, { id: novoId('dev'), unidadeId: it.id, produtoId: it.produtoId, produto: it.produto,
+      criadaEm: new Date().toISOString(), por: SESSAO.usuario.id,
+      venda: Object.assign({}, JSON.parse(JSON.stringify(it)), { custos: retratoCustos(comCustos(canal, custosDaVenda(it)), c.frete) }) });
+    return gravarGestao(pessoa, function (g) {
+      var anteriores = g.devolucoes.filter(function (d) { return d.unidadeId === it.id; });
+      if (anteriores.length && !anteriores[anteriores.length - 1].revenda) throw { tipo: 'conflito' };
+      g.devolucoes.push(evento);
+    });
+  }
+  function salvarVendaComCiclo(pessoa, it, canal, custos, campos, lembrar) {
+    var ultima = ultimaDevolucao(it.id, pessoa), retorno = ultima && !ultima.revenda ? ultima : null;
+    if (retorno && (!retorno.recebidaEm || campos.d_venda < retorno.recebidaEm)) return Promise.reject({ tipo: 'conflito' });
+    var gravouUnidade = false;
+    var antes = { canal: it.canal || '', preco: num(it.preco), frete: it.frete == null ? null : it.frete,
+      d_venda: it.dVenda || null, custo: num(it.custo), d_recebido: it.dRecebido || null };
+    return gravarCustos(pessoa, canal.id, it.produtoId, custos, it.id, lembrar).then(function () {
+      return alterarUnidade(it.id, campos);
+    }).then(function () {
+      gravouUnidade = true;
+      if (!retorno) return;
+      return gravarGestao(pessoa, function (g) {
+        var d = g.devolucoes.filter(function (x) { return x.id === retorno.id; })[0];
+        if (!d || d.revenda || !d.recebidaEm || campos.d_venda < d.recebidaEm) throw { tipo: 'conflito' };
+        d.revenda = { data: campos.d_venda, preco: campos.preco, canal: campos.canal, registradaEm: new Date().toISOString() };
+      });
+    }).catch(function (e) {
+      if (!retorno || !gravouUnidade) throw e;
+      return alterarUnidade(it.id, antes).then(function () { throw e; });
+    });
+  }
+  function atualizarOcorrencia(pessoa, id, dados) {
+    return gravarGestao(pessoa, function (g) {
+      var d = g.devolucoes.filter(function (x) { return x.id === id; })[0];
+      if (!d || dados.solicitadaEm < d.venda.dVenda || dados.recebidaEm && dados.recebidaEm < dados.solicitadaEm
+        || d.revenda && (!dados.recebidaEm || dados.recebidaEm > d.revenda.data)) throw { tipo: 'conflito' };
+      Object.assign(d, dados, { atualizadaEm: new Date().toISOString() });
+    });
+  }
+  function guardarDespesa(pessoa, dados, id) {
+    return gravarGestao(pessoa, function (g) {
+      if (id) {
+        var d = g.despesas.filter(function (x) { return x.id === id && !x.excluidaEm; })[0];
+        if (!d) throw { tipo: 'conflito' };
+        Object.assign(d, dados, { atualizadaEm: new Date().toISOString() });
+      } else g.despesas.push(Object.assign({}, dados, { id: novoId('desp'), criadaEm: new Date().toISOString(), por: SESSAO.usuario.id }));
+    });
+  }
   function retratoCustos(canal, frete) {
     return { pct: num(canal.pct), fixa: num(canal.fixa), limite: num(canal.limite),
       frete: num(frete), freteMin: 0 };
@@ -892,6 +1038,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
       .then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
         if (!linhas.length) throw { tipo: 'permissao' };
         var canais = linhas[0].canais;
+        var base = JSON.parse(JSON.stringify(canais));
         var canal = canais.filter(function (c) { return c.id === canalId; })[0];
         if (!canal) throw { tipo: 'rede' };
         if (lembrar) {
@@ -902,13 +1049,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
           canal.vendas = canal.vendas || {};
           canal.vendas[unidadeId] = Object.assign({}, custos);
         }
-        return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(pessoa.id), {
-          metodo: 'PATCH', corpo: { canais: canais }, extras: { Prefer: 'return=representation' }
-        }).then(conferir).then(function (r) { return r.json(); }).then(function (salvas) {
-          if (!salvas.length) throw { tipo: 'permissao' };
-          pessoa.canais = salvas[0].canais;
-          if (PESSOA === pessoa) DADOS.canais = pessoa.canais;
-        });
+        return atualizarCanais(pessoa, canais, base);
       });
   }
 
@@ -946,13 +1087,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
             return alterarUnidade(tarefa.item.id, { frete: 27.05 }).then(function () { alteradas.push(tarefa); });
           });
         }, Promise.resolve()).then(function () {
-          return api('/rest/v1/pessoas?id=eq.' + encodeURIComponent(pessoa.id), {
-            metodo: 'PATCH', corpo: { canais: canais }, extras: { Prefer: 'return=representation' }
-          }).then(conferir).then(function (r) { return r.json(); }).then(function (linhas) {
-            if (!linhas.length) throw { tipo: 'permissao' };
-            pessoa.canais = linhas[0].canais;
+          return atualizarCanais(pessoa, canais, pessoa.canais).then(function () {
             tarefas.forEach(function (t) { t.item.frete = 27.05; });
-            if (PESSOA === pessoa) DADOS.canais = pessoa.canais;
           });
         }).catch(function (e) {
           return Promise.all(alteradas.map(function (t) { return alterarUnidade(t.item.id, { frete: t.antes }); }))
@@ -993,6 +1129,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
           erro('<b>O banco recusou a alteração.</b> Essa aba não é sua.');
         } else if (t === 'sem-migracao') {
           erro('<b>O banco ainda não tem as tabelas novas.</b> Rode o arquivo <code>04-produtos-e-unidades.sql</code> no Supabase.');
+        } else if (t === 'conflito') {
+          erro('<b>Os dados mudaram em outro aparelho.</b> Recarregue a página e confira os dados antes de tentar novamente.');
         } else {
           erro('<b>Não deu pra salvar.</b> Verifique a conexão e tente de novo — o que você digitou não foi perdido.');
         }
@@ -1085,6 +1223,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     return null;
   }
   function fase(it) {
+    var d = ultimaDevolucao(it.id);
+    if (d && !d.revenda && !d.recebidaEm) return 'devolucao';
     if (it.dVenda) return 'vendido';
     if (it.dChegada) return 'estoque';
     return 'caminho';
@@ -1218,7 +1358,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
       return;
     }
     ANALISE = { periodo: periodo, inicio: inicio, fim: fim, canal: $('#f-canal').value };
-    $('#analise-nota').textContent = 'Resultados pela data da venda. Estoque e caixa mostram a posição atual.';
+    $('#analise-nota').textContent = 'Vendas pela data da saída; despesas pela data do gasto. Resultado geral em Todos os canais.';
     desenharTiles(); desenharPorCanal(); desenharGraficoDiario(); desenharVendidos(); desenharPainel(); ligarBotoesDeItem();
   }
   function desenharFiltroCanais() {
@@ -1471,6 +1611,52 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     + '      </div>'
     + '    </section>'
 
+    /* ================= DEVOLUCOES ================= */
+    + '    <section class="modulo" id="mod-devolucoes" hidden>'
+    + '      <div class="eyebrow">Ciclo do produto</div><h1 class="tit">Devoluções e cancelamentos</h1>'
+    + '      <div class="tit-sub">Mantenha o histórico da venda anulada. O tempo total continua contando desde a compra original até a venda efetiva.</div>'
+    + '      <div class="tiles tiles-operacao" id="tiles-devolucoes"></div>'
+    + '      <div class="colunas col-form">'
+    + '        <section class="cartao" id="painel-devolucao"><div class="cartao-corpo"><div class="rotulo-secao"><span>Registrar ocorrência</span></div>'
+    + '          <div class="campo"><label for="dev-unidade">Venda a devolver ou cancelar</label><select class="entrada" id="dev-unidade"></select></div>'
+    + '          <div class="campo"><label for="dev-tipo">Tipo</label><select class="entrada" id="dev-tipo"><option value="devolucao">Devolução</option><option value="cancelamento">Cancelamento</option></select></div>'
+    + '          <div class="campo dupla"><div><label for="dev-solicitada">Data da solicitação</label><input class="entrada" id="dev-solicitada" type="date"></div><div><label for="dev-prevista">Previsão de retorno (opcional)</label><input class="entrada" id="dev-prevista" type="date"></div></div>'
+    + '          <div class="campo"><label class="marcar"><input type="checkbox" id="dev-comigo"><span>O produto já está comigo<small>Marque quando ele já voltou ou o cancelamento ocorreu antes do envio.</small></span></label></div>'
+    + '          <div class="campo" id="dev-recebida-campo" hidden><label for="dev-recebida">Data em que ficou disponível novamente</label><input class="entrada" id="dev-recebida" type="date"></div>'
+    + '          <div class="campo dupla"><div><label for="dev-custo">Custos não recuperados (R$)</label><input class="entrada entrada-dinheiro" id="dev-custo" type="text" inputmode="decimal" value="0,00"></div><div><label for="dev-custo-data">Data do custo</label><input class="entrada" id="dev-custo-data" type="date"></div></div>'
+    + '          <p class="proj-nota">Some somente frete, taxas e outros gastos que não serão reembolsados. Esse custo entra automaticamente nas despesas; não é somado novamente ao custo de compra.</p>'
+    + '          <div class="campo"><label for="dev-motivo">Motivo / observações</label><textarea class="entrada" id="dev-motivo" placeholder="Explique o que aconteceu."></textarea></div>'
+    + '          <button class="btn btn-forte btn-larg" type="button" id="btn-devolucao">Registrar ocorrência</button>'
+    + '        </div></section>'
+    + '        <section class="cartao"><div class="cartao-corpo"><div class="rotulo-secao"><span>Histórico das ocorrências</span><span class="conta" id="conta-devolucoes"></span></div>'
+    + '          <div class="list-toolbar"><input class="entrada" id="dev-busca" type="search" placeholder="Buscar produto ou motivo…" aria-label="Buscar ocorrências"><select class="entrada" id="dev-status" aria-label="Filtrar ocorrências"><option value="">Todas as situações</option><option value="pendente">Aguardando retorno</option><option value="estoque">De volta ao estoque</option><option value="revendida">Vendida novamente</option></select></div><div id="lista-devolucoes"></div>'
+    + '        </div></section>'
+    + '      </div>'
+    + '    </section>'
+
+    /* ================= DESPESAS ================= */
+    + '    <section class="modulo" id="mod-despesas" hidden>'
+    + '      <div class="eyebrow">Financeiro</div><h1 class="tit">Despesas do negócio</h1>'
+    + '      <div class="tit-sub">Registre os gastos de operação. Os custos de devoluções e cancelamentos entram aqui automaticamente.</div>'
+    + '      <div class="tiles tiles-operacao" id="tiles-despesas"></div>'
+    + '      <div class="colunas col-form">'
+    + '        <section class="cartao" id="painel-despesa"><div class="cartao-corpo"><div class="rotulo-secao"><span id="desp-titulo">Nova despesa</span></div>'
+    + '          <div class="campo"><label for="desp-descricao">Descrição</label><input class="entrada" id="desp-descricao" type="text" placeholder="Ex.: embalagens ou anúncio"></div>'
+    + '          <div class="campo dupla"><div><label for="desp-valor">Valor (R$)</label><input class="entrada entrada-dinheiro" id="desp-valor" type="text" inputmode="decimal" placeholder="0,00"></div><div><label for="desp-data">Data da despesa</label><input class="entrada" id="desp-data" type="date"></div></div>'
+    + '          <div class="campo"><label for="desp-categoria">Categoria</label><select class="entrada" id="desp-categoria"><option value="embalagens">Embalagens</option><option value="publicidade">Publicidade</option><option value="transporte">Transporte</option><option value="servicos">Serviços e ferramentas</option><option value="outros">Outras despesas</option></select></div>'
+    + '          <div class="campo"><label for="desp-produto">Vincular a um produto (opcional)</label><select class="entrada" id="desp-produto"><option value="">Despesa geral do negócio</option></select></div>'
+    + '          <div class="campo"><label for="desp-obs">Observações (opcional)</label><textarea class="entrada" id="desp-obs"></textarea></div>'
+    + '          <p class="proj-nota">Não repita taxas, frete ou gastos já incluídos no custo da unidade. Despesas vinculadas aparecem no resultado do produto; as gerais entram no resultado do negócio.</p>'
+    + '          <div class="botoes-par"><button class="btn btn-forte" type="button" id="btn-despesa">Salvar despesa</button><button class="btn btn-fantasma" type="button" id="btn-despesa-cancelar">Limpar</button></div>'
+    + '        </div></section>'
+    + '        <section class="cartao"><div class="cartao-corpo"><div class="rotulo-secao"><span>Despesas registradas</span><span class="conta" id="conta-despesas"></span></div>'
+    + '          <div class="list-toolbar"><input class="entrada" id="desp-busca" type="search" placeholder="Buscar descrição ou produto…" aria-label="Buscar despesas"><select class="entrada" id="desp-filtro-categoria" aria-label="Filtrar categoria"><option value="">Todas as categorias</option><option value="embalagens">Embalagens</option><option value="publicidade">Publicidade</option><option value="transporte">Transporte</option><option value="servicos">Serviços e ferramentas</option><option value="devolucoes">Devoluções e cancelamentos</option><option value="outros">Outras despesas</option></select></div>'
+    + '          <div class="campo dupla"><div><label for="desp-inicio">De (opcional)</label><input class="entrada" id="desp-inicio" type="date"></div><div><label for="desp-fim">Até (opcional)</label><input class="entrada" id="desp-fim" type="date"></div></div>'
+    + '          <div id="lista-despesas"></div><button class="btn" type="button" id="btn-despesas-csv" style="margin-top:16px">Exportar despesas filtradas</button>'
+    + '        </div></section>'
+    + '      </div>'
+    + '    </section>'
+
     /* ================= AJUSTES ================= */
     + '    <section class="modulo" id="mod-ajustes" hidden>'
     + '      <div class="eyebrow">Preferências</div><h1 class="tit">Ajustes</h1>'
@@ -1540,6 +1726,177 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     + '</div><div class="toast" id="toast" role="status" hidden></div>';
 
   // ---------- desenhar ----------
+  var FILTRO_UNIDADE_DEV = '', DESPESA_EDITANDO = null;
+  var CATEGORIAS_DESPESA = { embalagens: 'Embalagens', publicidade: 'Publicidade', transporte: 'Transporte', servicos: 'Serviços e ferramentas', outros: 'Outras despesas', devolucoes: 'Devoluções e cancelamentos' };
+  function limparOcorrencia() {
+    $('#dev-unidade').value = ''; $('#dev-solicitada').value = hoje(); $('#dev-prevista').value = '';
+    $('#dev-comigo').checked = false; $('#dev-recebida-campo').hidden = true; $('#dev-recebida').value = hoje();
+    $('#dev-custo').value = '0,00'; $('#dev-custo-data').value = hoje(); $('#dev-motivo').value = '';
+  }
+  function abrirDevolucao(id) {
+    if (salvando || !podeEditar()) return;
+    var it = itemDe(id); if (!it || fase(it) !== 'vendido') return;
+    limparOcorrencia(); desenharSeletorOcorrencia(); $('#dev-unidade').value = id;
+    irPara('devolucoes'); $('#dev-solicitada').focus();
+  }
+  function desenharSeletorOcorrencia() {
+    var atual = $('#dev-unidade').value;
+    $('#dev-unidade').innerHTML = '<option value="">Selecione uma venda efetiva…</option>' + porFase('vendido').map(function (it) {
+      return '<option value="' + esc(it.id) + '">' + esc(it.produto) + ' · ' + dataBR(it.dVenda) + ' · ' + brl(num(it.preco)) + '</option>';
+    }).join(''); $('#dev-unidade').value = atual;
+  }
+  function aoRegistrarOcorrencia() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var it = itemDe($('#dev-unidade').value);
+    if (!it || fase(it) !== 'vendido') { erro('<b>Escolha uma venda efetiva.</b>'); return; }
+    var solicitada = lerDataCampo('dev-solicitada', 'a data da solicitação', false, false);
+    var prevista = lerDataCampo('dev-prevista', 'a previsão de retorno', true, true);
+    var recebida = $('#dev-comigo').checked ? lerDataCampo('dev-recebida', 'a chegada do produto', false, false) : '';
+    var custo = lerValor('dev-custo', true), custoEm = lerDataCampo('dev-custo-data', 'a data do custo', false, false);
+    if (solicitada === null || prevista === null || recebida === null || custo === null || custoEm === null) return;
+    if (solicitada < it.dVenda || prevista && prevista < solicitada || recebida && recebida < solicitada) {
+      erro('<b>Confira as datas.</b> A solicitação deve ser a partir da venda; previsão e chegada devem ser a partir da solicitação.'); return;
+    }
+    if (custo > 0 && custoEm < solicitada) { erro('<b>A data do custo não pode ser anterior à solicitação.</b>'); return; }
+    var dados = { tipo: $('#dev-tipo').value, solicitadaEm: solicitada, previstaEm: prevista, recebidaEm: recebida,
+      custo: custo, custoEm: custoEm, motivo: $('#dev-motivo').value.trim() };
+    var pessoa = PESSOA;
+    salvar(function () { return registrarOcorrencia(pessoa, it, dados); }, $('#btn-devolucao'), 'Registrar ocorrência', null, function () {
+      limparOcorrencia(); desenharTudo();
+    });
+  }
+  function editarOcorrencia(id) {
+    if (salvando) return;
+    var form = document.getElementById('dev-edit-' + id); if (form) { form.hidden = !form.hidden; }
+  }
+  function aoSalvarOcorrencia(id) {
+    if (salvando) return;
+    var d = gestaoDaPessoa(PESSOA).devolucoes.filter(function (x) { return x.id === id; })[0]; if (!d) return;
+    var prefixo = 'dc-' + id + '-';
+    var solicitada = lerDataCampo(prefixo + 'solicitada', 'a solicitação', false, false);
+    var prevista = lerDataCampo(prefixo + 'prevista', 'a previsão', true, true);
+    var recebida = lerDataCampo(prefixo + 'recebida', 'a chegada', !d.recebidaEm, false);
+    var custo = lerValor(prefixo + 'custo', true), custoEm = lerDataCampo(prefixo + 'data', 'a data do custo', false, false);
+    if ([solicitada, prevista, recebida, custo, custoEm].some(function (x) { return x === null; })) return;
+    if (solicitada < d.venda.dVenda || prevista && prevista < solicitada || recebida && recebida < solicitada
+      || d.recebidaEm && !recebida || d.revenda && (!recebida || recebida > d.revenda.data) || custo > 0 && custoEm < solicitada) {
+      erro('<b>Confira a sequência das datas.</b> A chegada deve ficar entre a solicitação e a revenda, quando houver. Não remova uma chegada já confirmada.'); return;
+    }
+    salvar(function () { return atualizarOcorrencia(PESSOA, id, { solicitadaEm: solicitada, previstaEm: prevista, recebidaEm: recebida, custo: custo, custoEm: custoEm }); },
+      document.getElementById('dev-save-' + id), 'Salvar datas e custos', null, desenharTudo);
+  }
+  function historicoDoProduto(id) {
+    FILTRO_UNIDADE_DEV = id; $('#dev-busca').value = ''; $('#dev-status').value = '';
+    desenharDevolucoes(); ligarBotoesDeItem(); irPara('devolucoes');
+  }
+  function desenharDevolucoes() {
+    desenharSeletorOcorrencia();
+    var todos = gestaoDaPessoa(PESSOA).devolucoes, pendentes = todos.filter(function (d) { return !d.recebidaEm; });
+    var custos = todos.reduce(function (s, d) { return s + num(d.custo); }, 0);
+    var tempos = todos.filter(function (d) { return !!d.recebidaEm; }).map(function (d) { return [d.solicitadaEm, d.recebidaEm]; });
+    var media = mediaDias(tempos);
+    $('#tiles-devolucoes').innerHTML = htmlTiles([
+      { r: 'Aguardando retorno', n: String(pendentes.length), s: 'unidades indisponíveis para venda', cor: pendentes.length ? 'var(--warn)' : '' },
+      { r: 'Custos das ocorrências', n: brl(custos), s: 'já incluídos nas despesas' },
+      { r: 'Tempo médio de retorno', n: media == null ? '—' : plural(media, 'dia', 'dias'), s: 'da solicitação à chegada confirmada' }
+    ]);
+    var busca = normalizarBusca($('#dev-busca').value), status = $('#dev-status').value;
+    var lista = todos.filter(function (d) {
+      return (!FILTRO_UNIDADE_DEV || d.unidadeId === FILTRO_UNIDADE_DEV)
+        && (!busca || normalizarBusca(d.produto + ' ' + (d.motivo || '')).indexOf(busca) >= 0)
+        && (!status || (status === 'pendente' ? !d.recebidaEm : status === 'revendida' ? !!d.revenda : !!d.recebidaEm && !d.revenda));
+    }).slice().reverse();
+    $('#conta-devolucoes').textContent = plural(lista.length, 'ocorrência', 'ocorrências');
+    var filtro = FILTRO_UNIDADE_DEV ? '<p class="proj-nota">Histórico de uma unidade. <button class="btn btn-mini" type="button" data-dev-todas="1">Mostrar todas</button></p>' : '';
+    if (!lista.length) { $('#lista-devolucoes').innerHTML = filtro + '<div class="vazio"><strong>Nenhuma ocorrência neste filtro</strong><p>Registre uma devolução ou um cancelamento a partir de uma venda.</p></div>'; return; }
+    $('#lista-devolucoes').innerHTML = filtro + lista.map(function (d) {
+      var it = itemDe(d.unidadeId), tipo = d.tipo === 'cancelamento' ? 'Cancelamento' : 'Devolução';
+      var situacao = d.revenda ? 'Vendida novamente' : d.recebidaEm ? 'De volta ao estoque' : 'Aguardando retorno';
+      var retornoDias = dias(d.solicitadaEm, d.recebidaEm || hoje()), ciclo = it ? diasCiclo(it) : null;
+      var canal = canalDe(d.venda.canal), prefixo = 'dc-' + d.id + '-';
+      var atrasada = !d.recebidaEm && d.previstaEm && d.previstaEm < hoje();
+      var h = '<article class="ocorrencia"><div class="ocorrencia-topo"><h3>' + esc(d.produto) + '</h3><span class="ciclo-pill ' + (d.revenda ? 'encerrada' : d.recebidaEm ? '' : 'pendente') + '">' + situacao + '</span></div>'
+        + '<div class="ocorrencia-meta">' + tipo + ' · venda de ' + brl(num(d.venda.preco)) + ' em ' + dataBR(d.venda.dVenda) + ' · ' + esc(canal ? canal.curto : d.venda.canal) + '</div>'
+        + '<div class="ciclo-datas"><div><small>Solicitada em</small>' + dataBR(d.solicitadaEm) + '</div><div><small>Previsão de retorno</small>' + (d.previstaEm ? dataBR(d.previstaEm) : 'Não informada') + (atrasada ? ' · atrasada' : '') + '</div><div><small>Chegada efetiva</small>' + (d.recebidaEm ? dataBR(d.recebidaEm) : 'Aguardando') + '</div></div>'
+        + '<div class="ciclo-numeros"><span>' + (d.recebidaEm ? 'Retorno em ' : 'Em retorno há ') + plural(retornoDias, 'dia', 'dias') + '</span><span>Custos: <b>' + brl(num(d.custo)) + '</b></span>' + (ciclo == null ? '' : '<span>Ciclo total da unidade: <b>' + plural(ciclo, 'dia', 'dias') + '</b></span>') + '</div>'
+        + (d.motivo ? '<p class="expense-note">' + esc(d.motivo) + '</p>' : '')
+        + (d.revenda ? '<p class="expense-note">Revenda efetiva em ' + dataBR(d.revenda.data) + ' por ' + brl(num(d.revenda.preco)) + '.</p>' : '')
+        + (it ? '<p class="expense-note">Compra original: ' + dataBR(it.dCompra) + '. Primeira chegada: ' + dataBR(it.dChegada) + '.</p>' : '');
+      if (podeEditar()) {
+        h += '<div class="item-acoes"><button class="btn btn-mini' + (d.recebidaEm ? '' : ' btn-forte') + '" type="button" data-editar-dev="' + esc(d.id) + '">' + (d.recebidaEm ? 'Editar datas e custos' : 'Confirmar chegada / ajustar') + '</button></div>'
+          + '<div class="ciclo-editar" id="dev-edit-' + esc(d.id) + '" hidden><div class="campo dupla"><div><label for="' + prefixo + 'solicitada">Solicitação</label><input class="entrada" id="' + prefixo + 'solicitada" type="date" value="' + esc(d.solicitadaEm) + '"></div><div><label for="' + prefixo + 'prevista">Previsão (opcional)</label><input class="entrada" id="' + prefixo + 'prevista" type="date" value="' + esc(d.previstaEm || '') + '"></div></div>'
+          + '<div class="campo"><label for="' + prefixo + 'recebida">Chegada efetiva (preencha para liberar a venda)</label><input class="entrada" id="' + prefixo + 'recebida" type="date" value="' + esc(d.recebidaEm || '') + '"></div>'
+          + '<div class="campo dupla"><div><label for="' + prefixo + 'custo">Custo total não recuperado (R$)</label><input class="entrada" id="' + prefixo + 'custo" type="text" inputmode="decimal" value="' + paraCampo(d.custo) + '"></div><div><label for="' + prefixo + 'data">Data do custo</label><input class="entrada" id="' + prefixo + 'data" type="date" value="' + esc(d.custoEm || d.solicitadaEm) + '"></div></div>'
+          + '<p class="expense-note">Informe o custo total atualizado desta ocorrência. O valor anterior será substituído, sem criar outra despesa.</p><button class="btn btn-forte" id="dev-save-' + esc(d.id) + '" type="button" data-salvar-dev="' + esc(d.id) + '" style="margin-top:12px">Salvar datas e custos</button></div>';
+      }
+      return h + '</article>';
+    }).join('');
+  }
+  function limparDespesa() {
+    DESPESA_EDITANDO = null; $('#desp-titulo').textContent = 'Nova despesa'; $('#desp-descricao').value = ''; $('#desp-valor').value = '';
+    $('#desp-data').value = hoje(); $('#desp-categoria').value = 'embalagens'; $('#desp-produto').value = ''; $('#desp-obs').value = '';
+  }
+  function aoSalvarDespesa() {
+    if (salvando) return;
+    $('#aviso-erro').hidden = true;
+    var descricao = $('#desp-descricao').value.trim(), valor = lerValor('desp-valor', false), data = lerDataCampo('desp-data', 'a data da despesa', false, false);
+    if (!descricao) { erro('<b>Descreva a despesa.</b>'); $('#desp-descricao').focus(); return; }
+    if (valor === null || data === null) return;
+    var dados = { descricao: descricao, valor: valor, data: data, categoria: $('#desp-categoria').value,
+      produtoId: $('#desp-produto').value || '', observacoes: $('#desp-obs').value.trim() };
+    salvar(function () { return guardarDespesa(PESSOA, dados, DESPESA_EDITANDO); }, $('#btn-despesa'), 'Salvar despesa', null, function () { limparDespesa(); desenharTudo(); });
+  }
+  function abrirDespesa(id) {
+    if (salvando || !podeEditar()) return;
+    var d = gestaoDaPessoa(PESSOA).despesas.filter(function (x) { return x.id === id && !x.excluidaEm; })[0]; if (!d) return;
+    DESPESA_EDITANDO = id; $('#desp-titulo').textContent = 'Editar despesa'; $('#desp-descricao').value = d.descricao;
+    $('#desp-valor').value = paraCampo(d.valor); $('#desp-data').value = d.data; $('#desp-categoria').value = d.categoria;
+    $('#desp-produto').value = d.produtoId || ''; $('#desp-obs').value = d.observacoes || '';
+    $('#painel-despesa').scrollIntoView({ behavior: 'auto', block: 'start' }); $('#desp-descricao').focus();
+  }
+  function excluirDespesa(id) {
+    if (salvando) return;
+    salvar(function () { return gravarGestao(PESSOA, function (g) {
+      var d = g.despesas.filter(function (x) { return x.id === id; })[0]; if (!d) throw { tipo: 'conflito' };
+      d.excluidaEm = new Date().toISOString();
+    }); }, null, '', null, function () { if (DESPESA_EDITANDO === id) limparDespesa(); desenharTudo(); });
+  }
+  function despesasFiltradas() {
+    var busca = normalizarBusca($('#desp-busca').value), categoria = $('#desp-filtro-categoria').value;
+    var inicio = $('#desp-inicio').value, fim = $('#desp-fim').value;
+    return despesasDaPessoa().filter(function (d) {
+      var p = PESSOA.produtos.filter(function (x) { return x.id === d.produtoId; })[0];
+      return (!busca || normalizarBusca(d.descricao + ' ' + (p ? p.nome : '') + ' ' + (d.observacoes || '')).indexOf(busca) >= 0)
+        && (!categoria || d.categoria === categoria) && (!inicio || d.data >= inicio) && (!fim || d.data <= fim);
+    }).sort(function (a, b) { return b.data.localeCompare(a.data); });
+  }
+  function desenharDespesas() {
+    var atual = $('#desp-produto').value;
+    $('#desp-produto').innerHTML = '<option value="">Despesa geral do negócio</option>' + PESSOA.produtos.map(function (p) { return '<option value="' + esc(p.id) + '">' + esc(p.nome) + '</option>'; }).join('');
+    $('#desp-produto').value = atual;
+    var lista = despesasFiltradas(), manuais = lista.filter(function (d) { return d.origem !== 'devolucao'; }), retorno = lista.filter(function (d) { return d.origem === 'devolucao'; });
+    $('#tiles-despesas').innerHTML = htmlTiles([
+      { r: 'Despesas no filtro', n: brl(totalDespesas(lista)), s: plural(lista.length, 'lançamento', 'lançamentos'), d: true },
+      { r: 'Despesas de operação', n: brl(totalDespesas(manuais)), s: 'lançamentos manuais' },
+      { r: 'Devoluções e cancelamentos', n: brl(totalDespesas(retorno)), s: 'incluídos automaticamente, uma vez' }
+    ]);
+    $('#conta-despesas').textContent = plural(lista.length, 'despesa', 'despesas');
+    if (!lista.length) { $('#lista-despesas').innerHTML = '<div class="vazio"><strong>Nenhuma despesa neste filtro</strong><p>Registre um gasto de operação ou ajuste os filtros.</p></div>'; return; }
+    $('#lista-despesas').innerHTML = lista.map(function (d) {
+      var p = PESSOA.produtos.filter(function (x) { return x.id === d.produtoId; })[0];
+      return '<div class="dinheiro-linha"><div><div class="dinheiro-nome">' + esc(d.descricao) + '</div><div class="dinheiro-meta">' + dataBR(d.data) + ' · ' + esc(CATEGORIAS_DESPESA[d.categoria] || d.categoria) + ' · ' + esc(p ? p.nome : 'Geral do negócio') + '</div>'
+        + (d.observacoes ? '<p class="expense-note">' + esc(d.observacoes) + '</p>' : '') + '</div><div class="dinheiro-val" style="color:var(--neg)">' + brl(num(d.valor)) + '</div><div class="item-acoes">'
+        + (d.origem === 'devolucao' ? '<button class="btn btn-mini" type="button" data-historico-unidade="' + esc(d.unidadeId) + '">Ver ocorrência</button>'
+          : podeEditar() ? '<button class="icone" type="button" data-editar-despesa="' + esc(d.id) + '" aria-label="Editar despesa">✎</button><button class="icone icone-perigo" type="button" data-excluir-despesa="' + esc(d.id) + '" aria-label="Excluir despesa">×</button>' : '') + '</div></div>';
+    }).join('');
+  }
+  function exportarDespesas() {
+    var linhas = [['Data', 'Descrição', 'Categoria', 'Valor (R$)', 'Origem', 'Produto']];
+    despesasFiltradas().forEach(function (d) { var p = PESSOA.produtos.filter(function (x) { return x.id === d.produtoId; })[0]; linhas.push([dataBR(d.data), d.descricao, CATEGORIAS_DESPESA[d.categoria] || d.categoria, paraCampo(d.valor), d.origem === 'devolucao' ? 'Ocorrência' : 'Manual', p ? p.nome : 'Geral']); });
+    var csv = linhas.map(function (linha) { return linha.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
+    baixarArquivo('despesas-' + PESSOA.id + '.csv', '\ufeff' + csv, 'text/csv;charset=utf-8').catch(function () { erro('<b>Não foi possível baixar as despesas.</b>'); });
+  }
   function htmlCanais(nomeGrupo) {
     var h = '';
     for (var i = 0; i < DADOS.canais.length; i++) {
@@ -1710,7 +2067,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   }
 
   function desenharTiles() {
-    var vend = vendasAnalisadas(), est = porFase('estoque'), cam = porFase('caminho');
+    var vend = vendasAnalisadas(), est = porFase('estoque'), cam = porFase('caminho'), emRetorno = porFase('devolucao');
     var fat = 0, lucro = 0, taxas = 0, parado = 0, investido = 0;
     var i, c;
     for (i = 0; i < vend.length; i++) {
@@ -1719,13 +2076,17 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     }
     for (i = 0; i < est.length; i++) parado += num(est[i].custo);
     for (i = 0; i < cam.length; i++) parado += num(cam[i].custo);
+    for (i = 0; i < emRetorno.length; i++) parado += num(emRetorno[i].custo);
     for (i = 0; i < DADOS.itens.length; i++) investido += num(DADOS.itens[i].custo);
 
+    var despesas = totalDespesas(despesasAnalisadas()), resultado = lucro - despesas;
     var t = [
-      { r: 'Lucro realizado', n: brl(lucro), s: plural(vend.length, 'venda no período', 'vendas no período'), d: true, cor: lucro < 0 ? 'var(--neg)' : 'var(--pos)' },
-      { r: 'Dinheiro parado', n: brl(parado), s: plural(est.length + cam.length, 'produto sem vender', 'produtos sem vender'), cor: parado > 0 ? 'var(--warn)' : '' },
+      { r: 'Resultado após despesas', n: ANALISE.canal ? '—' : brl(resultado), s: ANALISE.canal ? 'selecione Todos os canais' : 'lucro das vendas menos todas as despesas', d: true, cor: resultado < 0 ? 'var(--neg)' : 'var(--pos)' },
+      { r: 'Lucro das vendas', n: brl(lucro), s: plural(vend.length, 'venda no período', 'vendas no período'), cor: lucro < 0 ? 'var(--neg)' : 'var(--pos)' },
+      { r: 'Despesas no período', n: brl(despesas), s: 'todos os canais; inclui devoluções', cor: despesas > 0 ? 'var(--neg)' : '' },
+      { r: 'Dinheiro parado', n: brl(parado), s: plural(est.length + cam.length + emRetorno.length, 'produto sem vender', 'produtos sem vender') + (emRetorno.length ? ' · ' + emRetorno.length + ' em retorno' : ''), cor: parado > 0 ? 'var(--warn)' : '' },
       { r: 'Faturamento', n: brl(fat), s: 'entrou bruto' },
-      { r: 'Margem média', n: fat > 0 ? pc(lucro / fat) : '—', s: 'do que entra, sobra isso' },
+      { r: 'Margem das vendas', n: fat > 0 ? pc(lucro / fat) : '—', s: 'antes das despesas do negócio' },
       { r: 'Taxas e frete', n: brl(taxas), s: fat > 0 ? pc(taxas / fat) + ' do faturamento' : 'nada ainda' },
       { r: 'Investido total', n: brl(investido), s: 'compras de todo o histórico' }
     ];
@@ -1781,31 +2142,47 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     $('#lista-caminho').innerHTML = h;
   }
 
+  var ESTOQUE_ABERTO = {};
+  function agruparEstoque(itens) {
+    var mapa = {}, grupos = [];
+    itens.forEach(function (it) {
+      var chave = it.produtoId || normalizarBusca(it.produto);
+      if (!mapa[chave]) { mapa[chave] = { chave: chave, nome: it.produto, itens: [], custo: 0, devolucoes: 0 }; grupos.push(mapa[chave]); }
+      var g = mapa[chave]; g.itens.push(it); g.custo += num(it.custo); g.devolucoes += historicoUnidade(it.id).length;
+    });
+    return grupos;
+  }
   function desenharEstoque() {
-    var itens = filtrarEstoque('estoque');
-    $('#conta-estoque').textContent = itens.length ? plural(itens.length, 'produto', 'produtos') : '';
+    var itens = filtrarEstoque('estoque'), grupos = agruparEstoque(itens);
+    $('#conta-estoque').textContent = grupos.length ? plural(grupos.length, 'produto', 'produtos') + ' · ' + plural(itens.length, 'unidade', 'unidades') : '';
     if (!itens.length) {
-      $('#lista-estoque').innerHTML = '<div class="vazio"><strong>' + (porFase('estoque').length ? 'Nenhum produto neste filtro' : 'Nada em estoque agora') + '</strong>'
-        + '<p>' + (porFase('estoque').length ? 'Ajuste a busca ou a situação para ver outras unidades.' : 'Registre uma compra. As unidades disponíveis para venda aparecem aqui.') + '</p></div>';
-      return;
+      $('#lista-estoque').innerHTML = '<div class="vazio"><strong>' + (porFase('estoque').length ? 'Nenhum produto neste filtro' : 'Nada disponível em estoque') + '</strong><p>Unidades aguardando devolução ficam na aba Devoluções até a chegada ser confirmada.</p></div>'; return;
     }
-    var h = '';
-    for (var i = 0; i < itens.length; i++) {
-      var it = itens[i], d = dias(it.dChegada);
-      var meta = [];
-      if (it.dChegada) meta.push('chegou ' + dataBR(it.dChegada));
-      if (d != null && d >= 0) {
-        var txt = plural(d, 'dia parado', 'dias parados');
-        meta.push(d > 60 ? '<span class="encalhe">' + txt + '</span>' : txt);
-      }
-      h += '<div class="item"><div><div class="item-nome">' + esc(it.produto) + '</div>'
-        + '<div class="item-meta">' + selo(it) + '<span>' + meta.join(' · ') + '</span></div></div>'
-        + '<div class="item-valor">' + brl(num(it.custo)) + '</div>'
-        + '<div class="item-acoes">' + (podeEditar() ? '<button class="btn btn-mini btn-forte" type="button" data-vender="' + esc(it.id) + '">Vender</button>'
-        + '<button class="icone" type="button" data-voltar="' + esc(it.id) + '" aria-label="Desfazer chegada de ' + esc(it.produto) + '" title="Não chegou ainda (desfazer)">↺</button>' : '')
-        + acoesComuns(it) + '</div>' + formDuplicar(it) + '</div>';
-    }
-    $('#lista-estoque').innerHTML = h;
+    $('#lista-estoque').innerHTML = grupos.map(function (g) {
+      var chave = PESSOA.id + ':' + g.chave, custos = g.itens.map(function (it) { return num(it.custo); });
+      var idades = g.itens.map(function (it) { return diasCiclo(it); }).filter(function (n) { return n != null; });
+      var maiorIdade = idades.length ? Math.max.apply(Math, idades) : null;
+      var min = Math.min.apply(Math, custos), max = Math.max.apply(Math, custos);
+      var resumo = 'Custo total ' + brl(g.custo) + ' · médio ' + brl(g.custo / g.itens.length)
+        + (min !== max ? ' · de ' + brl(min) + ' a ' + brl(max) : '')
+        + (maiorIdade == null ? '' : ' · unidade mais antiga: ' + plural(maiorIdade, 'dia desde a compra', 'dias desde a compra'));
+      var h = '<details class="estoque-grupo" data-grupo-estoque="' + esc(chave) + '"' + (ESTOQUE_ABERTO[chave] ? ' open' : '') + '><summary><div><div class="grupo-nome">' + esc(g.nome) + '</div><div class="grupo-info">' + resumo + '</div>'
+        + (g.devolucoes ? '<span class="ciclo-pill">' + plural(g.devolucoes, 'ocorrência no histórico', 'ocorrências no histórico') + '</span>' : '')
+        + '</div><div class="grupo-quantidade">' + g.itens.length + '<small>' + (g.itens.length === 1 ? 'disponível' : 'disponíveis') + '</small></div><span class="grupo-expandir" aria-hidden="true">⌄</span></summary><div class="grupo-unidades">';
+      g.itens.forEach(function (it, idx) {
+        var historico = historicoUnidade(it.id), ciclo = diasCiclo(it), custoRetorno = historico.reduce(function (s, d) { return s + num(d.custo); }, 0);
+        var meta = 'Comprada em ' + dataBR(it.dCompra) + ' · primeira chegada ' + dataBR(it.dChegada)
+          + (ciclo == null ? '' : ' · ' + plural(ciclo, 'dia no ciclo total', 'dias no ciclo total'))
+          + (historico.length ? ' · custos de ocorrências ' + brl(custoRetorno) : '');
+        h += '<div class="item"><div><div class="item-nome">Unidade ' + (idx + 1) + '</div><div class="item-meta"><span>' + meta + '</span></div></div><div class="item-valor">' + brl(num(it.custo)) + '</div><div class="item-acoes">'
+          + (podeEditar() ? '<button class="btn btn-mini btn-forte" type="button" data-vender="' + esc(it.id) + '">Vender</button>' : '')
+          + (historico.length ? '<button class="btn btn-mini" type="button" data-historico-unidade="' + esc(it.id) + '">Histórico</button>' : (podeEditar() ? '<button class="icone" type="button" data-voltar="' + esc(it.id) + '" aria-label="Desfazer chegada">↺</button>' : ''))
+          + acoesComuns(it) + '</div>' + formDuplicar(it) + '</div>';
+      });
+      return h + '</div></details>';
+    }).join('');
+    var caixas = $('#lista-estoque').querySelectorAll('[data-grupo-estoque]');
+    for (var i = 0; i < caixas.length; i++) caixas[i].ontoggle = function () { ESTOQUE_ABERTO[this.getAttribute('data-grupo-estoque')] = this.open; };
   }
 
   function desenharVendidos() {
@@ -1820,14 +2197,16 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     for (var i = 0; i < itens.length; i++) {
       var it = itens[i], cn = canalDe(it.canal), c = contaDoItem(it);
       tFat += c.preco; tLucro += c.lucro; tTaxa += c.taxa; tFrete += c.frete; tCusto += c.custo;
-      var giro = dias(it.dChegada || it.dCompra, it.dVenda);
+      var giro = diasCiclo(it);
       var meta = [];
       var g = grupoDe(it);
       if (g) meta.push('unidade ' + g.idx + ' de ' + g.total);
       if (cn) meta.push(cn.curto);
       if (it.dVenda) meta.push(dataBR(it.dVenda));
       meta.push(it.dRecebido ? 'Recebida' : 'A receber');
-      if (giro != null && giro >= 0) meta.push('parado ' + plural(giro, 'dia', 'dias'));
+      if (giro != null && giro >= 0) meta.push('ciclo de ' + plural(giro, 'dia', 'dias') + ' desde a compra');
+      var historico = historicoUnidade(it.id);
+      if (historico.length) meta.push(plural(historico.length, 'ocorrência anterior', 'ocorrências anteriores'));
       h += '<tr>'
         + '<td data-l="Produto"><span class="prod">' + esc(it.produto) + '<small>' + meta.join(' · ') + '</small></span></td>'
         + '<td data-l="Custo" class="num-cel">' + brl(c.custo) + '</td>'
@@ -1837,7 +2216,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
         + '<td data-l="Sobrou" class="num-cel lucro-cel" style="color:' + (c.lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">' + brl(c.lucro) + '</td>'
         + '<td data-l="Margem" class="num-cel">' + pc(c.margem) + '</td>'
         + '<td data-l=""><span class="acoes-cel">'
-        + (podeEditar() ? '<button class="icone" type="button" data-devolver="' + esc(it.id) + '" aria-label="Desfazer venda de ' + esc(it.produto) + '" title="Devolvido: volta pro estoque">↺</button>' : '')
+        + (historico.length ? '<button class="btn btn-mini" type="button" data-historico-unidade="' + esc(it.id) + '">Histórico</button>' : '')
+        + (podeEditar() ? '<button class="btn btn-mini" type="button" data-devolver="' + esc(it.id) + '" title="Registrar devolução ou cancelamento">Devolver / cancelar</button>' : '')
         + acoesComuns(it) + '</span></td></tr>';
     }
     h += '</tbody><tfoot><tr><td>' + plural(itens.length, 'venda', 'vendas') + '</td>'
@@ -1903,7 +2283,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     var mapa = {}, ordem = [];
     for (var i = 0; i < DADOS.itens.length; i++) {
       var it = DADOS.itens[i];
-      if (fase(it) === 'vendido') continue;
+      if (fase(it) === 'vendido' || fase(it) === 'devolucao') continue;
       var k = String(it.produto || '(sem nome)').trim().toLowerCase();
       if (!mapa[k]) { mapa[k] = { nome: it.produto || '(sem nome)', itens: [], custo: 0 }; ordem.push(k); }
       mapa[k].itens.push(it);
@@ -2064,6 +2444,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     $('#btn-proj-sugerir').hidden = !meu;
     $('#btn-custos-produto').hidden = !meu;
     $('#painel-novo-produto').hidden = !meu;
+    $('#painel-devolucao').hidden = !meu;
+    $('#painel-despesa').hidden = !meu;
     $('#atalho-compra').hidden = !meu;
     $('#atalho-venda').hidden = !meu;
     var custos = $('#painel-custos-produto').querySelectorAll('input, select');
@@ -2106,6 +2488,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     limparEntrada();
     ['estoque-busca', 'vendas-busca', 'produtos-busca', 'caixa-busca'].forEach(function (campo) { $('#' + campo).value = ''; });
     $('#estoque-fase').value = ''; $('#vendas-status').value = ''; $('#produtos-status').value = '';
+    FILTRO_UNIDADE_DEV = ''; limparOcorrencia(); limparDespesa(); $('#dev-busca').value = ''; $('#dev-status').value = '';
+    $('#desp-busca').value = ''; $('#desp-filtro-categoria').value = ''; $('#desp-inicio').value = ''; $('#desp-fim').value = '';
     desenharCanais(); desenharAjustes(); desenharTudo();
     // busca o que a outra pessoa registrou desde que a pagina abriu
     carregarDoBanco().then(function () {
@@ -2195,12 +2579,16 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     { id: 'painel',   nome: 'Painel' },
     { id: 'compras',  nome: 'Compras e Estoque' },
     { id: 'vendas',   nome: 'Vendas' },
+    { id: 'devolucoes', nome: 'Devoluções' },
     { id: 'produtos', nome: 'Produtos' },
     { id: 'caixa',    nome: 'Caixa' },
+    { id: 'despesas', nome: 'Despesas' },
     { id: 'ajustes',  nome: 'Ajustes' }
   ];
 
   var ICONES = {
+    devolucoes: '<path d="M9 4L4 9l5 5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
+    despesas: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
     painel:  '<path d="M3 20h18"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16v-9"/>',
     compras: '<path d="M3 8l9-5 9 5v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
     vendas:  '<path d="M3 12V5a2 2 0 012-2h7l9 9-9 9-9-9z"/><circle cx="7.6" cy="7.6" r="1.3"/>',
@@ -2209,7 +2597,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     ajustes: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="M5.6 5.6l1.4 1.4"/><path d="M17 17l1.4 1.4"/><path d="M18.4 5.6L17 7"/><path d="M7 17l-1.4 1.4"/>'
   };
   // no celular os rotulos precisam ser curtos para os cinco caberem lado a lado
-  var CURTOS = { painel: 'Painel', compras: 'Estoque', vendas: 'Vendas', produtos: 'Produtos', caixa: 'Caixa', ajustes: 'Ajustes' };
+  var CURTOS = { painel: 'Painel', compras: 'Estoque', vendas: 'Vendas', devolucoes: 'Devoluções', produtos: 'Produtos', caixa: 'Caixa', despesas: 'Despesas', ajustes: 'Ajustes' };
 
   function desenharModulos() {
     var cima = '', baixo = '';
@@ -2257,6 +2645,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     }
     for (var j = 0; j < MODULOS.length; j++) {
       if (MODULOS[j].id === 'caixa') MODULOS[j].badge = esperando ? String(esperando) : '';
+      if (MODULOS[j].id === 'devolucoes') { var nRet = porFase('devolucao').length; MODULOS[j].badge = nRet ? String(nRet) : ''; }
     }
     desenharModulos();
   }
@@ -2276,7 +2665,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     for (var i = 0; i < DADOS.itens.length; i++) {
       var it = DADOS.itens[i];
       if (it.dCompra && it.dChegada) chegaram.push([it.dCompra, it.dChegada]);
-      if (it.dChegada && it.dVenda) venderam.push([it.dChegada, it.dVenda]);
+      if (it.dCompra && it.dVenda) venderam.push([it.dCompra, it.dVenda]);
       if (it.dVenda && it.dRecebido) caiu.push([it.dVenda, it.dRecebido]);
     }
     var mc = mediaDias(chegaram), mv = mediaDias(venderam);
@@ -2288,8 +2677,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     var t = [
       { r: 'Da compra até chegar', n: mc == null ? '—' : mc + (mc === 1 ? ' dia' : ' dias'),
         s: chegaram.length ? 'média de ' + plural(chegaram.length, 'produto', 'produtos') : 'nenhum chegou ainda' },
-      { r: 'Da chegada até vender', n: mv == null ? '—' : mv + (mv === 1 ? ' dia' : ' dias'),
-        s: venderam.length ? 'média de ' + plural(venderam.length, 'venda', 'vendas') : 'nenhuma venda ainda' },
+      { r: 'Da compra à venda efetiva', n: mv == null ? '—' : mv + (mv === 1 ? ' dia' : ' dias'),
+        s: venderam.length ? 'inclui o tempo das devoluções' : 'nenhuma venda efetiva ainda' },
       { r: 'Parado agora', n: brl(parado), s: plural(nParado, 'produto sem vender', 'produtos sem vender'),
         cor: parado > 0 ? 'var(--warn)' : '' }
     ];
@@ -2335,7 +2724,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
         cor: 'var(--pos)' },
       { r: 'Saiu em compras', n: brl(saiu), s: 'custo de tudo que entrou' },
       { r: 'Demora até cair', n: mr == null ? '—' : mr + (mr === 1 ? ' dia' : ' dias'),
-        s: pares.length ? 'média das que já caíram' : 'nenhuma caiu ainda' }
+        s: pares.length ? 'média das que já caíram' : 'nenhuma caiu ainda' },
+      { r: 'Despesas registradas', n: brl(totalDespesas(despesasDaPessoa())), s: 'operação e custos de devoluções', cor: 'var(--neg)' }
     ]);
 
     $('#conta-receber').textContent = esperando.length ? brl(aReceber) : '';
@@ -2396,11 +2786,13 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   function desenharPainel() {
     var esperando = vendasPorDinheiro(false), encalhe = porFase('estoque').filter(function (it) { return dias(it.dChegada) >= 60; });
     var semCustos = PESSOA.produtos.filter(function (p) { return !DADOS.canais.some(function (c) { return !!custosDoProduto(p.id, c); }); });
+    var retornos = porFase('devolucao');
     var total = esperando.reduce(function (s, it) { return s + contaDoItem(it).liquido; }, 0);
     $('#painel-pendencias').innerHTML = [
       { id: 'caixa', icon: '↙', titulo: brl(total) + ' a receber', detalhe: plural(esperando.length, 'venda aguardando baixa', 'vendas aguardando baixa') },
       { id: 'parado', icon: '◷', titulo: plural(encalhe.length, 'produto parado', 'produtos parados'), detalhe: 'Em estoque há 60 dias ou mais' },
-      { id: 'custos', icon: '%', titulo: plural(semCustos.length, 'cadastro sem custos', 'cadastros sem custos'), detalhe: 'Configure taxas e frete por canal' }
+      retornos.length ? { id: 'devolucoes', icon: '↩', titulo: plural(retornos.length, 'unidade em retorno', 'unidades em retorno'), detalhe: 'Confirme a chegada para liberar a revenda' }
+        : { id: 'custos', icon: '%', titulo: plural(semCustos.length, 'cadastro sem custos', 'cadastros sem custos'), detalhe: 'Configure taxas e frete por canal' }
     ].map(function (a) {
       return '<button class="action-card" type="button" data-pendencia="' + a.id + '"><span class="action-icon" aria-hidden="true">' + a.icon + '</span><span><strong>' + a.titulo + '</strong><small>' + a.detalhe + '</small></span><span class="arrow" aria-hidden="true">↗</span></button>';
     }).join('');
@@ -2473,7 +2865,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     svg += '<line class="eixo" x1="' + L + '" y1="' + zero.toFixed(1) + '" x2="' + (largura - R) + '" y2="' + zero.toFixed(1) + '"/></svg>';
     alvo.innerHTML = svg;
     $('#graf-periodo').textContent = dataBR(lista[0].inicio) + ' — ' + dataBR(lista[lista.length - 1].fim);
-    $('#graf-tooltip').textContent = (lista[0].inicio !== lista[0].fim ? 'Vendas agrupadas por intervalos. ' : '') + (GRAF_METRICA === 'lucro' ? 'Lucro após custo, taxas e frete.' : 'Faturamento bruto, antes das taxas.') + ' Passe o mouse ou selecione uma barra para ver o valor.';
+    $('#graf-tooltip').textContent = (lista[0].inicio !== lista[0].fim ? 'Vendas agrupadas por intervalos. ' : '') + (GRAF_METRICA === 'lucro' ? 'Lucro das vendas, antes das despesas do negócio.' : 'Faturamento bruto, antes das taxas.') + ' Passe o mouse ou selecione uma barra para ver o valor.';
     var barras = alvo.querySelectorAll('[data-graf-info]');
     for (var j = 0; j < barras.length; j++) {
       ['pointerenter', 'focus', 'click'].forEach(function (evento) { barras[j].addEventListener(evento, function () { $('#graf-tooltip').textContent = this.getAttribute('data-graf-info'); }); });
@@ -2551,6 +2943,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   function desfazerChegada(id) {
     if (salvando) return;
     var it = itemDe(id); if (!it) return;
+    if (historicoUnidade(id).length) { erro('<b>Esta unidade tem histórico de ocorrências.</b> Mantenha a primeira chegada para preservar o ciclo do produto.'); return; }
     var antes = it.dChegada;
     it.dChegada = '';
     desenharTudo();
@@ -2563,12 +2956,17 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     if (salvando) return;
     $('#aviso-erro').hidden = true;
     var it = itemDe(vendendo); if (!it) return;
+    if (fase(it) !== 'estoque') { erro('<b>Esta unidade ainda não está disponível.</b> Confirme a chegada na aba Devoluções antes de vender novamente.'); return; }
     var canal = canalEscolhido();
     if (!canal) { erro('<b>Falta escolher o canal.</b> Toque no app onde a venda aconteceu.'); return; }
     var custos = lerCustos('v', true); if (!custos) return;
     var preco = num($('#v-preco').value);
     if (preco <= 0) { erro('<b>Falta o valor da venda.</b> Digite por quanto o produto saiu.'); $('#v-preco').focus(); return; }
     var dVenda = $('#v-dvenda').value || hoje();
+    var retorno = ultimaDevolucao(it.id);
+    if (retorno && !retorno.revenda && (!retorno.recebidaEm || dVenda < retorno.recebidaEm)) {
+      erro('<b>A revenda não pode ocorrer antes da chegada do retorno.</b> Confira as datas na aba Devoluções.'); return;
+    }
     if (it.dChegada && dVenda < it.dChegada) {
       erro('<b>A data da saída é anterior à da chegada.</b> Confira: chegou em ' + dataBR(it.dChegada) + '.');
       return;
@@ -2576,31 +2974,16 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     var custo = num($('#v-custo-edit').value);
     if (custo <= 0) { erro('<b>Confira o custo do produto.</b> Ele deve ser maior que zero.'); return; }
     var pessoa = PESSOA, lembrar = $('#v-lembrar').checked;
-    var campos = { canal: canal.id, preco: preco, frete: custos.frete, d_venda: dVenda, custo: custo };
+    var campos = { canal: canal.id, preco: preco, frete: custos.frete, d_venda: dVenda, custo: custo, d_recebido: null };
     salvar(function () {
-      return gravarCustos(pessoa, canal.id, it.produtoId, custos, it.id, lembrar).then(function () {
-        return alterarUnidade(it.id, campos);
-      }).then(function () {
-        it.canal = canal.id; it.preco = preco; it.frete = custos.frete; it.dVenda = dVenda; it.custo = custo;
+      return salvarVendaComCiclo(pessoa, it, canal, custos, campos, lembrar).then(function () {
+        it.canal = canal.id; it.preco = preco; it.frete = custos.frete; it.dVenda = dVenda; it.custo = custo; it.dRecebido = '';
       });
     }, $('#btn-venda'), 'Confirmar saída', null, function () {
       fecharPaineis(); desenharTudo();
     });
   }
-  function desfazerVenda(id) {
-    if (salvando) return;
-    var it = itemDe(id); if (!it) return;
-    var antes = { canal: it.canal, preco: it.preco, frete: it.frete, dVenda: it.dVenda, dRecebido: it.dRecebido };
-    it.canal = ''; it.preco = 0; it.frete = null; it.dVenda = ''; it.dRecebido = '';
-    desenharTudo();
-    salvar(function () {
-      return alterarUnidade(id, { canal: '', preco: 0, frete: null, d_venda: null, d_recebido: null });
-    }, null, '', function () {
-      it.canal = antes.canal; it.preco = antes.preco; it.frete = antes.frete;
-      it.dVenda = antes.dVenda; it.dRecebido = antes.dRecebido;
-      desenharTudo();
-    });
-  }
+  function desfazerVenda(id) { abrirDevolucao(id); }
 
   // ---------- alterar ----------
   function salvarEdicao() {
@@ -2616,6 +2999,10 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     if (dCompra && dChegada && dChegada < dCompra) {
       erro('<b>A chegada não pode ser antes da compra.</b> Comprado em ' + dataBR(dCompra) + '.');
       return;
+    }
+    var ocorrencias = historicoUnidade(it.id);
+    if (ocorrencias.length && (!dCompra || !dChegada || dCompra > ocorrencias[0].venda.dVenda || dChegada > ocorrencias[0].venda.dVenda)) {
+      erro('<b>Preserve as datas originais do produto.</b> A compra e a primeira chegada devem existir e ser anteriores à primeira venda do histórico.'); return;
     }
     var vendido = fase(it) === 'vendido';
     var custosVenda = vendido ? lerCustos('ed', true) : null;
@@ -2730,6 +3117,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   function confirmarBaixa(id) {
     if (salvando) return;
     var it = itemDe(id); if (!it) return;
+    if (historicoUnidade(id).length) { erro('<b>Esta unidade possui histórico de devoluções ou cancelamentos.</b> Ela não pode ser apagada, para preservar os custos e o ciclo do produto.'); return; }
     var campo = document.getElementById('data-baixa-' + id);
     var d = (campo && campo.value) || hoje();
     if (it.dVenda && d < it.dVenda) {
@@ -2868,8 +3256,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     for (var i = 0; i < cat.length; i++) {
       mapa[cat[i].id] = {
         id: cat[i].id, nome: cat[i].nome, fornecedor: cat[i].fornecedor || '',
-        comprados: 0, caminho: 0, estoque: 0, vendidos: 0,
-        custoTotal: 0, faturamento: 0, lucro: 0, taxas: 0, giros: []
+        comprados: 0, caminho: 0, estoque: 0, retorno: 0, vendidos: 0,
+        custoTotal: 0, faturamento: 0, lucro: 0, despesas: 0, taxas: 0, giros: []
       };
     }
     var itens = (PESSOA && PESSOA.itens) ? PESSOA.itens : [];
@@ -2881,16 +3269,18 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
       var f = fase(it);
       if (f === 'caminho') r.caminho++;
       else if (f === 'estoque') r.estoque++;
+      else if (f === 'devolucao') r.retorno++;
       else {
         r.vendidos++;
         var c = contaDoItem(it);
         r.faturamento += c.preco; r.lucro += c.lucro; r.taxas += c.taxa + c.frete;
-        var g = dias(it.dChegada || it.dCompra, it.dVenda);
+        var g = diasCiclo(it);
         if (g != null && g >= 0) r.giros.push(g);
       }
     }
     var lista = [];
-    for (var k in mapa) if (Object.prototype.hasOwnProperty.call(mapa, k)) lista.push(mapa[k]);
+    despesasDaPessoa().forEach(function (d) { if (mapa[d.produtoId]) mapa[d.produtoId].despesas += num(d.valor); });
+    for (var k in mapa) if (Object.prototype.hasOwnProperty.call(mapa, k)) { mapa[k].lucro -= mapa[k].despesas; lista.push(mapa[k]); }
     lista.sort(function (a, b) {
       if (b.vendidos !== a.vendidos) return b.vendidos - a.vendidos;
       return b.comprados - a.comprados;
@@ -2921,7 +3311,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
       { r: 'Produtos diferentes', n: String(lista.length), s: 'no seu cadastro' },
       { r: 'Unidades compradas', n: String(tComprados), s: 'desde o começo' },
       { r: 'Unidades vendidas', n: String(tVendidos), s: tComprados ? pc(tVendidos / tComprados) + ' do que comprou' : '' },
-      { r: 'Lucro acumulado', n: brl(tLucro), s: tFat > 0 ? 'margem de ' + pc(tLucro / tFat) : 'nenhuma venda ainda',
+      { r: 'Resultado dos produtos', n: brl(tLucro), s: 'despesas vinculadas já descontadas',
         d: true, cor: tLucro < 0 ? 'var(--neg)' : 'var(--pos)' }
     ]);
 
@@ -2937,15 +3327,17 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
 
     var h = '<div class="tabela-caixa"><table><thead><tr>'
       + '<th>Produto</th><th>Comprou</th><th>Parado</th><th>Vendeu</th>'
-      + '<th>Faturou</th><th>Sobrou</th><th>Margem</th><th>Giro</th><th>Custos por canal</th>'
+      + '<th>Faturou</th><th>Resultado</th><th>Margem</th><th>Ciclo total</th><th>Custos por canal</th>'
       + '</tr></thead><tbody>';
     for (var j = 0; j < lista.length; j++) {
       var r = lista[j];
-      var parado = r.caminho + r.estoque;
+      var parado = r.caminho + r.estoque + r.retorno;
       var giro = r.giros.length ? Math.round(r.giros.reduce(function (s, x) { return s + x; }, 0) / r.giros.length) : null;
       var meta = [];
       if (r.fornecedor) meta.push(esc(r.fornecedor));
       if (r.comprados) meta.push('custo médio ' + brl(r.custoTotal / r.comprados));
+      if (r.retorno) meta.push(r.retorno + ' em retorno');
+      if (r.despesas) meta.push('despesas vinculadas ' + brl(r.despesas));
       var configurados = DADOS.canais.filter(function (c) { return !!custosDoProduto(r.id, c); });
       h += '<tr>'
         + '<td data-l="Produto"><span class="prod">' + esc(r.nome) + '<small>' + meta.join(' · ') + '</small></span></td>'
@@ -2953,10 +3345,10 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
         + '<td data-l="Parado" class="num-cel"' + (parado ? ' style="color:var(--warn)"' : '') + '>' + parado + '</td>'
         + '<td data-l="Vendeu" class="num-cel">' + r.vendidos + '</td>'
         + '<td data-l="Faturou" class="num-cel">' + (r.vendidos ? brl(r.faturamento) : '—') + '</td>'
-        + '<td data-l="Sobrou" class="num-cel lucro-cel" style="color:' + (r.lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">'
-        + (r.vendidos ? brl(r.lucro) : '—') + '</td>'
+        + '<td data-l="Resultado" class="num-cel lucro-cel" style="color:' + (r.lucro < 0 ? 'var(--neg)' : 'var(--pos)') + '">'
+        + (r.vendidos || r.despesas ? brl(r.lucro) : '—') + '</td>'
         + '<td data-l="Margem" class="num-cel">' + (r.vendidos && r.faturamento > 0 ? pc(r.lucro / r.faturamento) : '—') + '</td>'
-        + '<td data-l="Giro" class="num-cel">' + (giro == null ? '—' : giro + 'd') + '</td>'
+        + '<td data-l="Ciclo total" class="num-cel">' + (giro == null ? '—' : giro + 'd') + '</td>'
         + '<td data-l="Custos por canal"><span class="meta">' + (configurados.length ? configurados.map(function (c) { return esc(c.curto); }).join(' · ') : 'Ainda não cadastrado') + '</span>'
         + (podeEditar() ? '<br><button class="btn btn-mini" type="button" data-custos-produto="' + esc(r.id) + '">Taxas e frete</button>' : '') + '</td>'
         + '</tr>';
@@ -2984,6 +3376,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     desenharVendidos(); desenharPorCanal(); desenharGraficoDiario();
     desenharListaProdutos(); desenharCadastroCustos(); desenharProdutos();
     desenharFiltroCanais(); desenharSeletorVenda(); desenharPainel();
+    desenharDevolucoes(); desenharDespesas();
     atualizarBadges();
     ligarBotoesDeItem();
   }
@@ -3084,12 +3477,21 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
             });
             c.produtos = produtos; c.vendas = vendas;
             c.correcaoPorsche20261013 = correcoes;
+            if (c.gestao) {
+              (c.gestao.devolucoes || []).forEach(function (d) {
+                d.unidadeId = unidadesNovas[d.unidadeId] || d.unidadeId;
+                d.produtoId = produtosAntigos[d.produtoId] || d.produtoId;
+                if (d.venda) { d.venda.id = d.unidadeId; d.venda.produtoId = d.produtoId; }
+              });
+              (c.gestao.despesas || []).forEach(function (d) { if (d.produtoId) d.produtoId = produtosAntigos[d.produtoId] || ''; });
+            }
           });
         });
       }).then(function () {
-        return Array.isArray(minha.canais) && minha.canais.length ? gravarCanais() : Promise.resolve();
+        return Array.isArray(minha.canais) && minha.canais.length ? gravarCanais(true) : Promise.resolve();
       }).then(function () {
         ativar(PESSOA.id);
+        aplicarGestao(PESSOA);
         desenharCanais(); desenharAjustes(); desenharTudo();
       });
     }, $('#btn-restaurar'), 'Restaurar', function () {
@@ -3142,6 +3544,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   function abrirVenda(id) {
     if (salvando) return;
     var it = itemDe(id); if (!it) return;
+    if (fase(it) !== 'estoque') { erro('<b>Esta unidade ainda não está disponível para venda.</b> Confirme o retorno na aba Devoluções.'); return; }
     editando = null; $('#painel-editar').hidden = true;
     vendendo = id;
     $('#v-seletor').value = id;
@@ -3218,12 +3621,14 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   // ---------- exportar ----------
   function aoBaixar() {
     var linhas = [['Produto', 'Unidade', 'Situação', 'Onde comprou', 'Canal de venda', 'Data compra', 'Data chegada', 'Data saída',
-      'Dias a caminho', 'Dias parado', 'Custo', 'Preço previsto', 'Venda', 'Taxa', 'Frete', 'Sobrou', 'Margem %', 'Retorno %']];
-    var nomes = { caminho: 'A caminho', estoque: 'Em estoque', vendido: 'Vendido' };
+      'Dias a caminho', 'Dias desde a primeira chegada', 'Custo de compra', 'Preço previsto', 'Venda efetiva', 'Taxa', 'Frete', 'Lucro da venda', 'Margem %', 'Retorno %',
+      'Ciclo total em dias', 'Ocorrências anteriores', 'Custos das ocorrências', 'Última solicitação', 'Último retorno recebido']];
+    var nomes = { caminho: 'A caminho', estoque: 'Em estoque', devolucao: 'Aguardando retorno', vendido: 'Vendido' };
     var dec = function (n) { return n.toFixed(2).replace('.', ','); };
     for (var i = 0; i < DADOS.itens.length; i++) {
       var it = DADOS.itens[i], f = fase(it), cn = canalDe(it.canal), c = contaDoItem(it);
       var g = grupoDe(it);
+      var ocorrencias = historicoUnidade(it.id), ultima = ultimaDevolucao(it.id);
       var dCam = dias(it.dCompra, it.dChegada || null);
       var dPar = it.dChegada ? dias(it.dChegada, it.dVenda || null) : null;
       linhas.push([
@@ -3235,7 +3640,9 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
         f === 'vendido' ? dec(c.preco) : '', f === 'vendido' ? dec(c.taxa) : '',
         f === 'vendido' ? dec(c.frete) : '', f === 'vendido' ? dec(c.lucro) : '',
         f === 'vendido' && isFinite(c.margem) ? (c.margem * 100).toFixed(1).replace('.', ',') : '',
-        f === 'vendido' && isFinite(c.roi) ? (c.roi * 100).toFixed(1).replace('.', ',') : ''
+        f === 'vendido' && isFinite(c.roi) ? (c.roi * 100).toFixed(1).replace('.', ',') : '',
+        diasCiclo(it) == null ? '' : diasCiclo(it), ocorrencias.length,
+        dec(ocorrencias.reduce(function (s, d) { return s + num(d.custo); }, 0)), ultima ? dataBR(ultima.solicitadaEm) : '', ultima ? dataBR(ultima.recebidaEm) : ''
       ]);
     }
     var csv = linhas.map(function (l) {
@@ -3265,7 +3672,13 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     liga('data-cancela-chegada', function (id) { var f = document.getElementById('form-chegada-' + id); if (f) f.hidden = true; });
     liga('data-vender', abrirVenda);
     liga('data-voltar', desfazerChegada);
-    liga('data-devolver', function (id, b) { doisToques(b, 'Desfazer?', function () { desfazerVenda(id); }); });
+    liga('data-devolver', abrirDevolucao);
+    liga('data-historico-unidade', historicoDoProduto);
+    liga('data-editar-dev', editarOcorrencia);
+    liga('data-salvar-dev', aoSalvarOcorrencia);
+    liga('data-dev-todas', function () { FILTRO_UNIDADE_DEV = ''; desenharDevolucoes(); ligarBotoesDeItem(); });
+    liga('data-editar-despesa', abrirDespesa);
+    liga('data-excluir-despesa', function (id, b) { doisToques(b, 'Excluir?', function () { excluirDespesa(id); }); });
     liga('data-editar', abrirEdicao);
     liga('data-duplicar', abrirDuplicar);
     liga('data-confirma-dup', confirmarDuplicar);
@@ -3277,6 +3690,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     liga('data-desbaixa', function (id, b) { doisToques(b, 'Desfazer?', function () { desfazerBaixa(id); }); });
     liga('data-pendencia', function (id) {
       if (id === 'caixa') { irPara('caixa'); return; }
+      if (id === 'devolucoes') { FILTRO_UNIDADE_DEV = ''; $('#dev-status').value = 'pendente'; desenharDevolucoes(); ligarBotoesDeItem(); irPara('devolucoes'); return; }
       if (id === 'parado') { $('#estoque-busca').value = ''; $('#estoque-fase').value = 'parado'; desenharCaminho(); desenharEstoque(); ligarBotoesDeItem(); irPara('compras'); return; }
       $('#produtos-busca').value = ''; $('#produtos-status').value = 'sem-custos'; desenharProdutos(); irPara('produtos');
     });
@@ -3321,6 +3735,14 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   $('#pc-produto').addEventListener('change', carregarCadastroCustos);
   $('#pc-canal').addEventListener('change', carregarCadastroCustos);
   $('#btn-custos-produto').addEventListener('click', aoSalvarCustosProduto);
+  $('#btn-devolucao').addEventListener('click', aoRegistrarOcorrencia);
+  $('#dev-comigo').addEventListener('change', function () { $('#dev-recebida-campo').hidden = !this.checked; });
+  ['dev-busca', 'dev-status'].forEach(function (id) { $('#' + id).addEventListener(id === 'dev-busca' ? 'input' : 'change', function () { desenharDevolucoes(); ligarBotoesDeItem(); }); });
+  $('#btn-despesa').addEventListener('click', aoSalvarDespesa);
+  $('#btn-despesa-cancelar').addEventListener('click', function () { if (!salvando) limparDespesa(); });
+  ['desp-busca', 'desp-filtro-categoria', 'desp-inicio', 'desp-fim'].forEach(function (id) { $('#' + id).addEventListener(id === 'desp-busca' ? 'input' : 'change', function () { desenharDespesas(); ligarBotoesDeItem(); }); });
+  $('#btn-despesas-csv').addEventListener('click', exportarDespesas);
+  limparOcorrencia(); limparDespesa();
   $('#btn-novo-produto').addEventListener('click', aoCadastrarProduto);
   $('#p-nome').addEventListener('keydown', function (e) { if (e.key === 'Enter') aoCadastrarProduto(); });
   $('#v-seletor').addEventListener('change', function () {
