@@ -640,6 +640,28 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
 @media(max-width:1250px){#tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.ciclo-datas{grid-template-columns:1fr 1fr}}
 @media(max-width:719px){#tiles{grid-template-columns:1fr 1fr}.wrap,.wrap[data-compact="true"]{padding-bottom:145px}.nav-baixo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding-top:5px}.nav-item{min-height:47px;padding:3px 1px;gap:1px}.nav-icone{height:23px}.nav-item svg{width:18px;height:18px}.toast{bottom:135px}.ciclo-datas{grid-template-columns:1fr 1fr}.estoque-grupo>summary{padding:13px;gap:9px}.grupo-nome{font-size:13px}.grupo-quantidade{font-size:20px}.grupo-unidades{padding-left:12px;padding-right:12px}.tiles-operacao{grid-template-columns:1fr 1fr}.ocorrencia-topo{flex-wrap:wrap}}
 </style>
+<style id="menu-mobile">
+.menu-mobile-button,.menu-mobile-close,.menu-fundo{display:none}
+@media(max-width:719px){
+  .wrap,.wrap[data-compact="true"]{padding-bottom:28px}.nav-baixo{display:none!important}.toast{bottom:20px}
+  .menu-mobile-button,.menu-mobile-close{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:42px;height:42px;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer}
+  .menu-mobile-button svg,.menu-mobile-close svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+  .menu-mobile-close{position:absolute;right:14px;top:18px;width:34px;height:34px;padding:6px;border:0;background:var(--surface-2)}
+  .menu-fundo{display:block;position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.46);touch-action:none}
+  #app .sidebar,#app[data-compact="true"] .sidebar,#app[data-compact="true"] .sidebar:is(:hover,:focus-within){display:flex;width:min(300px,calc(100vw - 42px));height:100vh;height:100dvh;max-height:100dvh;padding:24px 16px max(18px,env(safe-area-inset-bottom));z-index:100;transform:translateX(-105%);visibility:hidden;transition:transform .22s ease,visibility .22s;box-shadow:12px 0 40px -20px rgba(0,0,0,.4)}
+  #app[data-mobile-menu="true"] .sidebar{transform:translateX(0);visibility:visible}
+  #app .sidebar .nav-text,#app .sidebar .sidebar-brand-text,#app .sidebar .nav-label,#app .sidebar .sidebar-bottom small{display:block}
+  #app .sidebar .sidebar-brand{margin:0 35px 24px 6px;flex-shrink:0;min-height:42px;gap:9px}
+  #app .sidebar .sidebar-brand b{font-size:14px}#app .sidebar .sidebar-brand small{font-size:10px}#app .sidebar .brand-icon{width:33px;height:33px;font-size:20px}
+  #app .sidebar .nav-label{padding-left:14px;flex-shrink:0}
+  #app .sidebar .modulos{display:flex;flex-direction:column;flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;gap:6px;padding:0 3px 14px 0;scrollbar-width:thin;touch-action:pan-y}
+  #app .sidebar .modulo-aba{flex-shrink:0;min-height:48px;padding:14px 15px;font-size:13px;gap:12px}
+  #app .sidebar .modulo-aba .badge{position:static;margin-left:auto;margin-top:0;padding:0 6px}
+  #app .sidebar .sidebar-bottom{flex-shrink:0;margin-top:0;padding-top:12px}#app .sidebar #btn-sidebar{display:none}
+  #app .sidebar .sidebar-bottom small{margin-top:0;padding:8px 0}
+  body[data-mobile-menu="true"]{overflow:hidden}
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
@@ -1398,6 +1420,23 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     try { localStorage.setItem('qs-menu', compacto ? 'compacto' : 'aberto'); } catch (e) {}
     setTimeout(function () { if (!$('#app').hidden) desenharGraficoDiario(); }, 220);
   }
+  var MENU_MOBILE_ABERTO = false;
+  function definirMenuMobile(abrir, devolverFoco) {
+    if (abrir && !window.matchMedia('(max-width: 719px)').matches) return;
+    MENU_MOBILE_ABERTO = !!abrir;
+    $('#app').setAttribute('data-mobile-menu', abrir ? 'true' : 'false');
+    document.body.setAttribute('data-mobile-menu', abrir ? 'true' : 'false');
+    $('#btn-menu-mobile').setAttribute('aria-expanded', abrir ? 'true' : 'false');
+    $('#menu-fundo').hidden = !abrir;
+    var menu = $('#menu-lateral');
+    if (abrir) {
+      menu.setAttribute('role', 'dialog'); menu.setAttribute('aria-modal', 'true');
+      $('#btn-menu-fechar').focus();
+    } else {
+      menu.removeAttribute('role'); menu.removeAttribute('aria-modal');
+      if (devolverFoco) $('#btn-menu-mobile').focus();
+    }
+  }
   function aoCadastrarProduto() {
     if (salvando) return;
     var nome = $('#p-nome').value.trim(), fornecedor = $('#p-fornecedor').value.trim();
@@ -1427,7 +1466,9 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     + '</div>'
 
     + '<div class="wrap" id="app" hidden>'
-    + '  <aside class="sidebar" aria-label="Navegação principal">'
+    + '  <div class="menu-fundo" id="menu-fundo" hidden aria-hidden="true"></div>'
+    + '  <aside class="sidebar" id="menu-lateral" aria-label="Navegação principal" tabindex="-1">'
+    + '    <button class="menu-mobile-close" type="button" id="btn-menu-fechar" aria-label="Fechar menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
     + '    <div class="sidebar-brand"><span class="brand-icon" aria-hidden="true">↗</span><span class="sidebar-brand-text"><b>Quanto Sobrou</b><small>Seu negócio, com clareza.</small></span></div>'
     + '    <div class="nav-label">Seu negócio</div>'
     + '    <nav class="modulos" id="modulos" role="tablist" aria-label="Áreas do sistema"></nav>'
@@ -1435,6 +1476,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     + '  </aside>'
     /* ---------------- barra do sistema ---------------- */
     + '  <div class="topo-sistema">'
+    + '    <button class="menu-mobile-button" type="button" id="btn-menu-mobile" aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="menu-lateral"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>'
     + '    <span class="breadcrumb">Quanto Sobrou / <b id="modulo-nome">Painel</b></span>'
     + '    <div class="abas" id="abas" role="tablist" aria-label="De quem é o controle"></div>'
     + '    <div class="header-actions"><button class="btn theme-button" type="button" id="btn-tema" aria-label="Trocar tema" title="Trocar tema">◐</button>'
@@ -1722,7 +1764,6 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     + '        <button class="btn btn-fantasma" id="btn-editar-cancelar" type="button">Cancelar</button></div>'
     + '    </div></section>'
     + '  </div>'
-    + '  <nav class="nav-baixo" id="nav-baixo" role="tablist" aria-label="Áreas do sistema"></nav>'
     + '</div><div class="toast" id="toast" role="status" hidden></div>';
 
   // ---------- desenhar ----------
@@ -2563,6 +2604,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   }
 
   function sair() {
+    definirMenuMobile(false, false);
     guardarSessao(null);
     USUARIO = '';
     fecharPaineis();
@@ -2600,21 +2642,14 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   var CURTOS = { painel: 'Painel', compras: 'Estoque', vendas: 'Vendas', devolucoes: 'Devoluções', produtos: 'Produtos', caixa: 'Caixa', despesas: 'Despesas', ajustes: 'Ajustes' };
 
   function desenharModulos() {
-    var cima = '', baixo = '';
+    var cima = '';
     for (var i = 0; i < MODULOS.length; i++) {
       var m = MODULOS[i], ativo = m.id === MODULO;
       cima += '<button class="modulo-aba" type="button" role="tab" data-mod="' + m.id + '"'
         + ' aria-selected="' + (ativo ? 'true' : 'false') + '" aria-controls="mod-' + m.id + '" title="' + esc(m.nome) + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICONES[m.id] + '</svg><span class="nav-text">' + esc(m.nome) + '</span>'
         + (m.badge ? '<span class="badge">' + m.badge + '</span>' : '') + '</button>';
-      baixo += '<button class="nav-item" type="button" role="tab" data-mod="' + m.id + '"'
-        + ' aria-selected="' + (ativo ? 'true' : 'false') + '" aria-label="' + esc(m.nome) + '">'
-        + '<span class="nav-icone"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICONES[m.id] + '</svg></span>'
-        + '<span>' + esc(CURTOS[m.id]) + '</span>'
-        + (m.badge ? '<span class="nav-ponto">' + m.badge + '</span>' : '')
-        + '</button>';
     }
     $('#modulos').innerHTML = cima;
-    $('#nav-baixo').innerHTML = baixo;
     var bs = document.querySelectorAll('[data-mod]');
     for (var j = 0; j < bs.length; j++) {
       (function (b) { b.addEventListener('click', function () { irPara(b.getAttribute('data-mod')); }); })(bs[j]);
@@ -2622,6 +2657,8 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   }
 
   function irPara(id) {
+    var veioDoMenu = MENU_MOBILE_ABERTO;
+    definirMenuMobile(false, false);
     MODULO = id;
     try { localStorage.setItem(CHAVE_MODULO, id); } catch (e) {}
     for (var i = 0; i < MODULOS.length; i++) {
@@ -2634,6 +2671,10 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     $('#modulo-nome').textContent = modulo ? modulo.nome : '';
     if (id === 'painel') desenharGraficoDiario();
     window.scrollTo({ top: 0, behavior: 'auto' });
+    if (veioDoMenu) {
+      var destino = document.getElementById('mod-' + id), titulo = destino && destino.querySelector('.tit');
+      if (titulo) { titulo.setAttribute('tabindex', '-1'); titulo.focus({ preventScroll: true }); }
+    }
   }
 
   // conta quantos pedidos esperam dinheiro, para o aviso na aba Caixa
@@ -3760,6 +3801,20 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   $('#btn-tema').addEventListener('click', function () { var opcoes = ['auto', 'light', 'dark']; definirTema(opcoes[(opcoes.indexOf($('#tema-select').value) + 1) % 3]); });
   $('#menu-select').addEventListener('change', function () { definirMenu(this.value === 'compacto'); });
   $('#btn-sidebar').addEventListener('click', function () { definirMenu($('#menu-select').value !== 'compacto'); });
+  $('#btn-menu-mobile').addEventListener('click', function () { definirMenuMobile(!MENU_MOBILE_ABERTO, false); });
+  $('#btn-menu-fechar').addEventListener('click', function () { definirMenuMobile(false, true); });
+  $('#menu-fundo').addEventListener('click', function () { definirMenuMobile(false, true); });
+  document.addEventListener('keydown', function (e) {
+    if (!MENU_MOBILE_ABERTO) return;
+    if (e.key === 'Escape') { e.preventDefault(); definirMenuMobile(false, true); return; }
+    if (e.key !== 'Tab') return;
+    var botoes = Array.prototype.slice.call($('#menu-lateral').querySelectorAll('button:not([disabled]), a[href], [tabindex="0"]'))
+      .filter(function (el) { return el.getClientRects().length > 0; });
+    if (!botoes.length) { e.preventDefault(); return; }
+    var primeiro = botoes[0], ultimo = botoes[botoes.length - 1];
+    if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+  });
   $('#atalho-compra').addEventListener('click', function () { irPara('compras'); $('#e-produto').focus(); });
   $('#atalho-venda').addEventListener('click', function () { irPara('vendas'); $('#v-seletor').focus(); });
   var atalhos = document.querySelectorAll('[data-atalho]');
@@ -3794,6 +3849,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   $('#btn-csv').addEventListener('click', aoBaixar);
   var relogioGrafico = 0;
   window.addEventListener('resize', function () {
+    if (MENU_MOBILE_ABERTO && !window.matchMedia('(max-width: 719px)').matches) definirMenuMobile(false, false);
     clearTimeout(relogioGrafico);
     relogioGrafico = setTimeout(function () { if (!$('#app').hidden) desenharGraficoDiario(); }, 180);
   });
