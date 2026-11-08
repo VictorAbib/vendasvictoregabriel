@@ -1125,7 +1125,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   function salvar(operacao, botao, textoOriginal, aoFalhar, aoSucesso) {
     if (!podeEditar()) {
       if (aoFalhar) aoFalhar();
-      erro('<b>Essa aba não é sua.</b> Só ' + esc(PESSOA ? PESSOA.nome : 'o dono') + ' pode alterar os dados dela.');
+      erro('<b>Você não tem permissão para alterar esta aba.</b> Só ' + esc(responsavelPelaAba(PESSOA)) + ' pode alterar os dados dela.');
       return;
     }
     salvando = true;
@@ -1163,8 +1163,22 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   var CHAVE_USUARIO = 'quanto-sobrou-usuario';
 
 
-  function podeEditar() {
-    return !!(SESSAO && SESSAO.usuario && PESSOA && PESSOA.dono && SESSAO.usuario.id === PESSOA.dono);
+  var EMAIL_GESTOR_EDUARDA = 'victorhugoabib@gmail.com';
+  function podeEditarPessoa(pessoa) {
+    var usuario = SESSAO && SESSAO.usuario;
+    if (!usuario || !pessoa || !pessoa.dono || usuario.id !== pessoa.dono) return false;
+    return pessoa.id !== 'eduarda' || String(usuario.email || '').trim().toLowerCase() === EMAIL_GESTOR_EDUARDA;
+  }
+  function podeEditar() { return podeEditarPessoa(PESSOA); }
+  function responsavelPelaAba(pessoa) {
+    return pessoa && pessoa.id === 'eduarda' ? 'Victor (' + EMAIL_GESTOR_EDUARDA + ')' : pessoa ? pessoa.nome : 'o responsável';
+  }
+  function abaPrincipalDoUsuario() {
+    var permitidas = DADOS.pessoas.filter(podeEditarPessoa);
+    // A conta pode gerenciar mais de uma aba. Abrir Eduarda nao altera a
+    // identidade do login nem substitui a aba pessoal do Victor.
+    var pessoal = permitidas.filter(function (p) { return p.id !== 'eduarda'; })[0];
+    return pessoal || permitidas[0] || null;
   }
 
   var PESSOA = null;             // pessoa cuja aba esta aberta
@@ -1455,7 +1469,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     + '  <div class="login-caixa">'
     + '    <div class="brand-icon" aria-hidden="true">↗</div>'
     + '    <h2>Quanto Sobrou</h2>'
-    + '    <p>Os dois veem tudo. Cada um só altera a própria aba.</p>'
+    + '    <p>Acesse suas abas. Cada conta altera somente os dados que tem permissão para gerenciar.</p>'
     + '    <label for="login-email" style="display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px">E-mail</label>'
     + '    <input class="entrada" id="login-email" type="email" autocomplete="username" placeholder="voce@exemplo.com" style="margin-bottom:12px">'
     + '    <label for="login-senha" style="display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px">Senha</label>'
@@ -2472,7 +2486,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   // deixa a aba do outro so para leitura: some com tudo que altera
   function aplicarPermissoes() {
     var meu = podeEditar();
-    var dono = PESSOA ? PESSOA.nome : '';
+    var dono = responsavelPelaAba(PESSOA);
     $('#aviso-alheio').hidden = meu;
     if (!meu) {
       $('#aviso-alheio-txt').innerHTML = 'Você está vendo a aba de <b>' + esc(dono) + '</b>. Dá para acompanhar tudo, '
@@ -2508,7 +2522,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
     for (var i = 0; i < DADOS.pessoas.length; i++) {
       var pe = DADOS.pessoas[i], ativa = PESSOA && pe.id === PESSOA.id;
       h += '<button class="aba" type="button" role="tab" data-pessoa="' + esc(pe.id) + '"'
-        + ' aria-selected="' + (ativa ? 'true' : 'false') + '">' + esc(pe.nome)
+        + ' aria-selected="' + (ativa ? 'true' : 'false') + '"' + (pe.id === 'eduarda' ? ' title="Gerenciada exclusivamente por ' + esc(EMAIL_GESTOR_EDUARDA) + '"' : '') + '>' + esc(pe.nome)
         + '<span class="aba-n">' + pe.itens.length + '</span></button>';
     }
     $('#abas').innerHTML = h;
@@ -2581,10 +2595,7 @@ table{font-size:12px}th{font-size:10px;letter-spacing:.035em;background:var(--su
   }
 
   function abrirApp() {
-    var minha = '';
-    for (var i = 0; i < DADOS.pessoas.length; i++) {
-      if (SESSAO && SESSAO.usuario && DADOS.pessoas[i].dono === SESSAO.usuario.id) minha = DADOS.pessoas[i].id;
-    }
+    var principal = abaPrincipalDoUsuario(), minha = principal ? principal.id : '';
     USUARIO = minha;
     $('#login').hidden = true;
     $('#app').hidden = false;
